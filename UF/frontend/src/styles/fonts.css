@@ -1,0 +1,9 @@
+@import url("https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&display=swap");
+
+@font-face {
+  font-family: "Isidora Sans Alt";
+  src: url("https://bkmedia.bakingo.com/ssr-static/IsidoraSansAlt-SemiBold.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600 800;
+}
