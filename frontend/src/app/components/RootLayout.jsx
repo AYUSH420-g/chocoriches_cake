@@ -85,7 +85,7 @@ function RootLayout() {
       .catch(() => void 0);
 
     loadSettings();
-    const intervalId = window.setInterval(loadSettings, 3000);
+    const intervalId = window.setInterval(loadSettings, 60000); // Poll every 60 seconds instead of 3 seconds to prevent server overload
 
     return () => {
       mounted = false;
