@@ -10,10 +10,12 @@ dotenv.config({ path: path.resolve(projectRoot, ".env") });
 dotenv.config({ path: path.resolve(backendRoot, ".env") });
 dotenv.config();
 
+const cleanOrigin = (url) => url ? url.trim().replace(/\/+$/, "") : "";
+
 const allowedOrigins = new Set(
   [
-    process.env.CLIENT_URL,
-    process.env.CLIENT_ORIGIN,
+    cleanOrigin(process.env.CLIENT_URL),
+    cleanOrigin(process.env.CLIENT_ORIGIN),
     "http://localhost:5173",
     "http://localhost:5174",
   ].filter(Boolean)
