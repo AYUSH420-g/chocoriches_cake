@@ -35,6 +35,7 @@ export function productCartSnapshot(product, weightLabel = "") {
     name: product.name,
     price: productPriceForWeight(product, weightLabel),
     image: productImage(product).replace("w=600", "w=200"),
+    sameDayDelivery: Boolean(product.sameDayDelivery),
   };
 }
 

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Filter, SlidersHorizontal, Truck, X } from "lucide-react";
-import { getProducts } from "../api/client";
+import { getProducts, getCategories, getSubcategories } from "../api/client";
 import ProductCard from "../components/ProductCard";
 
 const filters = ["Same Day", "Bestseller", "Under Rs. 799"];
@@ -11,7 +11,9 @@ const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low", "Name
 function Shop() {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get("cat") || "All";
+  const initialSubcategory = searchParams.get("subcat") || "";
   const [activeCategory, setActiveCategory] = useState(initialCategory);
+  const [activeSubcategory, setActiveSubcategory] = useState(initialSubcategory);
   const [activeFilters, setActiveFilters] = useState(() => {
     const filter = searchParams.get("filter");
     return filter && filters.includes(filter) ? [filter] : [];
@@ -19,10 +21,13 @@ function Shop() {
   const [sortBy, setSortBy] = useState("Newest");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const searchQuery = searchParams.get("q") || "";
 
   useEffect(() => {
     setActiveCategory(searchParams.get("cat") || "All");
+    setActiveSubcategory(searchParams.get("subcat") || "");
     const filter = searchParams.get("filter");
     setActiveFilters(filter && filters.includes(filter) ? [filter] : []);
   }, [searchParams]);
@@ -31,18 +36,18 @@ function Shop() {
     let mounted = true;
     getProducts({ q: searchQuery })
       .then((items) => {
-        if (mounted) {
-          setProducts(items);
-        }
+        if (mounted) setProducts(items);
       })
       .catch(() => {
-        if (mounted) {
-          setProducts([]);
-        }
+        if (mounted) setProducts([]);
       });
-    return () => {
-      mounted = false;
-    };
+    getCategories()
+      .then((cats) => { if (mounted) setCategories(cats); })
+      .catch(() => {});
+    getSubcategories()
+      .then((subs) => { if (mounted) setSubcategories(subs); })
+      .catch(() => {});
+    return () => { mounted = false; };
   }, [searchQuery]);
 
   const toggleFilter = (filter) => {
@@ -56,10 +61,28 @@ function Shop() {
     setActiveFilters([]);
   };
 
+  const pageTitle = useMemo(() => {
+    if (searchQuery) return `Search: "${searchQuery}"`;
+    if (activeSubcategory) {
+      const sub = subcategories.find((s) => s.name === activeSubcategory);
+      return sub ? sub.name : activeSubcategory;
+    }
+    if (activeCategory && activeCategory !== "All") {
+      const cat = categories.find((c) => c.name === activeCategory);
+      return cat ? cat.name : activeCategory;
+    }
+    return "All Cakes";
+  }, [activeCategory, activeSubcategory, searchQuery, categories, subcategories]);
+
   const filteredProducts = useMemo(() => {
-    let visible = activeCategory === "All"
-      ? products
-      : products.filter((product) => product.category === activeCategory || product.categories?.includes(activeCategory));
+    let visible = products;
+
+    if (activeCategory !== "All") {
+      visible = visible.filter((product) => product.category === activeCategory || product.categories?.includes(activeCategory));
+    }
+    if (activeSubcategory) {
+      visible = visible.filter((product) => product.subcategory === activeSubcategory);
+    }
 
     if (activeFilters.includes("Same Day")) {
       visible = visible.filter((product) => Number(product.stock ?? 1) > 0);
@@ -72,28 +95,13 @@ function Shop() {
     }
 
     return [...visible].sort((left, right) => {
-      if (sortBy === "Price: Low to High") {
-        return left.price - right.price;
-      }
-      if (sortBy === "Price: High to Low") {
-        return right.price - left.price;
-      }
-      if (sortBy === "Name: A to Z") {
-        return String(left.name || "").localeCompare(String(right.name || ""));
-      }
-      if (sortBy === "Newest") {
-        return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
-      }
+      if (sortBy === "Price: Low to High") return left.price - right.price;
+      if (sortBy === "Price: High to Low") return right.price - left.price;
+      if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
+      if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
       return 0;
     });
-  }, [activeCategory, activeFilters, products, sortBy]);
-
-  const categoryTabs = useMemo(() => {
-    const dynamicTabs = [...new Set(products.flatMap((product) => product.categories?.length ? product.categories : [product.category || "Cakes"]).filter(Boolean))]
-      .map((category) => ({ label: category, value: category }));
-
-    return [{ label: "All Cakes", value: "All" }, ...dynamicTabs];
-  }, [products]);
+  }, [activeCategory, activeSubcategory, activeFilters, products, sortBy]);
 
   return (
     <div className="bk-page">
@@ -102,18 +110,19 @@ function Shop() {
           <nav className="mb-4 flex gap-2 text-xs font-bold text-[#6f7573]">
             <Link to="/" className="hover:text-[#e61951]">Home</Link>
             <span>/</span>
-            <span className="text-[#1f2221]">Cakes</span>
+            {activeCategory !== "All" && (
+              <>
+                <Link to={`/shop?cat=${encodeURIComponent(activeCategory)}`} className="hover:text-[#e61951]">{activeCategory}</Link>
+                {activeSubcategory && <span>/</span>}
+              </>
+            )}
+            <span className="text-[#1f2221]">{activeSubcategory || (activeCategory === "All" ? "All Cakes" : activeCategory)}</span>
           </nav>
           <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
             <div>
-              <h1 className="text-3xl font-black tracking-tight text-[#1f2221] md:text-5xl">Online Cake Delivery</h1>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-[#6f7573]">
-                {searchQuery
-                  ? `Search results for "${searchQuery}" from your live cake catalog.`
-                  : "Browse fresh cakes by flavour, occasion, and delivery slot with a Bakingo-style marketplace flow."}
-              </p>
+              <h1 className="text-3xl font-bold tracking-tight text-[#1f2221] md:text-4xl">{pageTitle}</h1>
             </div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[#fff2e9] px-4 py-2 text-sm font-black text-[#e61951]">
+            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[#fff2e9] px-4 py-2 text-sm font-bold text-[#e61951]">
               <Truck size={18} />
               Same Day Delivery Available
             </div>
@@ -122,45 +131,28 @@ function Shop() {
       </div>
 
       <div className="sticky top-[118px] z-30 border-b border-[#ebebeb] bg-white/95 backdrop-blur">
-        <div className="bk-shell flex flex-col gap-3 py-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex gap-2 overflow-x-auto">
-            {categoryTabs.map((category) => (
-              <button
-                key={category.value}
-                type="button"
-                onClick={() => setActiveCategory(category.value)}
-                className={`whitespace-nowrap rounded-lg px-4 py-2 text-sm font-black transition ${
-                  activeCategory === category.value
-                    ? "bg-[#e61951] text-white"
-                    : "bg-[#f7f7f7] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
-                }`}
-              >
-                {category.label}
-              </button>
-            ))}
-          </div>
-
+        <div className="bk-shell flex items-center justify-between gap-3 py-3">
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-4 text-sm font-black text-[#1f2221] lg:hidden"
+              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-4 text-sm font-bold text-[#1f2221] lg:hidden"
             >
               <Filter size={17} />
               Filter
             </button>
-            <label className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-3 text-sm font-black text-[#1f2221]">
-              Sort
-              <select
-                value={sortBy}
-                onChange={(event) => setSortBy(event.target.value)}
-                className="bg-transparent text-sm outline-none"
-              >
-                {sortOptions.map((option) => <option key={option}>{option}</option>)}
-              </select>
-              <ChevronDown size={15} />
-            </label>
           </div>
+          <label className="inline-flex h-10 items-center gap-1 rounded-lg border border-[#ebebeb] bg-white pl-3 pr-2 text-sm font-bold text-[#6f7573]">
+            Sort by:
+            <select
+              value={sortBy}
+              onChange={(event) => setSortBy(event.target.value)}
+              className="appearance-none bg-transparent px-1 font-semibold text-[#1f2221] outline-none"
+            >
+              {sortOptions.map((option) => <option key={option}>{option}</option>)}
+            </select>
+            <ChevronDown size={15} className="text-[#1f2221]" />
+          </label>
         </div>
       </div>
 
@@ -196,7 +188,7 @@ function Shop() {
             <p className="text-sm font-bold text-[#6f7573]">
               Showing <span className="font-black text-[#1f2221]">{filteredProducts.length}</span> cakes
             </p>
-            <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p>
+            {/* <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p> */}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

@@ -141,6 +141,23 @@ function register(payload) {
 function getProfile() {
   return request("/profile");
 }
+function updateProfile(payload) {
+  return request("/auth/profile", {
+    method: "PATCH",
+    body: JSON.stringify(payload)
+  });
+}
+function addAddress(payload) {
+  return request("/auth/addresses", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+function deleteAddress(id) {
+  return request(`/auth/addresses/${id}`, {
+    method: "DELETE"
+  });
+}
 function getOrders() {
   return request("/orders/my");
 }
@@ -242,6 +259,29 @@ function deleteAdminCategory(id) {
   return adminRequest(`/categories/${id}`, {
     method: "DELETE"
   });
+}
+function getAdminSubcategories() {
+  return adminRequest("/subcategories");
+}
+function createAdminSubcategory(payload) {
+  return adminRequest("/subcategories", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+function updateAdminSubcategory(id, payload) {
+  return adminRequest(`/subcategories/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload)
+  });
+}
+function deleteAdminSubcategory(id) {
+  return adminRequest(`/subcategories/${id}`, {
+    method: "DELETE"
+  });
+}
+function getSubcategories() {
+  return request("/subcategories");
 }
 function getAdminPincodes() {
   return adminRequest("/pincodes");
@@ -349,5 +389,13 @@ export {
   updateAdminPincode,
   updateAdminProduct,
   updateAdminSettings,
-  updateCartItem
+  updateCartItem,
+  getAdminSubcategories,
+  createAdminSubcategory,
+  updateAdminSubcategory,
+  deleteAdminSubcategory,
+  getSubcategories,
+  addAddress,
+  deleteAddress,
+  updateProfile
 };

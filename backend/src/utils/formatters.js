@@ -30,6 +30,7 @@ export function publicUser(user = profileUser) {
     role: user.role || "user",
     isBlocked: Boolean(user.isBlocked),
     blockedReason: user.blockedReason || "",
+    addresses: Array.isArray(user.addresses) ? user.addresses : [],
     createdAt: user.createdAt,
   };
 }
@@ -125,6 +126,7 @@ export function listProduct(product) {
     weightOptions,
     tags: product.tags || [],
     sortOrder: Number(product.sortOrder || 0),
+    sameDayDelivery: Boolean(product.sameDayDelivery),
     createdAt: product.createdAt,
   };
 }
@@ -151,6 +153,7 @@ export function detailProduct(product = seedProducts[0]) {
     defaultWeight,
     weightOptions,
     isActive: product.isActive !== false,
+    sameDayDelivery: Boolean(product.sameDayDelivery),
   };
 }
 
@@ -224,6 +227,17 @@ export function categoryView(category) {
     image: category.image || "",
     isActive: category.isActive !== false,
     sortOrder: Number(category.sortOrder || 0),
+  };
+}
+
+export function subcategoryView(subcategory) {
+  return {
+    id: String(subcategory._id || subcategory.slug || subcategory.name),
+    name: subcategory.name,
+    slug: subcategory.slug || `${slugify(subcategory.category)}-${slugify(subcategory.name)}`,
+    category: subcategory.category,
+    isActive: subcategory.isActive !== false,
+    sortOrder: Number(subcategory.sortOrder || 0),
   };
 }
 

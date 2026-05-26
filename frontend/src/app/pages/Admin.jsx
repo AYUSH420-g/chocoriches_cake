@@ -4,6 +4,7 @@ import {
   Ban,
   CalendarOff,
   Edit3,
+  Layers,
   Lock,
   MapPin,
   Package,
@@ -44,7 +45,11 @@ import {
   updateAdminOrder,
   updateAdminPincode,
   updateAdminProduct,
-  updateAdminSettings
+  updateAdminSettings,
+  getAdminSubcategories,
+  createAdminSubcategory,
+  updateAdminSubcategory,
+  deleteAdminSubcategory
 } from "../api/client";
 import { formatPrice } from "../utils/format";
 
@@ -52,6 +57,7 @@ const tabs = [
   ["overview", "Overview", ShieldCheck],
   ["products", "Products", Package],
   ["categories", "Categories", Tags],
+  ["subcategories", "Subcategories", Layers],
   ["users", "Users", Users],
   ["orders", "Orders", ShoppingBag],
   ["pincodes", "Pincodes", MapPin],
@@ -79,9 +85,11 @@ const emptyProduct = {
   isBestSeller: false,
   isTrending: false,
   customizable: false,
+  sameDayDelivery: false,
 };
 
 const emptyCategory = { name: "", isActive: true };
+const emptySubcategory = { name: "", category: "", isActive: true, sortOrder: 0 };
 const emptyPincode = { pincode: "", city: "", state: "", deliveryFee: 0, isActive: true };
 const emptyDate = { date: "", reason: "", isActive: true };
 
@@ -94,6 +102,7 @@ function Admin() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [subcategories, setSubcategories] = useState([]);
   const [orders, setOrders] = useState([]);
   const [inquiries, setInquiries] = useState([]);
   const [pincodes, setPincodes] = useState([]);
@@ -103,6 +112,8 @@ function Admin() {
   const [editingProductId, setEditingProductId] = useState("");
   const [categoryForm, setCategoryForm] = useState(emptyCategory);
   const [editingCategoryId, setEditingCategoryId] = useState("");
+  const [subcategoryForm, setSubcategoryForm] = useState(emptySubcategory);
+  const [editingSubcategoryId, setEditingSubcategoryId] = useState("");
   const [pincodeForm, setPincodeForm] = useState(emptyPincode);
   const [editingPincodeId, setEditingPincodeId] = useState("");
   const [dateForm, setDateForm] = useState(emptyDate);
@@ -118,6 +129,15 @@ function Admin() {
 
     return [...new Set([...names, ...selectedCategories, emptyProduct.category].filter(Boolean))];
   }, [categories, selectedCategories]);
+
+  const subcategoryOptions = useMemo(() => {
+    const options = subcategories
+      .filter((sub) => sub.isActive !== false && selectedCategories.includes(sub.category?.name || sub.category))
+      .map((sub) => sub.name)
+      .filter(Boolean);
+    return ["", ...options];
+  }, [subcategories, selectedCategories]);
+
 
   const toggleProductCategory = (categoryName) => {
     setProductForm((current) => {
@@ -187,6 +207,7 @@ function Admin() {
         nextUsers,
         nextProducts,
         nextCategories,
+        nextSubcategories,
         nextOrders,
         nextInquiries,
         nextPincodes,
@@ -197,6 +218,7 @@ function Admin() {
         getAdminUsers(),
         getAdminProducts(),
         getAdminCategories(),
+        getAdminSubcategories(),
         getAdminOrders(),
         getAdminInquiries(),
         getAdminPincodes(),
@@ -208,6 +230,7 @@ function Admin() {
       setUsers(nextUsers);
       setProducts(nextProducts);
       setCategories(nextCategories);
+      setSubcategories(nextSubcategories);
       setOrders(nextOrders);
       setInquiries(nextInquiries);
       setPincodes(nextPincodes);
@@ -291,6 +314,7 @@ function Admin() {
       isBestSeller: product.isBestSeller,
       isTrending: product.isTrending,
       customizable: product.customizable,
+      sameDayDelivery: Boolean(product.sameDayDelivery),
     });
     setActiveTab("products");
   };
@@ -306,6 +330,20 @@ function Admin() {
     }
     setCategoryForm(emptyCategory);
     setEditingCategoryId("");
+    await loadAdmin();
+  };
+
+  const saveSubcategory = async (event) => {
+    event.preventDefault();
+    if (editingSubcategoryId) {
+      await updateAdminSubcategory(editingSubcategoryId, subcategoryForm);
+      toast.success("Subcategory updated");
+    } else {
+      await createAdminSubcategory(subcategoryForm);
+      toast.success("Subcategory added");
+    }
+    setSubcategoryForm(emptySubcategory);
+    setEditingSubcategoryId("");
     await loadAdmin();
   };
 
@@ -448,7 +486,7 @@ function Admin() {
                     <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
                   </div>
                   <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
-                  <Field label="Subcategory" value={productForm.subcategory} onChange={(value) => setProductForm({ ...productForm, subcategory: value })} />
+                  <SelectField label="Subcategory" value={productForm.subcategory} options={subcategoryOptions} onChange={(value) => setProductForm({ ...productForm, subcategory: value })} />
                   <WeightEditor
                     weights={productForm.weights}
                     defaultWeight={productForm.defaultWeight}
@@ -463,7 +501,8 @@ function Admin() {
                       ["isFeatured", "Featured"],
                       ["isBestSeller", "Bestseller"],
                       ["isTrending", "Trending"],
-                      ["customizable", "Customizable"]
+                      ["customizable", "Customizable"],
+                      ["sameDayDelivery", "Same Day Delivery"]
                     ].map(([key, label]) => (
                       <Check
                         key={key}
@@ -524,6 +563,37 @@ function Admin() {
               onDelete={async (item) => { await deleteAdminCategory(item.id); await loadAdmin(); }}
             />
           )}
+
+          {activeTab === "subcategories" && (
+            <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+              <Panel title={editingSubcategoryId ? "Edit Subcategory" : "Add Subcategory"}>
+                <form onSubmit={saveSubcategory} className="grid gap-4">
+                  <Field label="Name" value={subcategoryForm.name} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, name: value })} required />
+                  <SelectField label="Category" value={subcategoryForm.category} options={["", ...categories.filter(c => c.isActive !== false).map(c => c.name)]} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, category: value })} required />
+                  <Field label="Sort Order" type="number" value={subcategoryForm.sortOrder} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, sortOrder: Number(value || 0) })} />
+                  <Check label="Active" checked={subcategoryForm.isActive} onChange={(checked) => setSubcategoryForm({ ...subcategoryForm, isActive: checked })} />
+                  <button className="bk-btn h-11 text-sm"><Plus size={16} /> Save</button>
+                </form>
+              </Panel>
+              <Panel title="Subcategories">
+                <div className="grid gap-3">
+                  {subcategories.map((sub) => (
+                    <div key={sub.id} className="flex flex-col justify-between gap-3 rounded-lg border border-[#ebebeb] p-4 md:flex-row md:items-center">
+                      <div>
+                        <h3 className="font-black">{sub.name}</h3>
+                        <p className="text-sm font-bold text-[#6f7573]">Category: {sub.category} | Sort: {sub.sortOrder || 0} | {sub.isActive ? "Active" : "Inactive"}</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <IconButton label="Edit" icon={Edit3} onClick={() => { setEditingSubcategoryId(sub.id); setSubcategoryForm(sub); }} />
+                        <IconButton label="Delete" icon={Trash2} danger onClick={async () => { await deleteAdminSubcategory(sub.id); await loadAdmin(); }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
+          )}
+
 
           {activeTab === "users" && (
             <Panel title="Users">

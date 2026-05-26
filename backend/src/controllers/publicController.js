@@ -1,5 +1,5 @@
 import { isDatabaseConnected } from "../db.js";
-import { getSiteSetting, activeBlockedDates, activeCategories, pincodeStatus } from "../services/availabilityService.js";
+import { getSiteSetting, activeBlockedDates, activeCategories, activeSubcategories, pincodeStatus } from "../services/availabilityService.js";
 
 export function health(_req, res) {
   res.json({
@@ -15,6 +15,10 @@ export async function settings(_req, res) {
 
 export async function categories(_req, res) {
   res.json(await activeCategories());
+}
+
+export async function subcategories(_req, res) {
+  res.json(await activeSubcategories());
 }
 
 export async function checkPincode(req, res) {

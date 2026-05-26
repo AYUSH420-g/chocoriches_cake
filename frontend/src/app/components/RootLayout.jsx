@@ -14,21 +14,14 @@ import {
   User,
   X
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Toaster } from "sonner";
-import { getPublicSettings } from "../api/client";
+import { getPublicSettings, getCategories, getSubcategories } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
 
-const categoryLinks = [
-  { label: "Cakes", to: "/shop" },
-  { label: "Designer Cakes", to: "/shop?cat=Wedding" },
-  { label: "Birthday", to: "/shop?cat=Birthday Cakes" },
-  { label: "Anniversary", to: "/shop?cat=Celebration" },
-  { label: "Chocolate", to: "/shop?cat=Signature" },
-  { label: "Same Day Delivery", to: "/shop?filter=Same%20Day" }
-];
+
 
 const footerLinks = [
   ["Our Company", "About Us", "Careers", "Contact Us", "Corporate Orders"],
@@ -43,9 +36,31 @@ function RootLayout() {
   const [loggedIn, setLoggedIn] = useState(() => isUserLoggedIn());
   const [settings, setSettings] = useState({ maintenanceMode: false, maintenanceMessage: "" });
   const [searchTerm, setSearchTerm] = useState("");
+  const [dbCategories, setDbCategories] = useState([]);
+  const [dbSubcategories, setDbSubcategories] = useState([]);
+  const [hoveredCat, setHoveredCat] = useState(null);
+  const [mobileExpandedCat, setMobileExpandedCat] = useState(null);
   const { cartCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+
+  const categoryLinks = useMemo(() => {
+    const links = [{ label: "Cakes", to: "/shop" }];
+    dbCategories.forEach((cat) => {
+      links.push({ label: cat.name, to: `/shop?cat=${encodeURIComponent(cat.name)}` });
+    });
+    links.push({ label: "Same Day Delivery", to: "/shop?filter=Same%20Day" });
+    return links;
+  }, [dbCategories]);
+
+  const subcatsByCategory = useMemo(() => {
+    const map = {};
+    dbSubcategories.forEach((sub) => {
+      if (!map[sub.category]) map[sub.category] = [];
+      map[sub.category].push(sub);
+    });
+    return map;
+  }, [dbSubcategories]);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 12);
@@ -85,12 +100,23 @@ function RootLayout() {
       .catch(() => void 0);
 
     loadSettings();
-    const intervalId = window.setInterval(loadSettings, 60000); // Poll every 60 seconds instead of 3 seconds to prevent server overload
+    const intervalId = window.setInterval(loadSettings, 60000);
 
     return () => {
       mounted = false;
       window.clearInterval(intervalId);
     };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+    getCategories()
+      .then((cats) => { if (mounted) setDbCategories(cats); })
+      .catch(() => {});
+    getSubcategories()
+      .then((subs) => { if (mounted) setDbSubcategories(subs); })
+      .catch(() => {});
+    return () => { mounted = false; };
   }, []);
 
   const handleSearchSubmit = (event) => {
@@ -165,7 +191,7 @@ function RootLayout() {
               <ChevronDown size={16} className="text-[#6f7573]" />
             </button>
 
-            <form onSubmit={handleSearchSubmit} className="relative hidden flex-1 md:block">
+            <form onSubmit={handleSearchSubmit} className="relative hidden flex-1 max-w-md mr-auto lg:max-w-lg xl:max-w-xl md:block lg:ml-4">
               <Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7f8583]" />
               <input
                 type="search"
@@ -215,22 +241,57 @@ function RootLayout() {
           </div>
 
           <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1]">
-            <div className="flex min-w-0 flex-1 gap-1 overflow-x-auto">
-              {categoryLinks.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.to}
-                  className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-black transition ${
-                    isActiveCategory(item.to)
-                      ? "bg-[#fff2e9] text-[#e61951]"
-                      : "text-[#323635] hover:bg-[#fff2e9] hover:text-[#e61951]"
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              ))}
+            <div className="flex min-w-0 flex-1 justify-center gap-1">
+              {categoryLinks.map((item) => {
+                const subs = subcatsByCategory[item.label];
+                const hasSubs = subs && subs.length > 0;
+                const isOpen = hoveredCat === item.label;
+                return (
+                  <div
+                    key={item.label}
+                    className="relative"
+                    onMouseEnter={() => hasSubs && setHoveredCat(item.label)}
+                    onMouseLeave={() => setHoveredCat(null)}
+                  >
+                    <Link
+                      to={item.to}
+                      className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold transition ${
+                        isActiveCategory(item.to)
+                          ? "bg-[#fff2e9] text-[#e61951]"
+                          : "text-[#323635] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                    {hasSubs && isOpen && (
+                      <div className="absolute left-0 top-full z-[100] pt-1">
+                        <div className="min-w-[180px] rounded-xl border border-[#ebebeb] bg-white py-2 shadow-xl">
+                          <Link
+                            to={item.to}
+                            className="block px-4 py-2 text-sm font-semibold text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            onClick={() => setHoveredCat(null)}
+                          >
+                            {item.label}
+                          </Link>
+                          <div className="my-1 border-t border-[#f1f1f1]" />
+                          {subs.map((sub) => (
+                            <Link
+                              key={sub.id}
+                              to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
+                              className="block px-4 py-2 text-sm font-medium text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                              onClick={() => setHoveredCat(null)}
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-              <Link
+            <Link
               to="/custom"
               className="hidden shrink-0 items-center gap-2 rounded-lg bg-[#fff2e9] px-3 py-2 text-sm font-black text-[#e61951] md:flex"
             >
@@ -293,19 +354,49 @@ function RootLayout() {
                 </form>
               </div>
               <nav className="flex flex-col p-3">
-                {categoryLinks.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.to}
-                    className={`rounded-lg px-4 py-3 text-base font-black ${
-                      isActiveCategory(item.to)
-                        ? "bg-[#fff2e9] text-[#e61951]"
-                        : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                ))}
+                {categoryLinks.map((item) => {
+                  const subs = subcatsByCategory[item.label];
+                  const hasSubs = subs && subs.length > 0;
+                  const isExpanded = mobileExpandedCat === item.label;
+                  return (
+                    <div key={item.label}>
+                      <div className="flex items-center">
+                        <Link
+                          to={item.to}
+                          className={`flex-1 rounded-lg px-4 py-3 text-base font-bold ${
+                            isActiveCategory(item.to)
+                              ? "bg-[#fff2e9] text-[#e61951]"
+                              : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                          }`}
+                        >
+                          {item.label}
+                        </Link>
+                        {hasSubs && (
+                          <button
+                            type="button"
+                            onClick={() => setMobileExpandedCat(isExpanded ? null : item.label)}
+                            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-[#6f7573] hover:bg-[#f7f7f7]"
+                          >
+                            <ChevronDown size={16} className={`transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          </button>
+                        )}
+                      </div>
+                      {hasSubs && isExpanded && (
+                        <div className="ml-4 mb-1 border-l-2 border-[#fff2e9] pl-2">
+                          {subs.map((sub) => (
+                            <Link
+                              key={sub.id}
+                              to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
+                              className="block rounded-lg px-4 py-2 text-sm font-medium text-[#6f7573] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </nav>
               <div className="absolute inset-x-0 bottom-0 border-t border-[#ebebeb] p-5">
                 <Link to={loggedIn ? "/profile" : "/auth"} className="bk-btn h-11 w-full text-sm">
@@ -326,7 +417,6 @@ function RootLayout() {
           <div className="grid gap-8 lg:grid-cols-[1.3fr_2fr_1fr]">
             <div>
               <Link to="/" className="mb-4 flex items-center gap-2 text-2xl font-black text-[#e61951]">
-                <CakeSlice size={26} />
                 ChocoRiches
               </Link>
               <p className="max-w-sm text-sm leading-6 text-[#6f7573]">

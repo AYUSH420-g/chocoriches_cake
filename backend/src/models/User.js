@@ -1,5 +1,16 @@
 import mongoose from "mongoose";
 
+const addressSchema = new mongoose.Schema({
+  id: { type: String, required: true },
+  label: { type: String, required: true },
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  address: { type: String, required: true },
+  pincode: { type: String, required: true },
+  city: { type: String, required: true },
+  landmark: { type: String },
+});
+
 const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -12,6 +23,7 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "admin"], default: "user", index: true },
     isBlocked: { type: Boolean, default: false, index: true },
     blockedReason: { type: String },
+    addresses: [addressSchema],
   },
   { timestamps: true }
 );

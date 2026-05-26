@@ -16,10 +16,11 @@ import {
   Truck
 } from "lucide-react";
 import { toast } from "sonner";
-import { checkPincode, getProduct } from "../api/client";
+import { checkPincode, getProduct, getProducts } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice, ratingFor, reviewCountFor } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
+import ProductCard from "../components/ProductCard";
 
 function ProductDetail() {
   const { id } = useParams();
@@ -30,6 +31,7 @@ function ProductDetail() {
   const [pincode, setPincode] = useState("");
   const [pincodeStatus, setPincodeStatus] = useState({ checked: false, valid: false, message: "" });
   const [product, setProduct] = useState(null);
+  const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
@@ -43,6 +45,12 @@ function ProductDetail() {
           setProduct(item);
           const weights = item.weightOptions?.length ? item.weightOptions : [{ label: "Half Kg", price: item.price }];
           setSelectedWeight(weights.find((weight) => weight.label === item.defaultWeight) || weights[0]);
+
+          getProducts({ category: item.category }).then((all) => {
+            if (mounted) {
+              setSimilarProducts(all.filter((p) => p.id !== item.id).slice(0, 5));
+            }
+          }).catch(() => void 0);
         }
       })
       .catch(() => {
@@ -167,11 +175,11 @@ function ProductDetail() {
           <span className="text-[#1f2221]">{product.name}</span>
         </nav>
 
-        <div className="grid gap-5 lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
           <motion.div
             initial={{ opacity: 0, x: -18 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bk-card overflow-hidden p-3"
+            className="bk-card overflow-hidden p-3 self-start"
           >
             <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
               <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
@@ -191,6 +199,18 @@ function ProductDetail() {
                 <CakeSlice size={14} />
                 Freshly Baked
               </span>
+            </div>
+            
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {[
+                [ShieldCheck, "Secure Checkout"],
+                [Clock, "Freshly Prepared"]
+              ].map(([Icon, title]) => (
+                <div key={title} className="rounded-lg bg-[#ffffff] p-3 text-center">
+                  <Icon className="mx-auto text-[#e61951]" size={20} />
+                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.05em] text-[#1f2221]">{title}</p>
+                </div>
+              ))}
             </div>
           </motion.div>
 
@@ -310,54 +330,25 @@ function ProductDetail() {
               </button>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-3">
-              {[
-                [Truck, "Same Day Delivery"],
-                [ShieldCheck, "Secure Checkout"],
-                [Clock, "Freshly Prepared"]
-              ].map(([Icon, title]) => (
-                <div key={title} className="rounded-lg bg-[#f7f7f7] p-3 text-center">
-                  <Icon className="mx-auto text-[#e61951]" size={20} />
-                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.05em] text-[#1f2221]">{title}</p>
-                </div>
-              ))}
-            </div>
+
           </motion.div>
         </div>
 
-        <section className="mt-6 bk-card overflow-hidden">
-          <div className="flex overflow-x-auto border-b border-[#ebebeb] bg-white">
-            {["description", "delivery"].map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setActiveTab(tab)}
-                className={`min-w-40 px-5 py-4 text-sm font-black capitalize transition ${
-                  activeTab === tab ? "border-b-2 border-[#e61951] text-[#e61951]" : "text-[#5f6663] hover:text-[#e61951]"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-          <div className="p-5 md:p-7">
-            {activeTab === "description" && (
-              <p className="max-w-4xl text-sm leading-7 text-[#5f6663]">
-                {product.name} is prepared fresh with soft sponge layers, balanced filling, and careful packing for doorstep delivery. It is designed for birthdays, anniversaries, office celebrations, and surprise gifts.
-              </p>
-            )}
-            {activeTab === "delivery" && (
-              <div className="grid gap-4 md:grid-cols-3">
-                {["Choose your city and pincode", "Pick same-day or scheduled slot", "Cake arrives fresh and secure"].map((step) => (
-                  <div key={step} className="flex items-center gap-3 rounded-lg bg-[#f7f7f7] p-4">
-                    <CheckCircle2 size={19} className="shrink-0 text-[#0f8b57]" />
-                    <p className="text-sm font-bold text-[#5f6663]">{step}</p>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
+
+
+        {similarProducts.length > 0 && (
+          <section className="mt-10">
+            <h2 className="mb-5 text-xl font-black text-[#1f2221]">Similar Products</h2>
+            <div className="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {similarProducts.map((p) => (
+                <div key={p.id}>
+                  {/* Reuse ProductCard but compact if needed, we'll just import it */}
+                  <ProductCard product={p} compact />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

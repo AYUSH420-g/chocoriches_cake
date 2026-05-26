@@ -198,17 +198,19 @@
 
 @layer utilities {
   .font-black {
-    font-weight: 750;
+    font-weight: 600;
   }
 
   .font-bold {
-    font-weight: 600;
+    font-weight: 500;
   }
 }
 
 @layer components {
   .bk-shell {
-    width: min(1280px, calc(100vw - 32px));
+    width: 100%;
+    max-width: 1280px;
+    padding-inline: 16px; /* 16px = 1rem, typical mobile gap */
     margin-inline: auto;
   }
 
@@ -235,7 +237,7 @@
     border-radius: 8px;
     background: #e61951;
     color: #ffffff;
-    font-weight: 800;
+    font-weight: 600;
     transition: background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
   }
 
@@ -257,7 +259,7 @@
     border-radius: 8px;
     color: #e61951;
     background: #ffffff;
-    font-weight: 800;
+    font-weight: 600;
     transition: background 180ms ease, color 180ms ease;
   }
 
@@ -286,7 +288,7 @@
     border-radius: 999px;
     background: #fff2e9;
     color: #e61951;
-    font-weight: 800;
+    font-weight: 600;
   }
 
   .bk-rating {
@@ -297,7 +299,7 @@
     background: #0f8b57;
     color: #ffffff;
     font-size: 12px;
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1;
     padding: 5px 7px;
   }
@@ -305,7 +307,7 @@
   .bk-section-title {
     color: #1f2221;
     font-size: clamp(24px, 3vw, 34px);
-    font-weight: 800;
+    font-weight: 600;
     line-height: 1.2;
   }
 

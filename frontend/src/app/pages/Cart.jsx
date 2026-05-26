@@ -91,24 +91,12 @@ function Cart() {
 
               <div className="space-y-4 p-5">
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
-                  <span>Subtotal</span>
+                  <span>Order Total</span>
                   <span className="font-black text-[#1f2221]">{formatPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Delivery Fee</span>
                   <span className="font-black text-[#1f2221]">{formatPrice(deliveryFee)}</span>
-                </div>
-                <div className="flex justify-between text-sm font-bold text-[#0f8b57]">
-                  <span>Offer Discount</span>
-                  <span>- {formatPrice(discount)}</span>
-                </div>
-
-                <div className="rounded-lg border border-dashed border-[#e61951]/35 bg-[#fff2e9] p-4">
-                  <div className="flex items-center gap-2 text-sm font-black text-[#e61951]">
-                    <BadgePercent size={18} />
-                    CHOCORICHES16 applied
-                  </div>
-                  <p className="mt-1 text-xs leading-5 text-[#6f7573]">You saved {formatPrice(discount)} on this order.</p>
                 </div>
 
                 <div className="border-t border-[#ebebeb] pt-4">

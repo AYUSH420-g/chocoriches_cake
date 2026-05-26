@@ -2,6 +2,7 @@ import { isDatabaseConnected } from "../db.js";
 import { BlockedDate } from "../models/BlockedDate.js";
 import { CartItem } from "../models/CartItem.js";
 import { Category } from "../models/Category.js";
+import { Subcategory } from "../models/Subcategory.js";
 import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
 import { ServicePincode } from "../models/ServicePincode.js";
@@ -145,5 +146,20 @@ export async function seedDatabase() {
         sortOrder: index,
       }))
     );
+  }
+
+  // Seed subcategories in memory
+  if (!memory.subcategories || memory.subcategories.length === 0) {
+    memory.subcategories = [
+      { name: "Chocolate Cakes", slug: "signature-chocolate-cakes", category: "Signature", isActive: true, sortOrder: 1 },
+      { name: "Fruit Cakes", slug: "signature-fruit-cakes", category: "Signature", isActive: true, sortOrder: 2 },
+      { name: "Tiers & Tiered", slug: "wedding-tiers-tiered", category: "Wedding", isActive: true, sortOrder: 1 },
+      { name: "Cupcakes", slug: "celebration-cupcakes", category: "Celebration", isActive: true, sortOrder: 1 }
+    ];
+  }
+
+  // Seed subcategories in database
+  if (isDatabaseConnected() && (await Subcategory.countDocuments()) === 0) {
+    await Subcategory.insertMany(memory.subcategories);
   }
 }

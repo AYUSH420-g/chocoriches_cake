@@ -11,6 +11,7 @@ export const memory = {
   users: [structuredClone(profileUser)],
   inquiries: [],
   categories: [],
+  subcategories: [],
   pincodes: [],
   blockedDates: [],
   setting: {

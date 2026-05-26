@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet } from "lucide-react";
 import { motion } from "motion/react";
@@ -16,17 +16,45 @@ const deliverySlots = [
   { value: "scheduled-10-1", label: "Selected Date, 10 AM - 1 PM", copy: "Scheduled fresh delivery", price: "Free", type: "selected" },
 ];
 
+function getLocalDateString(offsetDays = 0) {
+  const d = new Date();
+  if (offsetDays) {
+    d.setDate(d.getDate() + offsetDays);
+  }
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  return getLocalDateString(0);
+}
+
+function tomorrowIso() {
+  return getLocalDateString(1);
 }
 
 function Checkout() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [checkoutData, setCheckoutData] = useState({});
+  const [placedOrder, setPlacedOrder] = useState(null);
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const storedUser = getStoredUser();
+
+  const hasSameDayOnly = cart.every((item) => item.sameDayDelivery);
+  const minDeliveryDate = hasSameDayOnly ? todayIso() : tomorrowIso();
+
+  useEffect(() => {
+    if (checkoutData.deliveryDate && checkoutData.deliveryDate < minDeliveryDate) {
+      setCheckoutData((prev) => ({
+        ...prev,
+        deliveryDate: minDeliveryDate,
+      }));
+    }
+  }, [minDeliveryDate, checkoutData.deliveryDate]);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const deliveryFee = cart.length ? 10 : 0;
@@ -50,7 +78,7 @@ function Checkout() {
       });
       await clearCart().catch(() => void 0);
       toast.success("Order placed successfully");
-      navigate(`/track?orderId=${encodeURIComponent(order.orderId || order.id)}`);
+      setPlacedOrder(order);
     } catch (error) {
       setLoading(false);
       toast.error(error.message || "Order could not be placed for this pincode or date");
@@ -80,17 +108,24 @@ function Checkout() {
 
       if (step === 2) {
         const selectedDate = String(nextCheckoutData.deliveryDate || "").slice(0, 10);
+        const minDate = hasSameDayOnly ? todayIso() : tomorrowIso();
         const selectedSlot = deliverySlots.find((slot) => slot.value === nextCheckoutData.slot) || deliverySlots[0];
         const today = todayIso();
 
-        if (!selectedDate || selectedDate < today) {
-          toast.error("Please select today or a future delivery date");
+        if (!selectedDate || selectedDate < minDate) {
+          toast.error(hasSameDayOnly ? "Please select today or a future delivery date" : "Please select tomorrow or a future delivery date");
           return;
         }
 
-        if (selectedSlot.type === "today" && selectedDate !== today) {
-          toast.error("Today delivery slots can only be used for today's date");
-          return;
+        if (selectedSlot.type === "today") {
+          if (!hasSameDayOnly) {
+            toast.error("Today delivery slots are not available for these products");
+            return;
+          }
+          if (selectedDate !== today) {
+            toast.error("Today delivery slots can only be used for today's date");
+            return;
+          }
         }
       }
 
@@ -136,6 +171,98 @@ function Checkout() {
     }, 500);
   };
 
+  if (placedOrder) {
+    return (
+      <div className="bk-page grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-12">
+        <div className="bk-card w-full max-w-md p-8 text-center shadow-xl bg-white border border-[#ebebeb] rounded-2xl">
+          <div className="mb-6">
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 260, damping: 20 }}
+              className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#0f8b57] text-white shadow-lg"
+            >
+              <motion.svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="4"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="h-10 w-10"
+                initial={{ pathLength: 0 }}
+                animate={{ pathLength: 1 }}
+                transition={{ delay: 0.2, duration: 0.5, ease: "easeOut" }}
+              >
+                <polyline points="20 6 9 17 4 12" />
+              </motion.svg>
+            </motion.div>
+          </div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="text-3xl font-black text-[#1f2221] tracking-tight"
+          >
+            Order Placed!
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mt-3 text-sm text-[#6f7573] font-bold"
+          >
+            Thank you for your order! Your delicious cake celebration is officially scheduled.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.6 }}
+            className="mt-6 rounded-xl bg-[#f7f7f7] border border-[#ebebeb] p-4 text-left"
+          >
+            <div className="flex justify-between items-center text-xs text-[#6f7573] font-black uppercase">
+              <span>Order ID</span>
+              <span className="text-[#1f2221] font-bold lowercase">{placedOrder.orderId || placedOrder.id}</span>
+            </div>
+            <div className="mt-2 flex justify-between items-center text-xs text-[#6f7573] font-black uppercase">
+              <span>Delivery Pincode</span>
+              <span className="text-[#1f2221] font-bold">{checkoutData.pincode}</span>
+            </div>
+            <div className="mt-2 flex justify-between items-center text-xs text-[#6f7573] font-black uppercase">
+              <span>Total Price</span>
+              <span className="text-[#e61951] font-black">{formatPrice(placedOrder.total)}</span>
+            </div>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.7 }}
+            className="mt-8 flex flex-col gap-3"
+          >
+            <Link
+              to={`/track?orderId=${encodeURIComponent(placedOrder.orderId || placedOrder.id)}`}
+              className="bk-btn h-12 w-full text-sm font-black flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] transition-transform"
+            >
+              <Truck size={17} />
+              Track Order
+            </Link>
+            <Link
+              to="/shop"
+              className="bk-outline-btn h-12 w-full text-sm font-black flex items-center justify-center gap-2 hover:scale-[1.01] transition-transform"
+            >
+              Continue Shopping
+            </Link>
+          </motion.div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bk-page">
       <div className="bk-shell py-6">
@@ -162,12 +289,44 @@ function Checkout() {
             <form onSubmit={handleNext}>
               <div className="border-b border-[#ebebeb] bg-white p-5 md:p-7">
                 <h1 className="text-2xl font-black text-[#1f2221]">{steps[step - 1]}</h1>
-                <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p>
+                {/* <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p> */}
               </div>
 
               <div className="p-5 md:p-7">
                 {step === 1 && (
-                  <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-5">
+                  <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-5">
+                    {storedUser?.addresses?.length > 0 && (
+                      <div className="mb-2">
+                        <h3 className="mb-3 text-sm font-black text-[#1f2221]">Select Saved Address</h3>
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          {storedUser.addresses.map((addr) => (
+                            <button
+                              key={addr.id}
+                              type="button"
+                              onClick={() => {
+                                setCheckoutData({
+                                  ...checkoutData,
+                                  addressId: addr.id,
+                                  name: addr.name,
+                                  phone: addr.phone,
+                                  address: addr.address,
+                                  pincode: addr.pincode,
+                                  city: addr.city,
+                                  landmark: addr.landmark,
+                                });
+                              }}
+                              className={`rounded-lg border p-3 text-left transition ${checkoutData.addressId === addr.id ? "border-[#e61951] bg-[#fff2e9]" : "border-[#ebebeb] bg-white hover:border-[#e61951]"}`}
+                            >
+                              <div className="mb-1 flex items-center justify-between">
+                                <span className="text-xs font-black uppercase tracking-wider text-[#6f7573]">{addr.label}</span>
+                              </div>
+                              <p className="truncate text-sm font-black text-[#1f2221]">{addr.name}</p>
+                              <p className="truncate text-xs text-[#6f7573]">{addr.address}</p>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="grid gap-5 md:grid-cols-2">
                       <Field label="Full Name" name="name" placeholder="Ayush Sharma" defaultValue={checkoutData.name || storedUser?.name || ""} required />
                       <Field label="Mobile Number" name="phone" placeholder="98765 43210" defaultValue={checkoutData.phone || storedUser?.phone || ""} required />
@@ -184,58 +343,54 @@ function Checkout() {
                   </motion.div>
                 )}
 
-                {step === 2 && (
-                  <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                    {deliverySlots.map((slot, index) => (
-                      <label key={slot.value} className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-4 ${index === 0 ? "border-[#e61951] bg-[#fff2e9]" : "border-[#ebebeb] bg-white hover:border-[#e61951]"}`}>
-                        <span className="flex items-center gap-3">
-                          <input type="radio" name="slot" value={slot.value} defaultChecked={(checkoutData.slot || deliverySlots[0].value) === slot.value} className="h-4 w-4 accent-[#e61951]" />
-                          <span>
-                            <span className="block text-sm font-black text-[#1f2221]">{slot.label}</span>
-                            <span className="mt-1 block text-xs font-bold text-[#6f7573]">{slot.copy}</span>
+                {step === 2 && (() => {
+                  const filteredSlots = deliverySlots.filter((slot) => hasSameDayOnly || slot.type !== "today");
+                  const defaultSlotVal = filteredSlots.find((slot) => slot.value === checkoutData.slot)?.value || filteredSlots[0]?.value;
+                  return (
+                    <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
+                      {filteredSlots.map((slot, index) => (
+                        <label key={slot.value} className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-4 ${index === 0 ? "border-[#e61951] bg-[#fff2e9]" : "border-[#ebebeb] bg-white hover:border-[#e61951]"}`}>
+                          <span className="flex items-center gap-3">
+                            <input type="radio" name="slot" value={slot.value} defaultChecked={defaultSlotVal === slot.value} className="h-4 w-4 accent-[#e61951]" />
+                            <span>
+                              <span className="block text-sm font-black text-[#1f2221]">{slot.label}</span>
+                              <span className="mt-1 block text-xs font-bold text-[#6f7573]">{slot.copy}</span>
+                            </span>
                           </span>
-                        </span>
-                        <span className="shrink-0 text-sm font-black text-[#e61951]">{slot.price}</span>
-                      </label>
-                    ))}
+                          <span className="shrink-0 text-sm font-black text-[#e61951]">{slot.price}</span>
+                        </label>
+                      ))}
 
-                    <div className="rounded-lg bg-[#f7f7f7] p-4">
-                      <label className="mb-2 block text-sm font-black text-[#1f2221]">Message on Cake</label>
-                      <input className="bk-input h-12 px-4 text-sm" placeholder="Happy Birthday Ayush" />
-                    </div>
-                    <Field label="Delivery Date" name="deliveryDate" type="date" min={todayIso()} defaultValue={checkoutData.deliveryDate || todayIso()} required />
-                  </motion.div>
-                )}
+                      <div className="rounded-lg bg-[#f7f7f7] p-4">
+                        <label className="mb-2 block text-sm font-black text-[#1f2221]">Message on Cake</label>
+                        <input className="bk-input h-12 px-4 text-sm" placeholder="Happy Birthday Ayush" />
+                      </div>
+                      <Field label="Delivery Date" name="deliveryDate" type="date" min={minDeliveryDate} defaultValue={checkoutData.deliveryDate || minDeliveryDate} required />
+                    </motion.div>
+                  );
+                })()}
 
                 {step === 3 && (
                   <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                    <div className="grid gap-3 md:grid-cols-3">
-                      {[
-                        [CreditCard, "Razorpay Card"],
-                        [Wallet, "Razorpay UPI"],
-                        [Truck, "Cash On Delivery"]
-                      ].map(([Icon, label], index) => (
-                        <button key={label} type="button" className={`flex h-14 items-center justify-center gap-2 rounded-lg border text-sm font-black ${index === 0 ? "border-[#e61951] bg-[#fff2e9] text-[#e61951]" : "border-[#ebebeb] bg-white text-[#1f2221]"}`}>
-                          <Icon size={18} />
-                          {label}
-                        </button>
-                      ))}
+                    <div className="grid gap-3">
+                      <button type="button" className="flex h-14 w-full items-center justify-center gap-2 rounded-lg border border-[#e61951] bg-[#fff2e9] text-sm font-black text-[#e61951]">
+                        <Wallet size={18} />
+                        Razorpay UPI
+                      </button>
                     </div>
-                    <div className="grid gap-5 rounded-lg bg-[#f7f7f7] p-5">
-                      <Field label="Card Number" name="cardNumber" placeholder="0000 0000 0000 0000" required />
-                      <div className="grid gap-5 md:grid-cols-2">
-                        <Field label="Expiry" name="expiry" placeholder="MM / YY" required />
-                        <Field label="CVV" name="cvv" placeholder="123" required />
-                      </div>
+                    
+                    <div className="rounded-lg bg-[#f7f7f7] p-6 text-center">
+                      <ShieldCheck size={32} className="mx-auto mb-3 text-[#0f8b57]" />
+                      <h3 className="mb-2 text-lg font-black text-[#1f2221]">Secure UPI Payment</h3>
+                      <p className="text-sm leading-6 text-[#6f7573]">
+                        Click <strong>Place Order</strong> below to open the secure Razorpay payment window. You can complete the payment using any UPI app (GPay, PhonePe, Paytm, etc).
+                      </p>
                     </div>
+
                     <div className="rounded-lg bg-[#fff2e9] p-4 text-sm font-bold text-[#6f7573]">
                       Razorpay checkout is configured from environment variables
                       {razorpayKeyId() ? "." : ", but the frontend key is missing."}
                     </div>
-                    <label className="flex items-center gap-2 text-sm font-bold text-[#6f7573]">
-                      <input type="checkbox" className="h-4 w-4 accent-[#e61951]" />
-                      Save payment method for faster cake orders
-                    </label>
                   </motion.div>
                 )}
               </div>
@@ -273,9 +428,9 @@ function Checkout() {
                   </div>
                 ))}
                 <div className="space-y-3 border-t border-[#ebebeb] pt-4 text-sm font-bold text-[#6f7573]">
-                  <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-                  <div className="flex justify-between"><span>Delivery</span><span>{formatPrice(deliveryFee)}</span></div>
-                  <div className="flex justify-between text-[#0f8b57]"><span>Discount</span><span>- {formatPrice(discount)}</span></div>
+                  <div className="flex justify-between"><span>Order Total</span><span>{formatPrice(subtotal)}</span></div>
+                  <div className="flex justify-between"><span>Delivery Fee</span><span>{formatPrice(deliveryFee)}</span></div>
+                  {/* <div className="flex justify-between text-[#0f8b57]"><span>Discount</span><span>- {formatPrice(discount)}</span></div> */}
                 </div>
                 <div className="flex justify-between border-t border-[#ebebeb] pt-4 text-lg font-black text-[#1f2221]">
                   <span>Total</span>

@@ -9,7 +9,7 @@ function priceToRupees(price) {
 }
 
 function formatPrice(price) {
-  return `Rs. ${priceToRupees(price).toLocaleString("en-IN")}`;
+  return `₹ ${priceToRupees(price).toLocaleString("en-IN")}`;
 }
 
 function formatOriginalPrice(price, discountPercent = 16) {
@@ -18,7 +18,7 @@ function formatOriginalPrice(price, discountPercent = 16) {
     return formatPrice(price);
   }
   const originalPrice = priceToRupees(price) / (1 - percent / 100);
-  return `Rs. ${Math.round(originalPrice).toLocaleString("en-IN")}`;
+  return `₹${Math.round(originalPrice).toLocaleString("en-IN")}`;
 }
 
 function ratingFor(id = "1") {

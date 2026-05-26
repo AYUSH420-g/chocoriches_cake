@@ -1,11 +1,12 @@
 import { isDatabaseConnected } from "../db.js";
 import { BlockedDate } from "../models/BlockedDate.js";
 import { Category } from "../models/Category.js";
+import { Subcategory } from "../models/Subcategory.js";
 import { Order } from "../models/Order.js";
 import { ServicePincode } from "../models/ServicePincode.js";
 import { SiteSetting } from "../models/SiteSetting.js";
 import { memory } from "../utils/memoryStore.js";
-import { blockedDateView, categoryView, pincodeView, settingView, todayIso } from "../utils/formatters.js";
+import { blockedDateView, categoryView, subcategoryView, pincodeView, settingView, todayIso } from "../utils/formatters.js";
 
 export async function getSiteSetting() {
   const setting = isDatabaseConnected()
@@ -41,6 +42,14 @@ export async function activeCategories() {
     : memory.categories.filter((category) => category.isActive !== false);
 
   return categories.map(categoryView);
+}
+
+export async function activeSubcategories() {
+  const subcategories = isDatabaseConnected()
+    ? await Subcategory.find({ isActive: true }).sort({ sortOrder: 1, name: 1 }).lean()
+    : (memory.subcategories || []).filter((subcat) => subcat.isActive !== false);
+
+  return subcategories.map(subcategoryView);
 }
 
 export async function activeBlockedDates() {

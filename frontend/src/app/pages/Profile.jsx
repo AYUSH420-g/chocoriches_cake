@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet } from "lucide-react";
+import { CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { getOrders, getProducts, getProfile } from "../api/client";
+import { getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
@@ -16,6 +16,7 @@ function Profile() {
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("orders");
+  const [showAddAddress, setShowAddAddress] = useState(false);
   const { addProduct } = useCart();
 
   useEffect(() => {
@@ -74,6 +75,303 @@ function Profile() {
     }
   };
 
+  const handleAddAddress = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const payload = Object.fromEntries(formData.entries());
+    try {
+      const updatedUser = await addAddress(payload);
+      setProfile(updatedUser);
+      saveUserSession({ user: updatedUser });
+      setShowAddAddress(false);
+      e.target.reset();
+      toast.success("Address saved successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to save address");
+    }
+  };
+
+  const handleDeleteAddress = async (id) => {
+    try {
+      const updatedUser = await deleteAddress(id);
+      setProfile(updatedUser);
+      saveUserSession({ user: updatedUser });
+      toast.success("Address removed");
+    } catch (error) {
+      toast.error(error.message || "Failed to remove address");
+    }
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    const name = formData.get("name")?.toString().trim();
+    const phone = formData.get("phone")?.toString().trim();
+
+    try {
+      const updatedUser = await updateProfile({ name, phone });
+      setProfile(updatedUser);
+      saveUserSession({ user: updatedUser });
+      toast.success("Profile updated successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to update profile");
+    }
+  };
+
+  const handleDownloadInvoice = (order) => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Popup blocker prevented opening the invoice. Please allow popups for this site.");
+      return;
+    }
+
+    const price = formatPrice(order.total);
+    const date = order.date || new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric"
+    });
+    
+    const itemsHtml = (order.items || ["Cake order"])
+      .map(
+        (item) => `
+      <tr>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; font-weight: 600;">${item}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: center;">1</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: right; font-weight: 600;">${price}</td>
+      </tr>
+    `
+      )
+      .join("");
+
+    const invoiceHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoice - ${order.orderId || order.id}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+          body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #1f2221;
+            background-color: #ffffff;
+            -webkit-print-color-adjust: exact;
+          }
+          .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+          }
+          .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            border-bottom: 2px solid #e61951;
+            padding-bottom: 24px;
+            margin-bottom: 40px;
+          }
+          .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+          }
+          .logo-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background-color: #e61951;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          }
+          .logo-svg {
+            color: #ffffff;
+            width: 24px;
+            height: 24px;
+          }
+          .brand-name {
+            font-size: 26px;
+            font-weight: 900;
+            color: #1f2221;
+            letter-spacing: -0.5px;
+          }
+          .invoice-title {
+            text-align: right;
+          }
+          .invoice-title h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 900;
+            color: #e61951;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          .invoice-title p {
+            margin: 4px 0 0 0;
+            font-size: 14px;
+            color: #6f7573;
+            font-weight: 600;
+          }
+          .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 40px;
+          }
+          .details-block h3 {
+            margin: 0 0 8px 0;
+            font-size: 14px;
+            text-transform: uppercase;
+            color: #6f7573;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+          }
+          .details-block p {
+            margin: 4px 0;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #1f2221;
+          }
+          .details-block .highlight {
+            font-weight: 800;
+          }
+          .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 40px;
+          }
+          .items-table th {
+            background-color: #fff2e9;
+            color: #e61951;
+            padding: 12px;
+            font-size: 12px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            text-align: left;
+          }
+          .items-table th.center {
+            text-align: center;
+          }
+          .items-table th.right {
+            text-align: right;
+          }
+          .totals {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 60px;
+          }
+          .totals-table {
+            width: 250px;
+            border-collapse: collapse;
+          }
+          .totals-table td {
+            padding: 8px 12px;
+            font-size: 14px;
+          }
+          .totals-table tr.total-row td {
+            border-top: 2px solid #e61951;
+            font-size: 18px;
+            font-weight: 900;
+            color: #e61951;
+            padding-top: 12px;
+          }
+          .footer {
+            border-top: 1px solid #ebebeb;
+            padding-top: 20px;
+            text-align: center;
+            font-size: 12px;
+            color: #6f7573;
+            font-weight: 600;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="invoice-container">
+          <div class="header">
+            <div class="logo-container">
+              <div class="logo-circle">
+                <svg class="logo-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v4M12 2a3 3 0 0 0-3 3v1h6V5a3 3 0 0 0-3-3z"/>
+                  <path d="M4 11.5a2.5 2.5 0 0 0 2.5 2.5h11a2.5 2.5 0 0 0 2.5-2.5V8H4z"/>
+                  <path d="M4 14v4a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-4"/>
+                </svg>
+              </div>
+              <span class="brand-name">Chocoriches</span>
+            </div>
+            <div class="invoice-title">
+              <h1>Invoice</h1>
+              <p>ID: ${order.orderId || order.id}</p>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <div class="details-block">
+              <h3>Billed To:</h3>
+              <p class="highlight">${profile.name}</p>
+              <p>${profile.email}</p>
+              ${profile.phone ? `<p>${profile.phone}</p>` : ""}
+            </div>
+            <div class="details-block" style="text-align: right;">
+              <h3>Invoice Details:</h3>
+              <p><span style="color: #6f7573; font-weight: 600;">Date:</span> ${date}</p>
+              <p><span style="color: #6f7573; font-weight: 600;">Pincode:</span> ${order.deliveryPincode || "N/A"}</p>
+              <p><span style="color: #6f7573; font-weight: 600;">Status:</span> <span style="color: #e61951; font-weight: 800;">${order.status}</span></p>
+            </div>
+          </div>
+
+          <table class="items-table">
+            <thead>
+              <tr>
+                <th>Item Description</th>
+                <th class="center" style="width: 100px;">Qty</th>
+                <th class="right" style="width: 150px;">Price</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="totals">
+            <table class="totals-table">
+              <tr>
+                <td style="color: #6f7573; font-weight: 600;">Subtotal</td>
+                <td style="text-align: right; font-weight: 600; color: #1f2221;">${price}</td>
+              </tr>
+              <tr>
+                <td style="color: #6f7573; font-weight: 600;">Delivery Fee</td>
+                <td style="text-align: right; font-weight: 600; color: #1f2221;">₹ 0</td>
+              </tr>
+              <tr class="total-row">
+                <td>Total</td>
+                <td style="text-align: right;">${price}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="footer">
+            <p>Thank you for celebrating with Chocoriches!</p>
+            <p style="margin-top: 4px; font-size: 10px; color: #b8bebc;">This is a system generated document. No signature required.</p>
+          </div>
+        </div>
+        <script>
+          window.onload = function() {
+            setTimeout(function() {
+              window.print();
+            }, 300);
+          }
+        </script>
+      </body>
+      </html>
+    `;
+
+    printWindow.document.open();
+    printWindow.document.write(invoiceHtml);
+    printWindow.document.close();
+  };
+
   const rewardPoints = orders.length * 50;
   const savedPincodeCount = new Set(orders.map((order) => order.deliveryPincode).filter(Boolean)).size;
   const savedPincodes = [...new Set(orders.map((order) => order.deliveryPincode).filter(Boolean))];
@@ -96,22 +394,18 @@ function Profile() {
       <div className="bk-shell py-6">
         <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
           <aside className="space-y-5">
-            <div className="bk-card p-5 text-center">
+            <div className="bk-card pt-5 pb-4 px-5 text-center">
               <span className="mx-auto grid h-24 w-24 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-4xl font-black uppercase text-white">
                 {(profile.name || profile.email || "U").slice(0, 1)}
               </span>
               <h1 className="mt-4 text-2xl font-black text-[#1f2221]">{profile.name}</h1>
               <p className="mt-1 break-words text-sm font-bold text-[#6f7573]">{profile.email}</p>
-              <span className="mt-4 inline-flex rounded-full bg-[#fff2e9] px-3 py-1 text-xs font-black text-[#e61951]">{profile.membership}</span>
             </div>
 
             <nav className="bk-card p-2">
               <ProfileNavItem icon={Package} label="My Orders" active={activeSection === "orders"} onClick={() => setActiveSection("orders")} />
               <ProfileNavItem icon={Heart} label="My Favourites" active={activeSection === "favourites"} onClick={() => setActiveSection("favourites")} />
-              <ProfileNavItem icon={Gift} label="My Occasions" active={activeSection === "occasions"} onClick={() => setActiveSection("occasions")} />
-              <ProfileNavItem icon={MapPin} label="Manage Address" active={activeSection === "address"} onClick={() => setActiveSection("address")} />
-              <ProfileNavItem icon={Wallet} label="My Wallet" active={activeSection === "wallet"} onClick={() => setActiveSection("wallet")} />
-              <ProfileNavItem icon={CreditCard} label="Payment Methods" active={activeSection === "payments"} onClick={() => setActiveSection("payments")} />
+              <ProfileNavItem icon={MapPin} label="Saved Addresses" active={activeSection === "address"} onClick={() => setActiveSection("address")} />
               <ProfileNavItem icon={Settings} label="Account Settings" active={activeSection === "settings"} onClick={() => setActiveSection("settings")} />
               <button type="button" onClick={logout} className="mt-2 flex h-11 w-full items-center gap-3 rounded-lg px-4 text-sm font-black text-[#e61951] hover:bg-[#fff2e9]">
                 <LogOut size={18} />
@@ -121,11 +415,10 @@ function Profile() {
           </aside>
 
           <main className="space-y-5">
-            <section className="grid gap-4 md:grid-cols-3">
+            <section className="grid gap-4 md:grid-cols-2">
               {[
                 ["Total Orders", orders.length],
-                ["Reward Points", rewardPoints],
-                ["Saved Addresses", savedPincodeCount]
+                ["Saved Addresses", profile.addresses?.length || 0]
               ].map(([label, value]) => (
                 <div key={label} className="bk-card p-5">
                   <p className="text-sm font-bold text-[#6f7573]">{label}</p>
@@ -135,9 +428,9 @@ function Profile() {
             </section>
 
             {activeSection === "orders" && <section className="bk-card overflow-hidden">
-              <div className="border-b border-[#ebebeb] bg-white p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">Recent Orders</h2>
-                <p className="mt-1 text-sm text-[#6f7573]">Track current orders and repeat previous favourites.</p>
+              <div className="border-b border-[#ebebeb] bg-white p-4">
+                <h2 className="text-xl font-black text-[#1f2221]">Recent Orders</h2>
+                <p className="mt-1 text-xs text-[#6f7573]">Track current orders and repeat previous favourites.</p>
               </div>
               <div className="divide-y divide-[#ebebeb]">
                 {orders.length ? (
@@ -146,26 +439,30 @@ function Profile() {
                       key={order.id}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center"
+                      className="grid gap-3 p-4 md:grid-cols-[1fr_auto] md:items-center hover:bg-[#fafafa] transition"
                     >
                       <div>
-                        <div className="mb-2 flex flex-wrap items-center gap-2">
+                        <div className="mb-1.5 flex flex-wrap items-center gap-2">
                           <span className="text-xs font-black text-[#6f7573]">Order {order.orderId || order.id}</span>
-                          <span className={`rounded-full px-3 py-1 text-[11px] font-black ${order.status === "Delivered" ? "bg-[#e8f8ef] text-[#0f8b57]" : "bg-[#fff2e9] text-[#e61951]"}`}>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${order.status === "Delivered" ? "bg-[#e8f8ef] text-[#0f8b57]" : "bg-[#fff2e9] text-[#e61951]"}`}>
                             {order.status}
                           </span>
                         </div>
-                        <h3 className="text-lg font-black text-[#1f2221]">{order.items?.join(", ") || "Cake order"}</h3>
-                        <p className="mt-1 text-sm font-bold text-[#6f7573]">{order.date}</p>
+                        <h3 className="text-base font-black text-[#1f2221]">{order.items?.join(", ") || "Cake order"}</h3>
+                        <p className="mt-0.5 text-xs font-bold text-[#6f7573]">{order.date}</p>
                       </div>
                       <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
-                        <p className="text-xl font-black text-[#e61951]">{formatPrice(order.total)}</p>
+                        <p className="text-lg font-black text-black">{formatPrice(order.total)}</p>
                         <div className="flex flex-wrap justify-end gap-2">
-                          <button type="button" onClick={() => handleOrderAgain(order)} className="bk-btn h-10 px-4 text-sm">
-                            <ShoppingCart size={16} />
+                          <button type="button" onClick={() => handleOrderAgain(order)} className="bk-btn h-9 px-3 text-xs">
+                            <ShoppingCart size={14} />
                             Order Again
                           </button>
-                          <Link to={`/track?orderId=${encodeURIComponent(order.orderId || order.id)}`} className="bk-outline-btn h-10 px-4 text-sm">Track Details</Link>
+                          <Link to={`/track?orderId=${encodeURIComponent(order.orderId || order.id)}`} className="bk-outline-btn h-9 px-3 text-xs">Track Details</Link>
+                          <button type="button" onClick={() => handleDownloadInvoice(order)} className="bk-outline-btn h-9 px-3 text-xs flex items-center gap-1">
+                            <FileText size={13} />
+                            Invoice
+                          </button>
                         </div>
                       </div>
                     </motion.article>
@@ -190,7 +487,7 @@ function Profile() {
                       <img src={product.image} alt={product.name} className="h-16 w-16 rounded-lg object-cover" />
                       <div>
                         <h3 className="text-sm font-black text-[#1f2221]">{product.name}</h3>
-                        <p className="mt-1 text-sm font-bold text-[#e61951]">{formatPrice(product.price)}</p>
+                        <p className="mt-1 text-sm font-bold text-[#1f2221]">{formatPrice(product.price)}</p>
                       </div>
                     </Link>
                   )) : <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">Liked cakes will appear here.</p>}
@@ -198,75 +495,108 @@ function Profile() {
               </section>
             )}
 
-            {activeSection === "occasions" && (
-              <section className="bk-card p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">My Occasions</h2>
-                <div className="mt-4 grid gap-3">
-                  {orders.length ? orders.map((order) => (
-                    <div key={order.id} className="rounded-lg border border-[#ebebeb] p-4">
-                      <p className="text-sm font-black text-[#1f2221]">{order.items?.join(", ") || "Cake order"}</p>
-                      <p className="mt-1 text-sm font-bold text-[#6f7573]">{order.deliveryDate || order.date}</p>
-                    </div>
-                  )) : <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">No saved occasions yet.</p>}
-                </div>
-              </section>
-            )}
-
             {activeSection === "address" && (
-              <section className="bk-card p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">Manage Address</h2>
-                <div className="mt-4 grid gap-3">
-                  {savedPincodes.length ? savedPincodes.map((pincode) => (
-                    <div key={pincode} className="flex items-center gap-3 rounded-lg border border-[#ebebeb] p-4">
-                      <MapPin size={18} className="text-[#e61951]" />
-                      <span className="text-sm font-black text-[#1f2221]">Pincode {pincode}</span>
+              <section className="bk-card p-4">
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-xl font-black text-[#1f2221]">Saved Addresses</h2>
+                  <button type="button" onClick={() => setShowAddAddress(!showAddAddress)} className="bk-btn h-9 px-4 text-xs">
+                    {showAddAddress ? "Cancel" : "Add New"}
+                  </button>
+                </div>
+                {showAddAddress && (
+                  <form onSubmit={handleAddAddress} className="mb-6 rounded-lg border border-[#ebebeb] p-4">
+                    <h3 className="mb-4 text-sm font-black text-[#1f2221]">Add New Address</h3>
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Label (e.g., Home, Work)</span>
+                        <input name="label" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Name</span>
+                        <input name="name" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Phone</span>
+                        <input name="phone" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Address</span>
+                        <input name="address" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Pincode</span>
+                        <input name="pincode" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">City</span>
+                        <input name="city" required className="bk-input h-10 px-3 text-sm" />
+                      </label>
+                      <label className="block md:col-span-2">
+                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Landmark (Optional)</span>
+                        <input name="landmark" className="bk-input h-10 px-3 text-sm" />
+                      </label>
                     </div>
-                  )) : <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">Checkout addresses will appear here.</p>}
-                </div>
-              </section>
-            )}
-
-            {activeSection === "wallet" && <section className="grid gap-5 lg:grid-cols-2">
-              <div className="bk-card overflow-hidden bg-[#1f2221] p-6 text-white">
-                <Star className="mb-5 text-[#ffcf4d]" size={36} fill="currentColor" />
-                <h2 className="text-2xl font-black">Sweet Rewards</h2>
-                <p className="mt-2 text-sm leading-6 text-white/75">You have earned {rewardPoints} points from completed account activity.</p>
-                <div className="mt-6 h-2 overflow-hidden rounded-full bg-white/15">
-                  <div className="h-full rounded-full bg-[#e61951]" style={{ width: `${Math.min(100, rewardPoints / 10)}%` }} />
-                </div>
-                <p className="mt-3 text-xs font-bold text-white/70">{pointsToNextTier} points to next tier</p>
-              </div>
-
-              <div className="bk-card p-6">
-                <h2 className="text-2xl font-black text-[#1f2221]">Upcoming Delivery</h2>
-                <p className="mt-2 text-sm leading-6 text-[#6f7573]">
-                  {activeOrder
-                    ? `${activeOrder.orderId || activeOrder.id} is ${activeOrder.status} for ${activeOrder.deliveryDate || "your selected date"}.`
-                    : "No active delivery right now. New checkout orders will appear here automatically."}
-                </p>
-                {activeOrder ? (
-                  <Link to={`/track?orderId=${encodeURIComponent(activeOrder.orderId || activeOrder.id)}`} className="bk-btn mt-6 h-11 px-5 text-sm">Track Active Order</Link>
-                ) : (
-                  <Link to="/shop" className="bk-btn mt-6 h-11 px-5 text-sm">Shop Cakes</Link>
+                    <button type="submit" className="bk-btn mt-4 h-10 w-full text-sm">Save Address</button>
+                  </form>
                 )}
-              </div>
-            </section>}
-
-            {activeSection === "payments" && (
-              <section className="bk-card p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">Payment Methods</h2>
-                <p className="mt-2 text-sm font-bold text-[#6f7573]">Saved Razorpay cards and UPI handles will appear after checkout.</p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {profile.addresses?.length ? profile.addresses.map((addr) => (
+                    <div key={addr.id} className="relative rounded-lg border border-[#ebebeb] p-4 flex flex-col justify-between">
+                      <div>
+                        <span className="absolute right-4 top-4 rounded bg-[#f7f7f7] px-2 py-0.5 text-[10px] font-black text-[#6f7573] uppercase tracking-wider">{addr.label}</span>
+                        <p className="text-sm font-black text-[#1f2221] pr-12">{addr.name}</p>
+                        <p className="mt-0.5 text-xs font-bold text-[#6f7573]">{addr.phone}</p>
+                        <p className="mt-2 text-xs text-[#6f7573] leading-relaxed">{addr.address}, {addr.landmark ? `${addr.landmark}, ` : ""}{addr.city} - {addr.pincode}</p>
+                      </div>
+                      <button type="button" onClick={() => handleDeleteAddress(addr.id)} className="mt-3 text-xs font-bold text-[#e61951] hover:underline self-start">Remove</button>
+                    </div>
+                  )) : !showAddAddress && <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">No saved addresses yet.</p>}
+                </div>
               </section>
             )}
 
             {activeSection === "settings" && (
-              <section className="bk-card p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">Account Settings</h2>
-                <div className="mt-4 grid gap-3">
-                  <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#1f2221]">Name: {profile.name}</p>
-                  <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#1f2221]">Email: {profile.email}</p>
-                  <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#1f2221]">Phone: {profile.phone || "Not added"}</p>
-                </div>
+              <section className="bk-card p-4">
+                <h2 className="text-xl font-black text-[#1f2221]">Account Settings</h2>
+                <form onSubmit={handleUpdateProfile} className="mt-4 grid gap-4">
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-[#6f7573]">Name</span>
+                    <input
+                      type="text"
+                      name="name"
+                      defaultValue={profile.name}
+                      required
+                      className="bk-input h-10 px-3 text-sm font-bold text-[#1f2221]"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-[#6f7573]">Email Address (cannot be changed)</span>
+                    <input
+                      type="email"
+                      name="email"
+                      value={profile.email}
+                      disabled
+                      readOnly
+                      className="bk-input h-10 px-3 text-sm font-bold text-[#8c9290] bg-[#f7f7f7] cursor-not-allowed border-[#ebebeb]"
+                    />
+                  </label>
+
+                  <label className="block">
+                    <span className="mb-1.5 block text-xs font-bold text-[#6f7573]">Phone</span>
+                    <input
+                      type="text"
+                      name="phone"
+                      defaultValue={profile.phone || ""}
+                      placeholder="Add phone number"
+                      className="bk-input h-10 px-3 text-sm font-bold text-[#1f2221]"
+                    />
+                  </label>
+
+                  <button type="submit" className="bk-btn h-10 text-sm font-black mt-2">
+                    Save Changes
+                  </button>
+                </form>
               </section>
             )}
           </main>

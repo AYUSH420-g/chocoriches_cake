@@ -1,6 +1,7 @@
 import { isDatabaseConnected } from "../db.js";
 import { BlockedDate } from "../models/BlockedDate.js";
 import { Category } from "../models/Category.js";
+import { Subcategory } from "../models/Subcategory.js";
 import { Inquiry } from "../models/Inquiry.js";
 import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
@@ -13,6 +14,7 @@ import {
   adminViewUser,
   blockedDateView,
   categoryView,
+  subcategoryView,
   objectIdFilter,
   pincodeView,
   productId,
@@ -88,6 +90,7 @@ function productPayload(body) {
     isBestSeller: Boolean(body.isBestSeller),
     isTrending: Boolean(body.isTrending),
     customizable: Boolean(body.customizable),
+    sameDayDelivery: Boolean(body.sameDayDelivery),
     tags: Array.isArray(body.tags) ? body.tags : [],
     sortOrder: Number(body.sortOrder || 0),
   };
@@ -265,6 +268,7 @@ export async function updateCategory(req, res) {
   };
 
   if (isDatabaseConnected()) {
+    const oldCategory = await Category.findOne(objectIdOrField(req.params.id, "slug")).lean();
     const category = await Category.findOneAndUpdate(objectIdOrField(req.params.id, "slug"), updates, {
       new: true,
     }).lean();
@@ -274,15 +278,21 @@ export async function updateCategory(req, res) {
       return;
     }
 
+    if (oldCategory && oldCategory.name !== category.name) {
+      await Subcategory.updateMany({ category: oldCategory.name }, { category: category.name });
+    }
+
     res.json(categoryView(category));
     return;
   }
 
+  let oldCategoryName = "";
   let updatedCategory = null;
   memory.categories = memory.categories.map((category) => {
-    if (category.slug !== req.params.id) {
+    if (category.slug !== req.params.id && String(category._id || category.id) !== String(req.params.id)) {
       return category;
     }
+    oldCategoryName = category.name;
     updatedCategory = { ...category, ...updates };
     return updatedCategory;
   });
@@ -292,14 +302,116 @@ export async function updateCategory(req, res) {
     return;
   }
 
+  if (oldCategoryName && oldCategoryName !== updatedCategory.name && memory.subcategories) {
+    memory.subcategories = memory.subcategories.map((subcat) => {
+      if (subcat.category === oldCategoryName) {
+        return { ...subcat, category: updatedCategory.name };
+      }
+      return subcat;
+    });
+  }
+
   res.json(categoryView(updatedCategory));
 }
 
 export async function deleteCategory(req, res) {
+  let categoryName = "";
   if (isDatabaseConnected()) {
-    await Category.deleteOne(objectIdOrField(req.params.id, "slug"));
+    const category = await Category.findOne(objectIdOrField(req.params.id, "slug")).lean();
+    if (category) {
+      categoryName = category.name;
+      await Category.deleteOne({ _id: category._id });
+      await Subcategory.deleteMany({ category: categoryName });
+    }
   } else {
-    memory.categories = memory.categories.filter((category) => category.slug !== req.params.id);
+    const category = memory.categories.find(c => c.slug === req.params.id || String(c._id || c.id) === String(req.params.id));
+    if (category) {
+      categoryName = category.name;
+      memory.categories = memory.categories.filter((c) => c.slug !== req.params.id && String(c._id || c.id) !== String(req.params.id));
+      if (memory.subcategories) {
+        memory.subcategories = memory.subcategories.filter((subcat) => subcat.category !== categoryName);
+      }
+    }
+  }
+
+  res.status(204).end();
+}
+
+export async function subcategories(_req, res) {
+  const list = isDatabaseConnected()
+    ? await Subcategory.find({}).sort({ sortOrder: 1, name: 1 }).lean()
+    : memory.subcategories || [];
+
+  res.json(list.map(subcategoryView));
+}
+
+export async function createSubcategory(req, res) {
+  const payload = {
+    name: req.body.name,
+    slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
+    category: req.body.category,
+    isActive: req.body.isActive !== false,
+    sortOrder: Number(req.body.sortOrder || 0),
+  };
+
+  if (isDatabaseConnected()) {
+    const subcategory = await Subcategory.create(payload);
+    res.status(201).json(subcategoryView(subcategory.toObject()));
+    return;
+  }
+
+  if (!memory.subcategories) memory.subcategories = [];
+  memory.subcategories.push(payload);
+  res.status(201).json(subcategoryView(payload));
+}
+
+export async function updateSubcategory(req, res) {
+  const updates = {
+    ...req.body,
+    slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
+    sortOrder: Number(req.body.sortOrder || 0),
+  };
+
+  if (isDatabaseConnected()) {
+    const subcategory = await Subcategory.findOneAndUpdate(objectIdOrField(req.params.id, "slug"), updates, {
+      new: true,
+    }).lean();
+
+    if (!subcategory) {
+      res.status(404).json({ message: "Subcategory not found." });
+      return;
+    }
+
+    res.json(subcategoryView(subcategory));
+    return;
+  }
+
+  let updatedSubcategory = null;
+  if (!memory.subcategories) memory.subcategories = [];
+  memory.subcategories = memory.subcategories.map((subcat) => {
+    if (subcat.slug !== req.params.id && String(subcat._id || subcat.id) !== String(req.params.id)) {
+      return subcat;
+    }
+    updatedSubcategory = { ...subcat, ...updates };
+    return updatedSubcategory;
+  });
+
+  if (!updatedSubcategory) {
+    res.status(404).json({ message: "Subcategory not found." });
+    return;
+  }
+
+  res.json(subcategoryView(updatedSubcategory));
+}
+
+export async function deleteSubcategory(req, res) {
+  if (isDatabaseConnected()) {
+    await Subcategory.deleteOne(objectIdOrField(req.params.id, "slug"));
+  } else {
+    if (!memory.subcategories) memory.subcategories = [];
+    memory.subcategories = memory.subcategories.filter(
+      (subcat) => subcat.slug !== req.params.id && String(subcat._id || subcat.id) !== String(req.params.id)
+    );
   }
 
   res.status(204).end();

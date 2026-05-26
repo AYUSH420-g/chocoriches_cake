@@ -65,17 +65,14 @@ function TrackOrder() {
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[380px_1fr]">
+        <div className="grid gap-5 lg:grid-cols-[380px_1fr] items-start">
           <section className="bk-card p-5">
             <form onSubmit={handleSubmit} className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-black text-[#1f2221]">Order ID</span>
                 <input value={orderId} onChange={(event) => setOrderId(event.target.value)} placeholder="CR-1234" className="bk-input h-12 px-4 text-sm" required />
               </label>
-              <label className="block">
-                <span className="mb-2 block text-sm font-black text-[#1f2221]">Email optional</span>
-                <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@example.com" type="email" className="bk-input h-12 px-4 text-sm" />
-              </label>
+
               <button disabled={loading} className="bk-btn h-12 text-sm disabled:opacity-60">
                 <Search size={17} />
                 {loading ? "Searching..." : "Track"}
@@ -109,7 +106,12 @@ function TrackOrder() {
                         const active = index <= activeIndex && order.status !== "Cancelled";
                         const Icon = index === 0 ? ClipboardList : index === 1 ? PackageCheck : index === 2 ? Truck : CheckCircle2;
                         return (
-                          <div key={status} className="relative">
+                          <div key={status} className="relative z-10 flex flex-col items-center text-center">
+                            {index < statuses.length - 1 && (
+                              <div className={`absolute left-1/2 top-[22px] -z-10 hidden h-[2px] w-[calc(100%+20px)] md:block ${
+                                index < activeIndex && order.status !== "Cancelled" ? "bg-[#e61951]" : "bg-[#f1f1f1]"
+                              }`} />
+                            )}
                             <span className={`grid h-11 w-11 place-items-center rounded-full ${active ? "bg-[#e61951] text-white" : "bg-[#f1f1f1] text-[#9a9f9d]"}`}>
                               <Icon size={20} />
                             </span>

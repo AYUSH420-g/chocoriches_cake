@@ -40,6 +40,7 @@ const productSchema = new mongoose.Schema(
     isBestSeller: { type: Boolean, default: false, index: true },
     isTrending: { type: Boolean, default: false, index: true },
     customizable: { type: Boolean, default: false },
+    sameDayDelivery: { type: Boolean, default: false, index: true },
     tags: [{ type: String }],
     sortOrder: { type: Number, default: 0 },
   },

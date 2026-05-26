@@ -11,6 +11,7 @@ const cartItemSchema = new mongoose.Schema(
     image: { type: String, required: true },
     size: { type: String, required: true },
     weight: { type: String },
+    sameDayDelivery: { type: Boolean, default: false },
     quantity: { type: Number, required: true, min: 1 },
   },
   { timestamps: true }

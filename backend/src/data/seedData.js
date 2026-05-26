@@ -103,6 +103,7 @@ export const profileUser = {
   email: "elena@example.com",
   avatar: "https://images.unsplash.com/photo-1611451444023-7fe9d86fe1d0?auto=format&fit=crop&q=80&w=200",
   membership: "Connoisseur Member",
+  addresses: [],
 };
 
 export const initialOrders = [

@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { isDatabaseConnected } from "../db.js";
 import { User } from "../models/User.js";
 import { hashPassword, signToken, verifyPassword } from "../utils/auth.js";
@@ -117,3 +118,88 @@ export async function adminLogin(req, res) {
 
   res.json({ admin: publicUser(user), token: authResponse(user).token });
 }
+
+export async function addAddress(req, res) {
+  const { label, name, phone, address, pincode, city, landmark } = req.body;
+  if (!label || !name || !phone || !address || !pincode || !city) {
+    res.status(400).json({ message: "Missing required address fields." });
+    return;
+  }
+
+  const newAddress = {
+    id: crypto.randomUUID(),
+    label,
+    name,
+    phone,
+    address,
+    pincode,
+    city,
+    landmark: landmark || "",
+  };
+
+  if (isDatabaseConnected()) {
+    const user = await User.findById(req.user._id || req.user.id);
+    if (!user) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+    user.addresses.push(newAddress);
+    await user.save();
+    res.status(201).json(publicUser(user));
+    return;
+  }
+
+  const memoryUser = memory.users.find((u) => u.email === req.user.email);
+  if (memoryUser) {
+    memoryUser.addresses = memoryUser.addresses || [];
+    memoryUser.addresses.push(newAddress);
+  }
+  res.status(201).json(publicUser(memoryUser));
+}
+
+export async function deleteAddress(req, res) {
+  const { id } = req.params;
+
+  if (isDatabaseConnected()) {
+    const user = await User.findById(req.user._id || req.user.id);
+    if (!user) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+    user.addresses = user.addresses.filter((addr) => String(addr.id) !== id && String(addr._id) !== id);
+    await user.save();
+    res.json(publicUser(user));
+    return;
+  }
+
+  const memoryUser = memory.users.find((u) => u.email === req.user.email);
+  if (memoryUser && memoryUser.addresses) {
+    memoryUser.addresses = memoryUser.addresses.filter((addr) => String(addr.id) !== id);
+  }
+  res.json(publicUser(memoryUser));
+}
+
+export async function updateProfile(req, res) {
+  const { name, phone } = req.body;
+
+  if (isDatabaseConnected()) {
+    const user = await User.findById(req.user._id || req.user.id);
+    if (!user) {
+      res.status(404).json({ message: "User not found." });
+      return;
+    }
+    if (name !== undefined) user.name = String(name).trim();
+    if (phone !== undefined) user.phone = String(phone).trim();
+    await user.save();
+    res.json(publicUser(user));
+    return;
+  }
+
+  const memoryUser = memory.users.find((u) => u.email === req.user.email);
+  if (memoryUser) {
+    if (name !== undefined) memoryUser.name = String(name).trim();
+    if (phone !== undefined) memoryUser.phone = String(phone).trim();
+  }
+  res.json(publicUser(memoryUser));
+}
+

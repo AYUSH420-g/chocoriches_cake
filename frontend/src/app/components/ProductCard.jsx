@@ -77,60 +77,25 @@ function ProductCard({ product, compact = false }) {
           </span>
         </div>
 
-        <div className="flex flex-1 flex-col p-4">
-          <div className="mb-2 flex items-start justify-between gap-3">
-            <h3 className="line-clamp-2 text-[15px] font-black leading-5 text-[#1f2221] transition group-hover:text-[#e61951]">
+        <div className="flex flex-1 flex-col p-3">
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <h3 className="line-clamp-2 text-sm font-black leading-5 text-[#1f2221] transition group-hover:text-[#e61951]">
               {product.name}
             </h3>
           </div>
 
-          <p className="mb-3 line-clamp-2 text-xs leading-5 text-[#6f7573]">{product.description}</p>
-
           <div className="mt-auto">
-            <div className="mb-1 flex items-end gap-2">
-              <span className="text-lg font-black text-[#1f2221]">{formatPrice(product.price)}</span>
+            <div className="mb-1.5 flex items-end gap-2">
+              <span className="text-base font-black text-[#1f2221]">{formatPrice(product.price)}</span>
               {Number(product.discountPercent || 0) > 0 && (
                 <span className="pb-0.5 text-xs font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(product.price, product.discountPercent)}</span>
               )}
             </div>
-            <p className="mb-4 text-xs font-bold text-[#6f7573]">({reviewCountFor(product.id)} Reviews)</p>
-            <div className="flex items-center justify-between gap-3">
-              <span className="inline-flex min-w-0 items-center gap-1 rounded-full bg-[#f7f7f7] px-3 py-2 text-[11px] font-black text-[#5f6663]">
-                <Clock size={13} className="shrink-0 text-[#e61951]" />
-                Today
-              </span>
-              {cartItem ? (
-                <div className="flex h-10 shrink-0 items-center overflow-hidden rounded-lg border border-[#e61951] bg-white text-[#e61951]">
-                  <button
-                    type="button"
-                    title="Decrease quantity"
-                    aria-label={`Decrease ${product.name} quantity`}
-                    onClick={(event) => handleQuantity(event, Math.max(1, Number(cartItem.quantity || 1) - 1))}
-                    className="grid h-10 w-9 place-items-center hover:bg-[#fff2e9]"
-                  >
-                    <Minus size={14} />
-                  </button>
-                  <span className="min-w-8 px-1 text-center text-sm font-black">{cartItem.quantity}</span>
-                  <button
-                    type="button"
-                    title="Increase quantity"
-                    aria-label={`Increase ${product.name} quantity`}
-                    onClick={(event) => handleQuantity(event, Number(cartItem.quantity || 1) + 1)}
-                    className="grid h-10 w-9 place-items-center hover:bg-[#fff2e9]"
-                  >
-                    <Plus size={14} />
-                  </button>
-                </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={handleAdd}
-                  className="bk-btn h-10 shrink-0 px-3 text-xs"
-                >
-                  <ShoppingCart size={15} />
-                  Add
-                </button>
-              )}
+            <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
+              <p className="text-[11px] font-bold text-[#6f7573]">({reviewCountFor(product.id)} Reviews)</p>
+              <p className="text-[11px] font-bold text-[#6f7573]">
+                Delivery: <span className="text-[#0f8b57]">Today</span>
+              </p>
             </div>
           </div>
         </div>

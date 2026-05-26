@@ -40,20 +40,20 @@ const wishCategories = [
 
 const promiseItems = [
   { icon: Truck, title: "On-Time Delivery", copy: "Fresh cakes delivered today" },
-  { icon: CakeSlice, title: "500+ Designs", copy: "For every celebration" },
+  { icon: CakeSlice, title: "300+ Designs", copy: "For every celebration" },
   { icon: Star, title: "Loved by Foodies", copy: "High rated cake picks" },
   { icon: ShieldCheck, title: "Baked Fresh", copy: "Prepared after order" }
 ];
 
 function Home() {
-  const [featuredCakes, setFeaturedCakes] = useState([]);
+  const [allCakes, setAllCakes] = useState([]);
 
   useEffect(() => {
     let mounted = true;
-    getProducts({ featured: true })
+    getProducts({})
       .then((cakes) => {
         if (mounted) {
-          setFeaturedCakes(cakes.slice(0, 4));
+          setAllCakes(cakes);
         }
       })
       .catch(() => void 0);
@@ -62,48 +62,25 @@ function Home() {
     };
   }, []);
 
-  const bestsellers = featuredCakes;
-
   return (
     <div className="bk-page overflow-hidden">
-      <section className="bk-shell py-4">
-        <div className="relative min-h-[330px] overflow-hidden rounded-xl bg-[#fff2e9] md:min-h-[390px]">
-          <img
-            src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&q=80&w=1800"
-            alt="Fresh chocolate cake"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/25 to-transparent" />
-          <motion.div
-            initial={{ opacity: 0, y: 18 }}
+      <section className="bk-shell pt-6 pb-3 md:pt-8 md:pb-4">
+        <Link to="/custom" className="mx-auto block max-w-6xl overflow-hidden rounded-2xl bg-[#fff2e9] shadow-sm hover:opacity-95 transition">
+          <motion.img
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="relative flex min-h-[330px] max-w-xl flex-col justify-center px-6 py-10 text-white md:min-h-[390px] md:px-12"
-          >
-            <span className="mb-3 inline-flex w-fit rounded-full bg-white/95 px-3 py-1 text-xs font-black uppercase tracking-[0.12em] text-[#e61951]">
-              Same Day Cake Delivery
-            </span>
-            <h1 className="text-4xl font-black leading-tight tracking-tight md:text-6xl">Fresh Cakes Online</h1>
-            <p className="mt-4 max-w-md text-base font-bold leading-7 text-white/90 md:text-lg">
-              Order celebration cakes, designer cakes, bento treats, and chocolate favourites baked fresh for every moment.
-            </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/shop" className="bk-btn h-12 px-6 text-sm">
-                Order Cakes
-                <ArrowRight size={17} />
-              </Link>
-              <Link to="/custom" className="inline-flex h-12 items-center gap-2 rounded-lg bg-white px-6 text-sm font-black text-[#e61951] transition hover:bg-[#fff2e9]">
-                Customize Cake
-              </Link>
-            </div>
-          </motion.div>
-        </div>
+            src="/hero-banner.png"
+            alt="Theme Cakes Delivery"
+            className="w-full h-auto object-contain"
+          />
+        </Link>
       </section>
 
       <section className="bk-shell py-7">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">menu</p>
+            {/* <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">menu</p> */}
             <h2 className="bk-section-title">What will you wish for?</h2>
           </div>
           <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
@@ -111,7 +88,7 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="mx-auto max-w-5xl grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {wishCategories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -120,11 +97,11 @@ function Home() {
               viewport={{ once: true }}
               transition={{ delay: index * 0.05 }}
             >
-              <Link to={category.to} className="group block rounded-xl bg-white p-3 text-center shadow-sm ring-1 ring-[#ebebeb] transition hover:-translate-y-0.5 hover:shadow-md">
-                <span className="mx-auto block aspect-square overflow-hidden rounded-full bg-[#f7f7f7]">
+              <Link to={category.to} className="group block text-center">
+                <span className="block aspect-square overflow-hidden rounded-2xl bg-[#f5f0ec]">
                   <img src={category.image} alt={category.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </span>
-                <span className="mt-3 block text-sm font-black uppercase tracking-[0.08em] text-[#1f2221]">{category.name}</span>
+                <span className="mt-2.5 block text-sm font-semibold text-[#1f2221]">{category.name}</span>
               </Link>
             </motion.div>
           ))}
@@ -134,8 +111,8 @@ function Home() {
       <section className="bk-shell py-8">
         <div className="mb-5 flex items-end justify-between gap-4">
           <div>
-            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">india loves</p>
-            <h2 className="bk-section-title">Bestsellers from across the country</h2>
+            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">explore</p>
+            <h2 className="bk-section-title">Our Collection</h2>
           </div>
           <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
             View All
@@ -143,14 +120,14 @@ function Home() {
           </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {bestsellers.map((cake) => (
+          {allCakes.map((cake) => (
             <ProductCard key={cake.id} product={cake} />
           ))}
         </div>
-        {!bestsellers.length && (
+        {!allCakes.length && (
           <div className="bk-card py-12 text-center">
-            <h3 className="text-xl font-black text-[#1f2221]">No featured cakes yet</h3>
-            <p className="mt-2 text-sm text-[#6f7573]">Add products as featured from admin to show them here.</p>
+            <h3 className="text-xl font-black text-[#1f2221]">No cakes found</h3>
+            <p className="mt-2 text-sm text-[#6f7573]">Add products from admin to show them here.</p>
           </div>
         )}
       </section>
@@ -159,8 +136,8 @@ function Home() {
         <div className="bk-shell">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">our promise</p>
-              <h2 className="bk-section-title">Fresh bakes, fast delivery, happy celebrations</h2>
+              <p className="text-base font-black lowercase tracking-[0.08em] text-[#e61951]">our promise</p>
+              <h2 className="bk-section-title">Fresh bakes, On Time delivery</h2>
             </div>
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -224,7 +201,7 @@ function Home() {
               <p className="mt-1 text-sm leading-6 text-[#6f7573]">Choose express slots and send fresh cakes across major cities.</p>
             </div>
           </div>
-          <Link to="/shop" className="bk-btn mt-5 h-11 px-5 text-sm md:mt-0">Explore Same Day Cakes</Link>
+          <Link to="/shop?filter=Same%20Day" className="bk-btn mt-5 h-11 px-5 text-sm md:mt-0">Explore Same Day Cakes</Link>
         </div>
       </section>
     </div>

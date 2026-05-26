@@ -1,6 +1,6 @@
 import express from "express";
 import { profile } from "../controllers/authController.js";
-import { blockedDates, categories, checkPincode, health, settings } from "../controllers/publicController.js";
+import { blockedDates, categories, subcategories, checkPincode, health, settings } from "../controllers/publicController.js";
 import { authenticate } from "../middleware/authMiddleware.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
 import { adminRouter } from "./adminRoutes.js";
@@ -16,6 +16,7 @@ export const apiRouter = express.Router();
 apiRouter.get("/health", health);
 apiRouter.get("/settings", asyncRoute(settings));
 apiRouter.get("/categories", asyncRoute(categories));
+apiRouter.get("/subcategories", asyncRoute(subcategories));
 apiRouter.get("/pincodes/check/:pincode", asyncRoute(checkPincode));
 apiRouter.get("/blocked-dates", asyncRoute(blockedDates));
 

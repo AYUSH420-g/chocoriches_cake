@@ -24,6 +24,11 @@ adminRouter.post("/categories", asyncRoute(admin.createCategory));
 adminRouter.patch("/categories/:id", asyncRoute(admin.updateCategory));
 adminRouter.delete("/categories/:id", asyncRoute(admin.deleteCategory));
 
+adminRouter.get("/subcategories", asyncRoute(admin.subcategories));
+adminRouter.post("/subcategories", asyncRoute(admin.createSubcategory));
+adminRouter.patch("/subcategories/:id", asyncRoute(admin.updateSubcategory));
+adminRouter.delete("/subcategories/:id", asyncRoute(admin.deleteSubcategory));
+
 adminRouter.get("/pincodes", asyncRoute(admin.pincodes));
 adminRouter.post("/pincodes", asyncRoute(admin.createPincode));
 adminRouter.patch("/pincodes/:id", asyncRoute(admin.updatePincode));
