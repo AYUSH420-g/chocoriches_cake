@@ -419,7 +419,7 @@ function Checkout() {
               <div className="space-y-4 p-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex gap-3">
-                    <img src={item.image} alt={item.name} className="h-16 w-16 rounded-lg object-cover" />
+                    <img src={item.image} alt={item.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="line-clamp-1 text-sm font-black text-[#1f2221]">{item.name}</p>
                       <p className="mt-1 text-xs font-bold text-[#6f7573]">{item.size} x {item.quantity}</p>

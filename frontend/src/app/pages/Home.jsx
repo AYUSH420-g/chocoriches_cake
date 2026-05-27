@@ -47,16 +47,21 @@ const promiseItems = [
 
 function Home() {
   const [allCakes, setAllCakes] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let mounted = true;
+    setIsLoading(true);
     getProducts({})
       .then((cakes) => {
         if (mounted) {
           setAllCakes(cakes);
         }
       })
-      .catch(() => void 0);
+      .catch(() => void 0)
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
     return () => {
       mounted = false;
     };
@@ -88,7 +93,7 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="mx-auto max-w-5xl grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="max-w-5xl grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {wishCategories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -99,7 +104,7 @@ function Home() {
             >
               <Link to={category.to} className="group block text-center">
                 <span className="block aspect-square overflow-hidden rounded-2xl bg-[#f5f0ec]">
-                  <img src={category.image} alt={category.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <img src={category.image} alt={category.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </span>
                 <span className="mt-2.5 block text-sm font-semibold text-[#1f2221]">{category.name}</span>
               </Link>
@@ -120,11 +125,17 @@ function Home() {
           </Link>
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {allCakes.map((cake) => (
-            <ProductCard key={cake.id} product={cake} />
-          ))}
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
+                  <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
+                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
+                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
+                </div>
+              ))
+            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} />)}
         </div>
-        {!allCakes.length && (
+        {!isLoading && !allCakes.length && (
           <div className="bk-card py-12 text-center">
             <h3 className="text-xl font-black text-[#1f2221]">No cakes found</h3>
             <p className="mt-2 text-sm text-[#6f7573]">Add products from admin to show them here.</p>
@@ -159,6 +170,7 @@ function Home() {
           <img
             src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&q=80&w=1200"
             alt="Celebration cake"
+            loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/10" />
@@ -176,6 +188,7 @@ function Home() {
           <img
             src="https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&q=80&w=1200"
             alt="Designer wedding cake"
+            loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-45 transition duration-700 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#e61951]/90 to-[#e61951]/10" />

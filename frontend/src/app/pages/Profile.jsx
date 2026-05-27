@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText } from "lucide-react";
 import { toast } from "sonner";
-import { getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile } from "../api/client";
+import { getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
@@ -17,6 +17,8 @@ function Profile() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("orders");
   const [showAddAddress, setShowAddAddress] = useState(false);
+  const [userReviews, setUserReviews] = useState([]);
+  const [reviewModal, setReviewModal] = useState({ open: false, product: null, rating: 5, comment: "", submitting: false });
   const { addProduct } = useCart();
 
   useEffect(() => {
@@ -26,13 +28,14 @@ function Profile() {
     }
 
     let mounted = true;
-    Promise.all([getProfile(), getOrders(), getProducts().catch(() => [])])
-      .then(([profileData, orderData, products]) => {
+    Promise.all([getProfile(), getOrders(), getProducts().catch(() => []), getUserReviews().catch(() => [])])
+      .then(([profileData, orderData, products, reviewsData]) => {
         if (mounted) {
           setProfile(profileData);
           saveUserSession({ user: profileData });
           setOrders(orderData);
           setCatalog(products);
+          setUserReviews(reviewsData || []);
         }
       })
       .catch(() => {
@@ -115,6 +118,22 @@ function Profile() {
       toast.success("Profile updated successfully");
     } catch (error) {
       toast.error(error.message || "Failed to update profile");
+    }
+  };
+
+  const handleReviewSubmit = async (e) => {
+    e.preventDefault();
+    if (!reviewModal.product) return;
+    try {
+      setReviewModal((p) => ({ ...p, submitting: true }));
+      await addReview({ productId: reviewModal.product.id, rating: reviewModal.rating, comment: reviewModal.comment });
+      const newReview = { productId: reviewModal.product.id, rating: reviewModal.rating, comment: reviewModal.comment, createdAt: new Date().toISOString(), userName: profile.name };
+      setUserReviews((p) => [newReview, ...p]);
+      setReviewModal({ open: false, product: null, rating: 5, comment: "", submitting: false });
+      toast.success("Review submitted successfully");
+    } catch (error) {
+      toast.error(error.message || "Failed to submit review");
+      setReviewModal((p) => ({ ...p, submitting: false }));
     }
   };
 
@@ -404,6 +423,7 @@ function Profile() {
 
             <nav className="bk-card p-2">
               <ProfileNavItem icon={Package} label="My Orders" active={activeSection === "orders"} onClick={() => setActiveSection("orders")} />
+              <ProfileNavItem icon={Star} label="My Reviews" active={activeSection === "reviews"} onClick={() => setActiveSection("reviews")} />
               <ProfileNavItem icon={Heart} label="My Favourites" active={activeSection === "favourites"} onClick={() => setActiveSection("favourites")} />
               <ProfileNavItem icon={MapPin} label="Saved Addresses" active={activeSection === "address"} onClick={() => setActiveSection("address")} />
               <ProfileNavItem icon={Settings} label="Account Settings" active={activeSection === "settings"} onClick={() => setActiveSection("settings")} />
@@ -465,6 +485,25 @@ function Profile() {
                           </button>
                         </div>
                       </div>
+                      {order.status === "Delivered" && (
+                        <div className="mt-4 pt-4 border-t border-[#ebebeb] flex gap-2 flex-wrap md:col-span-2 w-full">
+                          {order.items.map((itemName, idx) => {
+                            const p = catalog.find((c) => String(c.name || "").toLowerCase() === String(itemName || "").toLowerCase());
+                            if (!p) return <span key={idx} className="text-xs text-[#6f7573]">{itemName}</span>;
+                            const isReviewed = userReviews.some((r) => r.productId === p.id);
+                            return (
+                              <div key={`${order.id}-${p.id}`} className="flex items-center gap-2 rounded-lg border border-[#ebebeb] p-2 bg-white">
+                                <span className="text-xs font-bold text-[#1f2221] truncate max-w-[140px]">{p.name}</span>
+                                {isReviewed ? (
+                                  <span className="text-[10px] font-black text-[#0f8b57] bg-[#e8f8ef] px-2 py-0.5 rounded">Reviewed</span>
+                                ) : (
+                                  <button type="button" onClick={() => setReviewModal({ open: true, product: p, rating: 5, comment: "", submitting: false })} className="text-[10px] font-black text-[#e61951] bg-[#fff2e9] px-2 py-0.5 rounded hover:bg-[#e61951] hover:text-white transition">Review</button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </motion.article>
                   ))
                 ) : (
@@ -478,13 +517,55 @@ function Profile() {
               </div>
             </section>}
 
+            {activeSection === "reviews" && (
+              <section className="bk-card overflow-hidden">
+                <div className="border-b border-[#ebebeb] bg-white p-4">
+                  <h2 className="text-xl font-black text-[#1f2221]">My Reviews</h2>
+                  <p className="mt-1 text-xs text-[#6f7573]">Reviews you've left for products you've ordered.</p>
+                </div>
+                <div className="divide-y divide-[#ebebeb]">
+                  {userReviews.length ? (
+                    userReviews.map((review, idx) => {
+                      const product = catalog.find((p) => p.id === review.productId);
+                      return (
+                        <article key={review.id || review._id || idx} className="p-4 bg-white transition hover:bg-[#fafafa]">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <h3 className="text-sm font-black text-[#1f2221]">{product ? product.name : "Unknown Product"}</h3>
+                              <p className="text-[10px] font-bold text-[#6f7573] mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
+                            </div>
+                            {product && (
+                              <Link to={`/product/${product.id}`} className="text-xs font-bold text-[#e61951] hover:underline">View Product</Link>
+                            )}
+                          </div>
+                          <div className="flex items-center gap-1 mb-2 text-[#e61951]">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "" : "text-[#ebebeb]"} />
+                            ))}
+                          </div>
+                          <p className="text-sm text-[#6f7573] leading-6">{review.comment}</p>
+                        </article>
+                      );
+                    })
+                  ) : (
+                    <div className="p-8 text-center">
+                      <Star className="mx-auto text-[#ebebeb]" size={40} />
+                      <h3 className="mt-4 text-base font-black text-[#1f2221]">No reviews yet</h3>
+                      <p className="mt-2 text-sm text-[#6f7573]">Review products from your delivered orders.</p>
+                      <button type="button" onClick={() => setActiveSection("orders")} className="bk-outline-btn mt-4 h-10 px-4 text-xs">View Orders</button>
+                    </div>
+                  )}
+                </div>
+              </section>
+            )}
+
             {activeSection === "favourites" && (
               <section className="bk-card p-5">
                 <h2 className="text-2xl font-black text-[#1f2221]">My Favourites</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {favouriteProducts.length ? favouriteProducts.map((product) => (
                     <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e61951]">
-                      <img src={product.image} alt={product.name} className="h-16 w-16 rounded-lg object-cover" />
+                      <img src={product.image} alt={product.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
                       <div>
                         <h3 className="text-sm font-black text-[#1f2221]">{product.name}</h3>
                         <p className="mt-1 text-sm font-bold text-[#1f2221]">{formatPrice(product.price)}</p>
@@ -602,6 +683,66 @@ function Profile() {
           </main>
         </div>
       </div>
+
+      {reviewModal.open && reviewModal.product && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 p-4 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md overflow-hidden rounded-xl bg-white shadow-2xl"
+          >
+            <div className="border-b border-[#ebebeb] p-5">
+              <h2 className="text-xl font-black text-[#1f2221]">Write a Review</h2>
+              <p className="mt-1 text-sm text-[#6f7573] truncate">{reviewModal.product.name}</p>
+            </div>
+            <form onSubmit={handleReviewSubmit} className="p-5">
+              <div className="mb-4">
+                <label className="mb-2 block text-sm font-black text-[#1f2221]">Rating</label>
+                <div className="flex gap-2 text-[#e61951]">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setReviewModal((p) => ({ ...p, rating: i + 1 }))}
+                      className="transition-transform hover:scale-110 focus:outline-none"
+                    >
+                      <Star size={24} fill={i < reviewModal.rating ? "currentColor" : "none"} className={i < reviewModal.rating ? "" : "text-[#ebebeb]"} />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="mb-6">
+                <label className="mb-2 block text-sm font-black text-[#1f2221]">Comment</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={reviewModal.comment}
+                  onChange={(e) => setReviewModal((p) => ({ ...p, comment: e.target.value }))}
+                  placeholder="How was the cake? Share your experience..."
+                  className="bk-input w-full resize-none px-4 py-3 text-sm"
+                />
+              </div>
+              <div className="flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReviewModal({ open: false, product: null, rating: 5, comment: "", submitting: false })}
+                  className="bk-outline-btn h-10 px-5 text-sm disabled:opacity-50"
+                  disabled={reviewModal.submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="bk-btn h-10 px-5 text-sm disabled:opacity-50"
+                  disabled={reviewModal.submitting}
+                >
+                  {reviewModal.submitting ? "Submitting..." : "Submit Review"}
+                </button>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

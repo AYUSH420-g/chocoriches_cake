@@ -1,30 +1,42 @@
+import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import RootLayout from "./components/RootLayout";
-import Home from "./pages/Home";
-import Shop from "./pages/Shop";
-import ProductDetail from "./pages/ProductDetail";
-import CustomCake from "./pages/CustomCake";
-import Cart from "./pages/Cart";
-import Checkout from "./pages/Checkout";
-import Auth from "./pages/Auth";
-import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
-import TrackOrder from "./pages/TrackOrder";
+import PageLoader from "./components/PageLoader";
+
+const Home = lazy(() => import("./pages/Home"));
+const Shop = lazy(() => import("./pages/Shop"));
+const ProductDetail = lazy(() => import("./pages/ProductDetail"));
+const CustomCake = lazy(() => import("./pages/CustomCake"));
+const Cart = lazy(() => import("./pages/Cart"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const Auth = lazy(() => import("./pages/Auth"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Admin = lazy(() => import("./pages/Admin"));
+const TrackOrder = lazy(() => import("./pages/TrackOrder"));
+
+function LazyPage({ Component }) {
+  return (
+    <Suspense fallback={<PageLoader />}>
+      <Component />
+    </Suspense>
+  );
+}
+
 const router = createBrowserRouter([
-  { path: "/admin", Component: Admin },
+  { path: "/admin", element: <LazyPage Component={Admin} /> },
   {
     path: "/",
     Component: RootLayout,
     children: [
-      { index: true, Component: Home },
-      { path: "shop", Component: Shop },
-      { path: "product/:id", Component: ProductDetail },
-      { path: "custom", Component: CustomCake },
-      { path: "cart", Component: Cart },
-      { path: "checkout", Component: Checkout },
-      { path: "auth", Component: Auth },
-      { path: "profile", Component: Profile },
-      { path: "track", Component: TrackOrder }
+      { index: true, element: <LazyPage Component={Home} /> },
+      { path: "shop", element: <LazyPage Component={Shop} /> },
+      { path: "product/:id", element: <LazyPage Component={ProductDetail} /> },
+      { path: "custom", element: <LazyPage Component={CustomCake} /> },
+      { path: "cart", element: <LazyPage Component={Cart} /> },
+      { path: "checkout", element: <LazyPage Component={Checkout} /> },
+      { path: "auth", element: <LazyPage Component={Auth} /> },
+      { path: "profile", element: <LazyPage Component={Profile} /> },
+      { path: "track", element: <LazyPage Component={TrackOrder} /> }
     ]
   }
 ]);

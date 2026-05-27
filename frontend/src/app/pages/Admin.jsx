@@ -73,8 +73,8 @@ const emptyProduct = {
   discountPrice: "",
   discountPercent: "0",
   image: "",
-  category: "Birthday Cakes",
-  categories: ["Birthday Cakes"],
+  category: "",
+  categories: [],
   subcategory: "",
   stock: "",
   weights: [{ label: "Half Kg", price: "" }],
@@ -486,7 +486,7 @@ function Admin() {
                     <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
                   </div>
                   <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
-                  <SelectField label="Subcategory" value={productForm.subcategory} options={subcategoryOptions} onChange={(value) => setProductForm({ ...productForm, subcategory: value })} />
+                  <SingleSelectCheckboxField label="Subcategory" value={productForm.subcategory} options={subcategoryOptions.filter(Boolean)} onChange={(value) => setProductForm({ ...productForm, subcategory: value })} />
                   <WeightEditor
                     weights={productForm.weights}
                     defaultWeight={productForm.defaultWeight}
@@ -519,7 +519,7 @@ function Admin() {
                 <div className="grid gap-3">
                   {products.map((product) => (
                     <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[72px_1fr_auto] sm:items-center">
-                      <img src={product.image} alt={product.name} className="h-20 w-20 rounded-lg object-cover" />
+                      <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                       <div>
                         <h3 className="font-black">{product.name}</h3>
                         <p className="text-sm font-bold text-[#6f7573]">
@@ -569,7 +569,7 @@ function Admin() {
               <Panel title={editingSubcategoryId ? "Edit Subcategory" : "Add Subcategory"}>
                 <form onSubmit={saveSubcategory} className="grid gap-4">
                   <Field label="Name" value={subcategoryForm.name} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, name: value })} required />
-                  <SelectField label="Category" value={subcategoryForm.category} options={["", ...categories.filter(c => c.isActive !== false).map(c => c.name)]} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, category: value })} required />
+                  <SingleSelectCheckboxField label="Category" value={subcategoryForm.category} options={categories.filter(c => c.isActive !== false).map(c => c.name)} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, category: value })} required />
                   <Field label="Sort Order" type="number" value={subcategoryForm.sortOrder} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, sortOrder: Number(value || 0) })} />
                   <Check label="Active" checked={subcategoryForm.isActive} onChange={(checked) => setSubcategoryForm({ ...subcategoryForm, isActive: checked })} />
                   <button className="bk-btn h-11 text-sm"><Plus size={16} /> Save</button>
@@ -892,6 +892,28 @@ function MultiSelectField({ label, values, options, onToggle }) {
             />
           </label>
         ))}
+      </div>
+    </div>
+  );
+}
+
+function SingleSelectCheckboxField({ label, value, options, onChange, required }) {
+  return (
+    <div>
+      <span className="mb-2 block text-sm font-black text-[#1f2221]">{label} {required && <span className="text-red-500">*</span>}</span>
+      <div className="max-h-44 overflow-y-auto rounded-lg border border-[#ebebeb] bg-white p-2">
+        {options.map((option) => (
+          <label key={option} className="flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-bold text-[#5f6663] hover:bg-[#fff2e9]">
+            {option}
+            <input
+              type="checkbox"
+              checked={value === option}
+              onChange={() => onChange(value === option ? "" : option)}
+              className="h-4 w-4 accent-[#e61951]"
+            />
+          </label>
+        ))}
+        {options.length === 0 && <p className="text-xs text-[#6f7573] p-2">No options available</p>}
       </div>
     </div>
   );

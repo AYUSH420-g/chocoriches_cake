@@ -41,7 +41,7 @@ function Cart() {
                   className="bk-card grid gap-4 p-4 sm:grid-cols-[132px_1fr_auto] sm:items-center"
                 >
                   <div className="aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
-                    <img src={item.image} alt={item.name} className="h-full w-full object-cover" />
+                    <img src={item.image} alt={item.name} loading="lazy" className="h-full w-full object-cover" />
                   </div>
                   <div>
                     <div className="mb-2 flex flex-wrap items-center gap-2">

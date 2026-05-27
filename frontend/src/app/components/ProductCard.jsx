@@ -3,7 +3,7 @@ import { Clock, Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
-import { formatOriginalPrice, formatPrice, ratingFor, reviewCountFor } from "../utils/format";
+import { formatOriginalPrice, formatPrice } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 
 function ProductCard({ product, compact = false }) {
@@ -57,6 +57,7 @@ function ProductCard({ product, compact = false }) {
           <img
             src={product.image}
             alt={product.name}
+            loading="lazy"
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
           <button
@@ -72,14 +73,14 @@ function ProductCard({ product, compact = false }) {
             <Heart size={18} fill={liked ? "currentColor" : "none"} />
           </button>
           <span className="absolute bottom-3 left-3 bk-rating">
-            {ratingFor(product.id)}
+            {product.ratings ? product.ratings.toFixed(1) : 0}
             <Star size={11} fill="currentColor" />
           </span>
         </div>
 
         <div className="flex flex-1 flex-col p-3">
           <div className="mb-2 flex items-start justify-between gap-2">
-            <h3 className="line-clamp-2 text-sm font-black leading-5 text-[#1f2221] transition group-hover:text-[#e61951]">
+            <h3 className="line-clamp-2 text-sm font-black leading-5 text-[#1f2221] transition">
               {product.name}
             </h3>
           </div>
@@ -92,7 +93,7 @@ function ProductCard({ product, compact = false }) {
               )}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-              <p className="text-[11px] font-bold text-[#6f7573]">({reviewCountFor(product.id)} Reviews)</p>
+              <p className="text-[11px] font-bold text-[#6f7573]">({product.numOfReviews || 0} Reviews)</p>
               <p className="text-[11px] font-bold text-[#6f7573]">
                 Delivery: <span className="text-[#0f8b57]">Today</span>
               </p>

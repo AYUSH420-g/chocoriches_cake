@@ -20,6 +20,7 @@ import { Toaster } from "sonner";
 import { getPublicSettings, getCategories, getSubcategories } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
+import TopLoader from "./TopLoader";
 
 
 
@@ -151,6 +152,7 @@ function RootLayout() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">
+      <TopLoader />
       <Toaster position="top-center" richColors />
 
       <header className={`fixed inset-x-0 top-0 z-50 bg-white transition-shadow ${scrolled ? "shadow-md shadow-black/5" : "shadow-sm shadow-black/5"}`}>
@@ -268,7 +270,7 @@ function RootLayout() {
                         <div className="min-w-[180px] rounded-xl border border-[#ebebeb] bg-white py-2 shadow-xl">
                           <Link
                             to={item.to}
-                            className="block px-4 py-2 text-sm font-semibold text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
                             onClick={() => setHoveredCat(null)}
                           >
                             {item.label}
@@ -278,7 +280,7 @@ function RootLayout() {
                             <Link
                               key={sub.id}
                               to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className="block px-4 py-2 text-sm font-medium text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                              className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
                               onClick={() => setHoveredCat(null)}
                             >
                               {sub.name}

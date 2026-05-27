@@ -202,6 +202,18 @@ function submitInquiry(payload) {
     body: JSON.stringify(payload)
   });
 }
+function addReview(payload) {
+  return request("/reviews", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+function getProductReviews(productId) {
+  return request(`/reviews/product/${productId}`);
+}
+function getUserReviews() {
+  return request("/reviews/me");
+}
 function adminLogin(payload) {
   return request("/admin/login", {
     method: "POST",
@@ -397,5 +409,8 @@ export {
   getSubcategories,
   addAddress,
   deleteAddress,
-  updateProfile
+  updateProfile,
+  addReview,
+  getProductReviews,
+  getUserReviews
 };

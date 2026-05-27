@@ -32,6 +32,20 @@ function Auth() {
       password: String(formData.get("password") || "")
     };
 
+    if (!isLogin) {
+      if (!payload.name.trim()) return toast.error("Full Name is required");
+      if (!payload.email.trim()) return toast.error("Email Address is required");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return toast.error("Please enter a valid email address");
+      if (!payload.phone.trim()) return toast.error("Mobile Number is required");
+      if (!/^\d{10,}$/.test(payload.phone.replace(/\D/g, ""))) return toast.error("Please enter a valid mobile number (at least 10 digits)");
+      if (!payload.password) return toast.error("Password is required");
+      if (payload.password.length < 6) return toast.error("Password must be at least 6 characters long");
+    } else {
+      if (!payload.email.trim()) return toast.error("Email Address is required");
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return toast.error("Please enter a valid email address");
+      if (!payload.password) return toast.error("Password is required");
+    }
+
     setLoading(true);
     try {
       const data = isLogin
@@ -64,6 +78,7 @@ function Auth() {
             <img
               src="https://images.unsplash.com/photo-1605807646983-377bc5a76493?auto=format&fit=crop&q=80&w=1100"
               alt="Cake table"
+              loading="lazy"
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/60" />

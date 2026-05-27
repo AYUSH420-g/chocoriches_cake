@@ -113,6 +113,8 @@ export function listProduct(product) {
     price: productPrice(product),
     discountPercent: Number(product.discountPercent || 0),
     image: productImage(product),
+    ratings: Number(product.ratings || 0),
+    numOfReviews: Number(product.numOfReviews || 0),
     category: categories[0] || "Cakes",
     categories: categories.length ? categories : ["Cakes"],
     subcategory: product.subcategory || "",

@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { checkPincode, getProduct, getProducts } from "../api/client";
 import { useCart } from "../context/CartContext";
-import { formatOriginalPrice, formatPrice, ratingFor, reviewCountFor } from "../utils/format";
+import { formatOriginalPrice, formatPrice } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 import ProductCard from "../components/ProductCard";
 
@@ -34,6 +34,7 @@ function ProductDetail() {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
+  const [reviews, setReviews] = useState([]);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
 
   useEffect(() => {
@@ -51,6 +52,14 @@ function ProductDetail() {
               setSimilarProducts(all.filter((p) => p.id !== item.id).slice(0, 5));
             }
           }).catch(() => void 0);
+
+          import("../api/client").then(({ getProductReviews }) => {
+            getProductReviews(item.id).then((revs) => {
+              if (mounted) {
+                setReviews(revs);
+              }
+            }).catch(() => void 0);
+          });
         }
       })
       .catch(() => {
@@ -182,7 +191,7 @@ function ProductDetail() {
             className="bk-card overflow-hidden p-3 self-start"
           >
             <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
-              <img src={product.image} alt={product.name} className="h-full w-full object-cover" />
+              <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
               <button
                 type="button"
                 title="Wishlist"
@@ -217,10 +226,10 @@ function ProductDetail() {
           <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-5 md:p-7">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <span className="bk-rating">
-                {ratingFor(product.id)}
+                {product.ratings ? product.ratings.toFixed(1) : 0}
                 <Star size={11} fill="currentColor" />
               </span>
-              <span className="text-xs font-bold text-[#6f7573]">({reviewCountFor(product.id)} Reviews)</span>
+              <span className="text-xs font-bold text-[#6f7573]">({product.numOfReviews || 0} Reviews)</span>
               <span className="rounded bg-[#fff2e9] px-2 py-1 text-[11px] font-black text-[#e61951]">Bestseller</span>
             </div>
 
@@ -334,7 +343,27 @@ function ProductDetail() {
           </motion.div>
         </div>
 
-
+        {reviews.length > 0 && (
+          <section className="mt-10 bk-card p-5 md:p-7">
+            <h2 className="mb-5 text-xl font-black text-[#1f2221]">Customer Reviews</h2>
+            <div className="grid gap-5">
+              {reviews.map((review) => (
+                <div key={review.id || review._id} className="border-b border-[#ebebeb] pb-5 last:border-0 last:pb-0">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-black text-[#1f2221]">{review.userName}</span>
+                    <span className="text-xs font-bold text-[#6f7573]">{new Date(review.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="flex items-center gap-1 mb-2 text-[#e61951]">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} size={13} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "" : "text-[#ebebeb]"} />
+                    ))}
+                  </div>
+                  <p className="text-sm text-[#6f7573] leading-6">{review.comment}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         {similarProducts.length > 0 && (
           <section className="mt-10">

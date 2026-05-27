@@ -23,6 +23,7 @@ function Shop() {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const searchQuery = searchParams.get("q") || "";
 
   useEffect(() => {
@@ -34,12 +35,16 @@ function Shop() {
 
   useEffect(() => {
     let mounted = true;
+    setIsLoading(true);
     getProducts({ q: searchQuery })
       .then((items) => {
         if (mounted) setProducts(items);
       })
       .catch(() => {
         if (mounted) setProducts([]);
+      })
+      .finally(() => {
+        if (mounted) setIsLoading(false);
       });
     getCategories()
       .then((cats) => { if (mounted) setCategories(cats); })
@@ -186,29 +191,43 @@ function Shop() {
         <main>
           <div className="mb-4 flex items-center justify-between">
             <p className="text-sm font-bold text-[#6f7573]">
-              Showing <span className="font-black text-[#1f2221]">{filteredProducts.length}</span> cakes
+              {isLoading ? (
+                "Loading cakes..."
+              ) : (
+                <>Showing <span className="font-black text-[#1f2221]">{filteredProducts.length}</span> cakes</>
+              )}
             </p>
             {/* <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p> */}
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            <AnimatePresence mode="popLayout">
-              {filteredProducts.map((product) => (
-                <motion.div
-                  key={product.id}
-                  layout
-                  initial={{ opacity: 0, scale: 0.97 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.97 }}
-                  transition={{ duration: 0.22 }}
-                >
-                  <ProductCard product={product} />
-                </motion.div>
-              ))}
-            </AnimatePresence>
+            {isLoading ? (
+              Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
+                  <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
+                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
+                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
+                </div>
+              ))
+            ) : (
+              <AnimatePresence mode="popLayout">
+                {filteredProducts.map((product) => (
+                  <motion.div
+                    key={product.id}
+                    layout
+                    initial={{ opacity: 0, scale: 0.97 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.97 }}
+                    transition={{ duration: 0.22 }}
+                  >
+                    <ProductCard product={product} />
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            )}
           </div>
 
-          {filteredProducts.length === 0 && (
+          {!isLoading && filteredProducts.length === 0 && (
             <div className="bk-card py-20 text-center">
               <h3 className="text-2xl font-black text-[#1f2221]">No cakes found</h3>
               <p className="mt-2 text-sm text-[#6f7573]">Try another category or clear filters.</p>
