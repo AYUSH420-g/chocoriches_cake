@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkPincode, getProduct, getProducts } from "../api/client";
+import { isUserLoggedIn } from "../utils/session";
 import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
@@ -100,6 +101,12 @@ function ProductDetail() {
   }, [cartItem?.quantity]);
 
   const handleAddToCart = async () => {
+    if (!isUserLoggedIn()) {
+      toast.error("Please log in to add items to your cart");
+      navigate("/auth");
+      return false;
+    }
+
     try {
       if (cartItem) {
         await setCartQuantity(cartItem.id, quantity);
