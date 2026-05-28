@@ -193,7 +193,6 @@ function RootLayout() {
                   <span className="block truncate text-sm font-black text-[#1f2221]">Gujrat</span>
                 </span>
               </span>
-              <ChevronDown size={16} className="text-[#6f7573]" />
             </button>
 
             <form onSubmit={handleSearchSubmit} className="relative hidden flex-1 max-w-md mr-auto lg:max-w-lg xl:max-w-xl md:block lg:ml-4">

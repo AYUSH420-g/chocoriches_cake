@@ -8,8 +8,8 @@ function Cart() {
   const { cart, removeItem, setQuantity } = useCart();
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const deliveryFee = cart.length ? 10 : 0;
-  const discount = cart.length ? 5 : 0;
-  const total = Math.max(0, subtotal + deliveryFee - discount);
+  const discount = 0;
+  const total = Math.max(0, subtotal + deliveryFee);
 
   const handleQuantityChange = (id, quantity) => {
     const nextQuantity = Math.max(1, quantity);

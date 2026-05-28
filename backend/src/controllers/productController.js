@@ -40,11 +40,23 @@ export function productCartSnapshot(product, weightLabel = "") {
 }
 
 export async function listProducts(req, res) {
-  const { category, featured, q, page, limit: rawLimit } = req.query;
+  const { category, subcategory, featured, sameDay, bestseller, maxPrice, sortBy, q, page, limit: rawLimit } = req.query;
   const query = {};
 
   if (category && category !== "All") {
     query.$or = [{ category }, { categories: category }];
+  }
+  if (subcategory) {
+    query.subcategory = subcategory;
+  }
+  if (sameDay === "true") {
+    query.sameDayDelivery = true;
+  }
+  if (bestseller === "true") {
+    query.$or = [...(query.$or || []), { isBestSeller: true }, { featured: true }];
+  }
+  if (maxPrice) {
+    query.price = { $lte: Number(maxPrice) };
   }
 
   query.isActive = { $ne: false };
@@ -62,6 +74,12 @@ export async function listProducts(req, res) {
     ];
   }
 
+  let sortCriteria = { sortOrder: 1, createdAt: 1 };
+  if (sortBy === "Price: Low to High") sortCriteria = { price: 1 };
+  else if (sortBy === "Price: High to Low") sortCriteria = { price: -1 };
+  else if (sortBy === "Name: A to Z") sortCriteria = { name: 1 };
+  else if (sortBy === "Newest") sortCriteria = { createdAt: -1 };
+
   // If page param is provided, return paginated response
   if (page) {
     const pageNum = Math.max(1, parseInt(page, 10) || 1);
@@ -71,7 +89,7 @@ export async function listProducts(req, res) {
       const total = await Product.countDocuments(query);
       const totalPages = Math.ceil(total / limitNum);
       const products = await Product.find(query)
-        .sort({ sortOrder: 1, createdAt: 1 })
+        .sort(sortCriteria)
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
         .lean();
@@ -87,14 +105,24 @@ export async function listProducts(req, res) {
     // Memory store fallback with pagination
     let source = memory.products
       .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
+      .filter((product) => !subcategory || product.subcategory === subcategory)
       .filter((product) => product.isActive !== false)
       .filter((product) => featured !== "true" || product.featured || product.isFeatured)
+      .filter((product) => sameDay !== "true" || product.sameDayDelivery)
+      .filter((product) => bestseller !== "true" || product.isBestSeller || product.featured)
+      .filter((product) => !maxPrice || Number(product.price) <= Number(maxPrice))
       .filter((product) => {
         if (!q) return true;
         const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""}`.toLowerCase();
         return searchText.includes(String(q).trim().toLowerCase());
       })
-      .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
+      .sort((left, right) => {
+        if (sortBy === "Price: Low to High") return Number(left.price) - Number(right.price);
+        if (sortBy === "Price: High to Low") return Number(right.price) - Number(left.price);
+        if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
+        if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
+        return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
+      });
 
     const total = source.length;
     const totalPages = Math.ceil(total / limitNum);
@@ -110,11 +138,15 @@ export async function listProducts(req, res) {
 
   // No page param → return flat array (backward compat for ProductDetail, Profile, etc.)
   const source = isDatabaseConnected()
-    ? await Product.find(query).sort({ sortOrder: 1, createdAt: 1 }).lean()
+    ? await Product.find(query).sort(sortCriteria).lean()
     : memory.products
         .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
+        .filter((product) => !subcategory || product.subcategory === subcategory)
         .filter((product) => product.isActive !== false)
         .filter((product) => featured !== "true" || product.featured || product.isFeatured)
+        .filter((product) => sameDay !== "true" || product.sameDayDelivery)
+        .filter((product) => bestseller !== "true" || product.isBestSeller || product.featured)
+        .filter((product) => !maxPrice || Number(product.price) <= Number(maxPrice))
         .filter((product) => {
           if (!q) {
             return true;
@@ -122,7 +154,13 @@ export async function listProducts(req, res) {
           const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""}`.toLowerCase();
           return searchText.includes(String(q).trim().toLowerCase());
         })
-        .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
+        .sort((left, right) => {
+          if (sortBy === "Price: Low to High") return Number(left.price) - Number(right.price);
+          if (sortBy === "Price: High to Low") return Number(right.price) - Number(left.price);
+          if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
+          if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
+          return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
+        });
 
   res.json(source.map(listProduct));
 }

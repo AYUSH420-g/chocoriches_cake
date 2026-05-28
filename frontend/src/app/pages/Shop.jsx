@@ -37,9 +37,17 @@ function Shop() {
     setActiveFilters(filter && filters.includes(filter) ? [filter] : []);
   }, [searchParams]);
 
-  const loadPage = useCallback(async (page, query) => {
+  const loadPage = useCallback(async (page, query, cat, subcat, filterArr, sort) => {
     try {
-      const data = await getProductsPaginated({ q: query }, page, 8);
+      const options = { q: query };
+      if (cat && cat !== "All") options.category = cat;
+      if (subcat) options.subcategory = subcat;
+      if (filterArr.includes("Same Day")) options.sameDay = true;
+      if (filterArr.includes("Bestseller")) options.bestseller = true;
+      if (filterArr.includes("Under Rs. 799")) options.maxPrice = 799;
+      if (sort) options.sortBy = sort;
+
+      const data = await getProductsPaginated(options, page, 8);
       if (page === 1) {
         setProducts(data.products);
       } else {
@@ -57,7 +65,7 @@ function Shop() {
     setProducts([]);
     pageRef.current = 1;
     setHasMore(true);
-    loadPage(1, searchQuery).finally(() => setIsLoading(false));
+    loadPage(1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy).finally(() => setIsLoading(false));
 
     // Load categories/subcategories with slight delay so products API gets priority
     const timer = setTimeout(() => {
@@ -65,7 +73,7 @@ function Shop() {
       getSubcategories().then(setSubcategories).catch(() => {});
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery, loadPage]);
+  }, [searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, loadPage]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -74,14 +82,14 @@ function Shop() {
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
           setLoadingMore(true);
-          loadPage(pageRef.current + 1, searchQuery).finally(() => setLoadingMore(false));
+          loadPage(pageRef.current + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy).finally(() => setLoadingMore(false));
         }
       },
       { rootMargin: "200px" }
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [hasMore, loadingMore, isLoading, loadPage, searchQuery]);
+  }, [hasMore, loadingMore, isLoading, loadPage, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy]);
 
   const toggleFilter = (filter) => {
     setActiveFilters((current) =>
@@ -106,35 +114,6 @@ function Shop() {
     }
     return "All Cakes";
   }, [activeCategory, activeSubcategory, searchQuery, categories, subcategories]);
-
-  const filteredProducts = useMemo(() => {
-    let visible = products;
-
-    if (activeCategory !== "All") {
-      visible = visible.filter((product) => product.category === activeCategory || product.categories?.includes(activeCategory));
-    }
-    if (activeSubcategory) {
-      visible = visible.filter((product) => product.subcategory === activeSubcategory);
-    }
-
-    if (activeFilters.includes("Same Day")) {
-      visible = visible.filter((product) => Number(product.stock ?? 1) > 0);
-    }
-    if (activeFilters.includes("Bestseller")) {
-      visible = visible.filter((product) => product.isBestSeller || product.featured);
-    }
-    if (activeFilters.includes("Under Rs. 799")) {
-      visible = visible.filter((product) => Number(product.price || 0) <= 799);
-    }
-
-    return [...visible].sort((left, right) => {
-      if (sortBy === "Price: Low to High") return left.price - right.price;
-      if (sortBy === "Price: High to Low") return right.price - left.price;
-      if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
-      if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
-      return 0;
-    });
-  }, [activeCategory, activeSubcategory, activeFilters, products, sortBy]);
 
   return (
     <div className="bk-page">
@@ -222,7 +201,7 @@ function Shop() {
               {isLoading ? (
                 "Loading cakes..."
               ) : (
-                <>Showing <span className="font-black text-[#1f2221]">{filteredProducts.length}</span> cakes</>
+                <>Showing <span className="font-black text-[#1f2221]">{products.length}</span> cakes</>
               )}
             </p>
             {/* <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p> */}
@@ -239,7 +218,7 @@ function Shop() {
               ))
             ) : (
               <AnimatePresence mode="popLayout">
-                {filteredProducts.map((product) => (
+                {products.map((product) => (
                   <motion.div
                     key={product.id}
                     layout
@@ -255,7 +234,7 @@ function Shop() {
             )}
           </div>
 
-          {!isLoading && filteredProducts.length === 0 && (
+          {!isLoading && products.length === 0 && (
             <div className="bk-card py-20 text-center">
               <h3 className="text-2xl font-black text-[#1f2221]">No cakes found</h3>
               <p className="mt-2 text-sm text-[#6f7573]">Try another category or clear filters.</p>
