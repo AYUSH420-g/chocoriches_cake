@@ -39,7 +39,7 @@ function Shop() {
 
   const loadPage = useCallback(async (page, query) => {
     try {
-      const data = await getProductsPaginated({ q: query }, page, 12);
+      const data = await getProductsPaginated({ q: query }, page, 8);
       if (page === 1) {
         setProducts(data.products);
       } else {
@@ -230,7 +230,7 @@ function Shop() {
 
           <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
             {isLoading ? (
-              Array.from({ length: 6 }).map((_, i) => (
+              Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
                   <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
                   <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>

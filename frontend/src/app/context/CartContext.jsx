@@ -42,7 +42,7 @@ function CartProvider({ children }) {
             setLoading(false);
           }
         });
-    }, 500);
+    }, 1500);
 
     return () => {
       mounted = false;

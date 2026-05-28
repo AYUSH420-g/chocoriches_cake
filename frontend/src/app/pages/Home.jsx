@@ -55,7 +55,7 @@ function Home() {
 
   const loadPage = useCallback(async (page) => {
     try {
-      const data = await getProductsPaginated({}, page, 12);
+      const data = await getProductsPaginated({}, page, 8);
       if (page === 1) {
         setAllCakes(data.products);
       } else {
@@ -148,7 +148,7 @@ function Home() {
         </div>
         <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {isLoading
-            ? Array.from({ length: 4 }).map((_, i) => (
+            ? Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
                   <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
                   <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
