@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Filter, SlidersHorizontal, Truck, X } from "lucide-react";
-import { getProducts, getCategories, getSubcategories } from "../api/client";
+import { getProductsPaginated, getCategories, getSubcategories } from "../api/client";
 import ProductCard from "../components/ProductCard";
 
 const filters = ["Same Day", "Bestseller", "Under Rs. 799"];
@@ -24,6 +24,10 @@ function Shop() {
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const sentinelRef = useRef(null);
   const searchQuery = searchParams.get("q") || "";
 
   useEffect(() => {
@@ -33,27 +37,51 @@ function Shop() {
     setActiveFilters(filter && filters.includes(filter) ? [filter] : []);
   }, [searchParams]);
 
+  const loadPage = useCallback(async (page, query) => {
+    try {
+      const data = await getProductsPaginated({ q: query }, page, 12);
+      if (page === 1) {
+        setProducts(data.products);
+      } else {
+        setProducts((prev) => [...prev, ...data.products]);
+      }
+      setHasMore(data.hasMore);
+      pageRef.current = data.currentPage;
+    } catch {
+      if (page === 1) setProducts([]);
+    }
+  }, []);
+
   useEffect(() => {
-    let mounted = true;
     setIsLoading(true);
-    getProducts({ q: searchQuery })
-      .then((items) => {
-        if (mounted) setProducts(items);
-      })
-      .catch(() => {
-        if (mounted) setProducts([]);
-      })
-      .finally(() => {
-        if (mounted) setIsLoading(false);
-      });
-    getCategories()
-      .then((cats) => { if (mounted) setCategories(cats); })
-      .catch(() => {});
-    getSubcategories()
-      .then((subs) => { if (mounted) setSubcategories(subs); })
-      .catch(() => {});
-    return () => { mounted = false; };
-  }, [searchQuery]);
+    setProducts([]);
+    pageRef.current = 1;
+    setHasMore(true);
+    loadPage(1, searchQuery).finally(() => setIsLoading(false));
+
+    // Load categories/subcategories with slight delay so products API gets priority
+    const timer = setTimeout(() => {
+      getCategories().then(setCategories).catch(() => {});
+      getSubcategories().then(setSubcategories).catch(() => {});
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, loadPage]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
+          setLoadingMore(true);
+          loadPage(pageRef.current + 1, searchQuery).finally(() => setLoadingMore(false));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, isLoading, loadPage, searchQuery]);
 
   const toggleFilter = (filter) => {
     setActiveFilters((current) =>
@@ -236,6 +264,12 @@ function Shop() {
               </button>
             </div>
           )}
+          {loadingMore && (
+            <div className="flex justify-center py-6">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e61951]" />
+            </div>
+          )}
+          <div ref={sentinelRef} className="h-1" />
         </main>
       </div>
 

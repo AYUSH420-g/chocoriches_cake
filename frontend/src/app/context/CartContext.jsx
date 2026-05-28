@@ -24,25 +24,29 @@ function CartProvider({ children }) {
 
   useEffect(() => {
     let mounted = true;
-    getCart()
-      .then((items) => {
-        if (mounted) {
-          setCart(items);
-        }
-      })
-      .catch(() => {
-        if (mounted) {
-          setCart([]);
-        }
-      })
-      .finally(() => {
-        if (mounted) {
-          setLoading(false);
-        }
-      });
+    // Delay initial cart fetch so product APIs get network priority
+    const timer = setTimeout(() => {
+      getCart()
+        .then((items) => {
+          if (mounted) {
+            setCart(items);
+          }
+        })
+        .catch(() => {
+          if (mounted) {
+            setCart([]);
+          }
+        })
+        .finally(() => {
+          if (mounted) {
+            setLoading(false);
+          }
+        });
+    }, 500);
 
     return () => {
       mounted = false;
+      clearTimeout(timer);
     };
   }, []);
 

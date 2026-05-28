@@ -111,13 +111,16 @@ function RootLayout() {
 
   useEffect(() => {
     let mounted = true;
-    getCategories()
-      .then((cats) => { if (mounted) setDbCategories(cats); })
-      .catch(() => {});
-    getSubcategories()
-      .then((subs) => { if (mounted) setDbSubcategories(subs); })
-      .catch(() => {});
-    return () => { mounted = false; };
+    // Delay non-critical navbar data so product APIs get network priority
+    const timer = setTimeout(() => {
+      getCategories()
+        .then((cats) => { if (mounted) setDbCategories(cats); })
+        .catch(() => {});
+      getSubcategories()
+        .then((subs) => { if (mounted) setDbSubcategories(subs); })
+        .catch(() => {});
+    }, 500);
+    return () => { mounted = false; clearTimeout(timer); };
   }, []);
 
   const handleSearchSubmit = (event) => {

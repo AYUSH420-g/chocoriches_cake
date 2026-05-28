@@ -98,6 +98,21 @@ function getProducts(filters = {}) {
   const query = searchParams.toString();
   return request(`/products${query ? `?${query}` : ""}`);
 }
+function getProductsPaginated(filters = {}, page = 1, limit = 12) {
+  const searchParams = new URLSearchParams();
+  searchParams.set("page", String(page));
+  searchParams.set("limit", String(limit));
+  if (filters.category && filters.category !== "All") {
+    searchParams.set("category", filters.category);
+  }
+  if (filters.featured) {
+    searchParams.set("featured", "true");
+  }
+  if (filters.q) {
+    searchParams.set("q", filters.q);
+  }
+  return request(`/products?${searchParams.toString()}`);
+}
 function getProduct(id) {
   return request(`/products/${id}`);
 }
@@ -433,5 +448,6 @@ export {
   getProductReviews,
   getUserReviews,
   forgotPassword,
-  resetPassword
+  resetPassword,
+  getProductsPaginated
 };

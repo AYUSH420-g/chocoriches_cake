@@ -40,7 +40,7 @@ export function productCartSnapshot(product, weightLabel = "") {
 }
 
 export async function listProducts(req, res) {
-  const { category, featured, q } = req.query;
+  const { category, featured, q, page, limit: rawLimit } = req.query;
   const query = {};
 
   if (category && category !== "All") {
@@ -62,6 +62,53 @@ export async function listProducts(req, res) {
     ];
   }
 
+  // If page param is provided, return paginated response
+  if (page) {
+    const pageNum = Math.max(1, parseInt(page, 10) || 1);
+    const limitNum = Math.min(60, Math.max(1, parseInt(rawLimit, 10) || 12));
+
+    if (isDatabaseConnected()) {
+      const total = await Product.countDocuments(query);
+      const totalPages = Math.ceil(total / limitNum);
+      const products = await Product.find(query)
+        .sort({ sortOrder: 1, createdAt: 1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
+        .lean();
+
+      return res.json({
+        products: products.map(listProduct),
+        currentPage: pageNum,
+        totalPages,
+        hasMore: pageNum < totalPages,
+      });
+    }
+
+    // Memory store fallback with pagination
+    let source = memory.products
+      .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
+      .filter((product) => product.isActive !== false)
+      .filter((product) => featured !== "true" || product.featured || product.isFeatured)
+      .filter((product) => {
+        if (!q) return true;
+        const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""}`.toLowerCase();
+        return searchText.includes(String(q).trim().toLowerCase());
+      })
+      .sort((left, right) => Number(left.sortOrder || 0) - Number(right.sortOrder || 0));
+
+    const total = source.length;
+    const totalPages = Math.ceil(total / limitNum);
+    const paged = source.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+
+    return res.json({
+      products: paged.map(listProduct),
+      currentPage: pageNum,
+      totalPages,
+      hasMore: pageNum < totalPages,
+    });
+  }
+
+  // No page param → return flat array (backward compat for ProductDetail, Profile, etc.)
   const source = isDatabaseConnected()
     ? await Product.find(query).sort({ sortOrder: 1, createdAt: 1 }).lean()
     : memory.products

@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { ArrowRight, CakeSlice, Clock, Gift, ShieldCheck, Sparkles, Star, Truck } from "lucide-react";
-import { getProducts } from "../api/client";
+import { getProductsPaginated } from "../api/client";
 import ProductCard from "../components/ProductCard";
 
 const wishCategories = [
@@ -48,24 +48,46 @@ const promiseItems = [
 function Home() {
   const [allCakes, setAllCakes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const pageRef = useRef(1);
+  const sentinelRef = useRef(null);
+
+  const loadPage = useCallback(async (page) => {
+    try {
+      const data = await getProductsPaginated({}, page, 12);
+      if (page === 1) {
+        setAllCakes(data.products);
+      } else {
+        setAllCakes((prev) => [...prev, ...data.products]);
+      }
+      setHasMore(data.hasMore);
+      pageRef.current = data.currentPage;
+    } catch {
+      if (page === 1) setAllCakes([]);
+    }
+  }, []);
 
   useEffect(() => {
-    let mounted = true;
     setIsLoading(true);
-    getProducts({})
-      .then((cakes) => {
-        if (mounted) {
-          setAllCakes(cakes);
+    loadPage(1).finally(() => setIsLoading(false));
+  }, [loadPage]);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel) return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
+          setLoadingMore(true);
+          loadPage(pageRef.current + 1).finally(() => setLoadingMore(false));
         }
-      })
-      .catch(() => void 0)
-      .finally(() => {
-        if (mounted) setIsLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMore, loadingMore, isLoading, loadPage]);
 
   return (
     <div className="bk-page overflow-hidden">
@@ -141,6 +163,12 @@ function Home() {
             <p className="mt-2 text-sm text-[#6f7573]">Add products from admin to show them here.</p>
           </div>
         )}
+        {loadingMore && (
+          <div className="flex justify-center py-6">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e61951]" />
+          </div>
+        )}
+        <div ref={sentinelRef} className="h-1" />
       </section>
 
       <section className="bg-white py-10">
