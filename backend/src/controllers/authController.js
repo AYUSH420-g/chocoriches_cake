@@ -317,7 +317,7 @@ export async function forgotPassword(req, res) {
         memoryUser.resetPasswordExpire = undefined;
       }
     }
-    res.status(500).json({ message: "Email could not be sent." });
+    res.status(500).json({ message: "Email could not be sent. Reason: " + (error.message || "Unknown error") });
   }
 }
 

@@ -1,6 +1,10 @@
 import nodemailer from "nodemailer";
 
 export const sendEmail = async (options) => {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    throw new Error("SMTP_USER or SMTP_PASS environment variables are not set on the server.");
+  }
+
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
