@@ -1,7 +1,7 @@
 const RAZORPAY_SCRIPT_ID = "razorpay-checkout-js";
 
 function razorpayKeyId() {
-  return import.meta.env.VITE_RAZORPAY_KEY_ID || "";
+  return import.meta.env.VITE_RAZORPAY_KEY_ID || "rzp_test_SpmXD8wvDaArVD";
 }
 
 function loadRazorpay() {
