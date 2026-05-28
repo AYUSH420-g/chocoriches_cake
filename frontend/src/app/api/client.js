@@ -138,6 +138,24 @@ function register(payload) {
     body: JSON.stringify(payload)
   });
 }
+function googleLogin(payload) {
+  return request("/auth/google", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+function forgotPassword(payload) {
+  return request("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+function resetPassword(payload) {
+  return request("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
 function getProfile() {
   return request("/profile");
 }
@@ -392,6 +410,7 @@ export {
   getRazorpayConfig,
   trackOrder,
   login,
+  googleLogin,
   register,
   removeCartItem,
   submitInquiry,
@@ -412,5 +431,7 @@ export {
   updateProfile,
   addReview,
   getProductReviews,
-  getUserReviews
+  getUserReviews,
+  forgotPassword,
+  resetPassword
 };

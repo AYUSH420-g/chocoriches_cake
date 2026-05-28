@@ -23,6 +23,8 @@ const userSchema = new mongoose.Schema(
     role: { type: String, enum: ["user", "admin"], default: "user", index: true },
     isBlocked: { type: Boolean, default: false, index: true },
     blockedReason: { type: String },
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
     addresses: [addressSchema],
   },
   { timestamps: true }

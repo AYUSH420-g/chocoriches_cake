@@ -13,6 +13,13 @@ const Auth = lazy(() => import("./pages/Auth"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const TrackOrder = lazy(() => import("./pages/TrackOrder"));
+const About = lazy(() => import("./pages/About"));
+const Contact = lazy(() => import("./pages/Contact"));
+const Terms = lazy(() => import("./pages/Terms"));
+const ReturnPolicy = lazy(() => import("./pages/ReturnPolicy"));
+const Faq = lazy(() => import("./pages/Faq"));
+const ForgotPassword = lazy(() => import("./pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function LazyPage({ Component }) {
   return (
@@ -36,7 +43,14 @@ const router = createBrowserRouter([
       { path: "checkout", element: <LazyPage Component={Checkout} /> },
       { path: "auth", element: <LazyPage Component={Auth} /> },
       { path: "profile", element: <LazyPage Component={Profile} /> },
-      { path: "track", element: <LazyPage Component={TrackOrder} /> }
+      { path: "track", element: <LazyPage Component={TrackOrder} /> },
+      { path: "about", element: <LazyPage Component={About} /> },
+      { path: "contact", element: <LazyPage Component={Contact} /> },
+      { path: "terms", element: <LazyPage Component={Terms} /> },
+      { path: "return-policy", element: <LazyPage Component={ReturnPolicy} /> },
+      { path: "faq", element: <LazyPage Component={Faq} /> },
+      { path: "forgot-password", element: <LazyPage Component={ForgotPassword} /> },
+      { path: "reset-password", element: <LazyPage Component={ResetPassword} /> }
     ]
   }
 ]);

@@ -124,7 +124,7 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
@@ -151,7 +151,7 @@ function Home() {
               <h2 className="bk-section-title">Fresh bakes, On Time delivery</h2>
             </div>
           </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             {promiseItems.map(({ icon: Icon, title, copy }) => (
               <div key={title} className="rounded-xl border border-[#ebebeb] bg-[#f7f7f7] p-5">
                 <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">

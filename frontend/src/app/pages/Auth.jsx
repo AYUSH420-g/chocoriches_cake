@@ -3,7 +3,8 @@ import { Link, useNavigate } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, CakeSlice, Lock, Mail, Phone, User } from "lucide-react";
 import { toast } from "sonner";
-import { login, register } from "../api/client";
+import { useGoogleLogin } from "@react-oauth/google";
+import { login, register, googleLogin } from "../api/client";
 import { clearUserSession, isUserLoggedIn, saveUserSession } from "../utils/session";
 
 function Auth() {
@@ -69,6 +70,32 @@ function Auth() {
       setLoading(false);
     }
   };
+
+  const handleGoogleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      setLoading(true);
+      try {
+        const data = await googleLogin({ access_token: tokenResponse.access_token });
+        
+        if (data.user?.role === "admin") {
+          clearUserSession();
+          localStorage.setItem("chocoriches_admin_token", data.token);
+          toast.success("Admin login successful");
+          navigate("/admin");
+          return;
+        }
+
+        saveUserSession(data);
+        toast.success("Logged in with Google");
+        navigate("/");
+      } catch (error) {
+        toast.error(error.message || "Google Authentication failed");
+      } finally {
+        setLoading(false);
+      }
+    },
+    onError: () => toast.error("Google Login failed"),
+  });
 
   return (
     <div className="bk-page">
@@ -144,7 +171,7 @@ function Auth() {
                       <input type="checkbox" className="h-4 w-4 accent-[#e61951]" />
                       Remember me
                     </label>
-                    <button type="button" className="font-black text-[#e61951]">Forgot Password?</button>
+                    <Link to="/forgot-password" className="font-black text-[#e61951]">Forgot Password?</Link>
                   </div>
                 )}
 
@@ -161,7 +188,12 @@ function Auth() {
               <span className="h-px flex-1 bg-[#ebebeb]" />
             </div>
 
-            <button type="button" className="h-12 w-full rounded-lg border border-[#ebebeb] bg-white text-sm font-black text-[#1f2221] transition hover:bg-[#f7f7f7]">
+            <button 
+              type="button" 
+              onClick={() => handleGoogleLogin()} 
+              disabled={loading}
+              className="h-12 w-full rounded-lg border border-[#ebebeb] bg-white text-sm font-black text-[#1f2221] transition hover:bg-[#f7f7f7] disabled:opacity-60"
+            >
               Continue with Google
             </button>
 

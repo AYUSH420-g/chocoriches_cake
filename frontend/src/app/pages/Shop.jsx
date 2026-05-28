@@ -200,7 +200,7 @@ function Shop() {
             {/* <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p> */}
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
             {isLoading ? (
               Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">

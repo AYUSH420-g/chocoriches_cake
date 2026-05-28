@@ -25,9 +25,9 @@ import TopLoader from "./TopLoader";
 
 
 const footerLinks = [
-  ["Our Company", "About Us", "Careers", "Contact Us", "Corporate Orders"],
+  ["Our Company", "About Us", "Contact Us", "Corporate Orders"],
   ["Quick Links", "Cakes", "Designer Cakes", "Custom Cakes", "Track Order"],
-  ["Help", "Shipping Policy", "Return Policy", "FAQs", "Terms & Conditions"]
+  ["Help", "Return Policy", "FAQs", "Terms & Conditions"]
 ];
 
 function RootLayout() {
@@ -438,19 +438,30 @@ function RootLayout() {
                 <div key={heading}>
                   <h4 className="mb-4 text-sm font-black text-[#1f2221]">{heading}</h4>
                   <ul className="space-y-3 text-sm text-[#6f7573]">
-                    {links.map((link) => (
-                      <li key={link}>
-                        <Link to={link === "Track Order" ? "/track" : link.includes("Cake") || link.includes("Order") ? "/shop" : "/"} className="hover:text-[#e61951]">
-                          {link}
-                        </Link>
-                      </li>
-                    ))}
+                    {links.map((link) => {
+                      let url = "/";
+                      if (link === "Track Order") url = "/track";
+                      else if (link === "About Us") url = "/about";
+                      else if (link === "Contact Us" || link === "Corporate Orders") url = "/contact";
+                      else if (link === "Return Policy") url = "/return-policy";
+                      else if (link === "FAQs") url = "/faq";
+                      else if (link === "Terms & Conditions") url = "/terms";
+                      else if (link.includes("Cake") || link.includes("Order")) url = "/shop";
+
+                      return (
+                        <li key={link}>
+                          <Link to={url} className="hover:text-[#e61951]">
+                            {link}
+                          </Link>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}
             </div>
 
-            <div>
+            {/* <div>
               <h4 className="mb-4 text-sm font-black text-[#1f2221]">Fresh Offers</h4>
               <div className="rounded-xl bg-[#fff2e9] p-4">
                 <p className="text-sm leading-6 text-[#6f7573]">Get launch offers and same-day delivery updates.</p>
@@ -459,14 +470,14 @@ function RootLayout() {
                   <button type="button" className="bk-btn h-10 px-4 text-sm">Join</button>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="mt-8 flex flex-col gap-3 border-t border-[#ebebeb] pt-5 text-xs font-bold text-[#7f8583] md:flex-row md:items-center md:justify-between">
-            <p>Copyright 2026 ChocoRiches. All rights reserved.</p>
+            {/* <p>Copyright 2026 ChocoRiches. All rights reserved.</p> */}
             <div className="flex gap-5">
-              <Link to="/">Privacy Policy</Link>
-              <Link to="/">Terms of Use</Link>
+              <Link to="/return-policy">Return Policy</Link>
+              <Link to="/terms">Terms & Conditions</Link>
             </div>
           </div>
         </div>
