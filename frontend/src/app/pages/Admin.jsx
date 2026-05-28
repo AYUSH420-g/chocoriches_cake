@@ -98,6 +98,8 @@ function Admin() {
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
+  const [isFetchingTab, setIsFetchingTab] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [summary, setSummary] = useState(null);
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
@@ -184,13 +186,43 @@ function Admin() {
   };
 
   const handleImageFile = (file) => {
-    if (!file) {
+    if (!file) return;
+    
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
       return;
     }
 
     const reader = new FileReader();
-    reader.onload = () => {
-      setProductForm((current) => ({ ...current, image: String(reader.result || "") }));
+    reader.onload = (event) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        const MAX_WIDTH = 800;
+        const MAX_HEIGHT = 800;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+        } else {
+          if (height > MAX_HEIGHT) {
+            width *= MAX_HEIGHT / height;
+            height = MAX_HEIGHT;
+          }
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
+        setProductForm((current) => ({ ...current, image: compressedBase64 }));
+      };
+      img.src = event.target.result;
     };
     reader.readAsDataURL(file);
   };
@@ -202,39 +234,12 @@ function Admin() {
 
     setLoading(true);
     try {
-      const [
-        nextSummary,
-        nextUsers,
-        nextProducts,
-        nextCategories,
-        nextSubcategories,
-        nextOrders,
-        nextInquiries,
-        nextPincodes,
-        nextBlockedDates,
-        nextSettings
-      ] = await Promise.all([
+      const [nextSummary, nextSettings] = await Promise.all([
         getAdminSummary(),
-        getAdminUsers(),
-        getAdminProducts(),
-        getAdminCategories(),
-        getAdminSubcategories(),
-        getAdminOrders(),
-        getAdminInquiries(),
-        getAdminPincodes(),
-        getAdminBlockedDates(),
         getAdminSettings()
       ]);
 
       setSummary(nextSummary);
-      setUsers(nextUsers);
-      setProducts(nextProducts);
-      setCategories(nextCategories);
-      setSubcategories(nextSubcategories);
-      setOrders(nextOrders);
-      setInquiries(nextInquiries);
-      setPincodes(nextPincodes);
-      setBlockedDates(nextBlockedDates);
       setSettings(nextSettings);
     } catch {
       toast.error("Admin session expired. Please login again.");
@@ -242,6 +247,7 @@ function Admin() {
       setToken("");
     } finally {
       setLoading(false);
+      setRefreshKey((k) => k + 1);
     }
   };
 
@@ -250,6 +256,51 @@ function Admin() {
       loadAdmin();
     }
   }, [token]);
+
+  useEffect(() => {
+    if (!token) return;
+    let mounted = true;
+    
+    const fetchTab = async () => {
+      setIsFetchingTab(true);
+      try {
+        if (activeTab === "products") {
+          const [nextProducts, nextCats, nextSubcats] = await Promise.all([
+            getAdminProducts(), getAdminCategories(), getAdminSubcategories()
+          ]);
+          if (mounted) { setProducts(nextProducts); setCategories(nextCats); setSubcategories(nextSubcats); }
+        } else if (activeTab === "categories") {
+          const nextCats = await getAdminCategories();
+          if (mounted) setCategories(nextCats);
+        } else if (activeTab === "subcategories") {
+          const [nextCats, nextSubcats] = await Promise.all([getAdminCategories(), getAdminSubcategories()]);
+          if (mounted) { setCategories(nextCats); setSubcategories(nextSubcats); }
+        } else if (activeTab === "users") {
+          const nextUsers = await getAdminUsers();
+          if (mounted) setUsers(nextUsers);
+        } else if (activeTab === "orders") {
+          const nextOrders = await getAdminOrders();
+          if (mounted) setOrders(nextOrders);
+        } else if (activeTab === "pincodes") {
+          const nextPincodes = await getAdminPincodes();
+          if (mounted) setPincodes(nextPincodes);
+        } else if (activeTab === "dates") {
+          const nextDates = await getAdminBlockedDates();
+          if (mounted) setBlockedDates(nextDates);
+        } else if (activeTab === "overview") {
+          const [nextOrders, nextInquiries] = await Promise.all([getAdminOrders(), getAdminInquiries()]);
+          if (mounted) { setOrders(nextOrders); setInquiries(nextInquiries); }
+        }
+      } catch (err) {
+        console.error("Tab fetch error", err);
+      } finally {
+        if (mounted) setIsFetchingTab(false);
+      }
+    };
+    
+    fetchTab();
+    return () => { mounted = false; };
+  }, [activeTab, token, refreshKey]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -451,10 +502,23 @@ function Admin() {
           <div className="mb-4 flex items-center justify-between gap-3 sm:mb-5">
             <div>
               <p className="text-sm font-bold text-[#6f7573]">Active area</p>
-              <h2 className="text-xl font-black sm:text-2xl">{activeTabMeta?.[1]}</h2>
+              <h2 className="flex items-center gap-3 text-xl font-black sm:text-2xl">
+                {activeTabMeta?.[1]}
+                {isFetchingTab && <RefreshCw size={20} className="animate-spin text-[#e61951]" />}
+              </h2>
             </div>
             {loading && <p className="text-sm font-black text-[#e61951]">Loading...</p>}
           </div>
+
+          {isFetchingTab ? (
+            <div className="grid h-64 place-items-center rounded-xl border border-[#ebebeb] bg-white text-[#6f7573]">
+              <div className="flex flex-col items-center gap-3">
+                <RefreshCw size={28} className="animate-spin text-[#e61951]" />
+                <p className="text-sm font-bold">Loading {activeTabMeta?.[1]}...</p>
+              </div>
+            </div>
+          ) : (
+            <>
 
           {activeTab === "overview" && (
             <div className="grid gap-5">
@@ -714,6 +778,8 @@ function Admin() {
                 </div>
               </div>
             </Panel>
+          )}
+            </>
           )}
         </main>
       </div>
