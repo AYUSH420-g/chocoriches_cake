@@ -3,6 +3,8 @@ import {
   AlertTriangle,
   Ban,
   CalendarOff,
+  ChevronDown,
+  ChevronUp,
   Edit3,
   Layers,
   Lock,
@@ -120,6 +122,23 @@ function Admin() {
   const [editingPincodeId, setEditingPincodeId] = useState("");
   const [dateForm, setDateForm] = useState(emptyDate);
   const [editingDateId, setEditingDateId] = useState("");
+  const [expandedOrderId, setExpandedOrderId] = useState(null);
+
+  const handleStatusChange = async (order, targetStatus) => {
+    const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
+    const currentIndex = statuses.indexOf(order.status || "Processing");
+    const targetIndex = statuses.indexOf(targetStatus);
+
+    if (targetIndex !== currentIndex + 1) {
+      toast.error(`You can only change the status to ${statuses[currentIndex + 1]}`);
+      return;
+    }
+
+    if (window.confirm(`Are you sure you want to mark this order as ${targetStatus}?`)) {
+      await updateAdminOrder(order.id, { status: targetStatus });
+      await loadAdmin();
+    }
+  };
 
   const activeTabMeta = useMemo(() => tabs.find(([key]) => key === activeTab), [activeTab]);
   const selectedCategories = productForm.categories?.length ? productForm.categories : [productForm.category].filter(Boolean);
@@ -724,26 +743,63 @@ function Admin() {
             <Panel title="Orders">
               <div className="grid gap-3">
                 {orders.map((order) => (
-                  <div key={order.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-4 lg:grid-cols-[1fr_180px_auto] lg:items-center">
-                    <div>
-                      <h3 className="font-black">{order.orderId || order.id}</h3>
-                      <p className="text-sm font-bold text-[#6f7573]">{order.customerEmail || "No email"} | {order.deliveryPincode || "No pincode"} | {formatPrice(order.total || 0)}</p>
+                  <div key={order.id} className="rounded-lg border border-[#ebebeb] bg-white overflow-hidden">
+                    <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
+                      <div>
+                        <h3 className="font-black">{order.customerName || order.customerEmail || "Guest User"}</h3>
+                        <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e61951]">{order.status}</span></p>
+                      </div>
+                      <div className="flex flex-wrap gap-4 items-center">
+                        {["Processing", "Packed", "Out For Delivery", "Delivered"].map((status) => {
+                          const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
+                          const currentIndex = statuses.indexOf(order.status || "Processing");
+                          const statusIndex = statuses.indexOf(status);
+                          const isChecked = statusIndex <= currentIndex;
+                          return (
+                            <label key={status} className={`flex items-center gap-2 text-sm font-bold cursor-pointer ${isChecked ? "text-[#0f8b57]" : "text-[#1f2221]"}`}>
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => !isChecked && handleStatusChange(order, status)}
+                                disabled={isChecked || statusIndex > currentIndex + 1}
+                                className="h-4 w-4 accent-[#e61951] disabled:opacity-50"
+                              />
+                              {status}
+                            </label>
+                          );
+                        })}
+                      </div>
+                      <button 
+                        onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
+                        className="bk-outline-btn h-10 px-4 text-sm whitespace-nowrap"
+                      >
+                        {expandedOrderId === order.id ? <><ChevronUp size={16}/> Hide</> : <><ChevronDown size={16}/> View Order</>}
+                      </button>
                     </div>
-                    <select
-                      value={order.status || "Processing"}
-                      onChange={async (event) => {
-                        await updateAdminOrder(order.id, { status: event.target.value });
-                        await loadAdmin();
-                      }}
-                      className="bk-input h-10 px-3 text-sm"
-                    >
-                      <option>Processing</option>
-                      <option>Packed</option>
-                      <option>Out For Delivery</option>
-                      <option>Delivered</option>
-                      <option>Cancelled</option>
-                    </select>
-                    <span className="rounded-full bg-[#fff2e9] px-3 py-2 text-xs font-black text-[#e61951]">{order.status}</span>
+                    {expandedOrderId === order.id && (
+                      <div className="border-t border-[#ebebeb] bg-[#f7f7f7] p-5 text-sm text-[#1f2221]">
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          <div>
+                            <h4 className="font-black mb-3 text-[#6f7573] uppercase tracking-wider text-xs">Customer Details</h4>
+                            <div className="grid gap-2">
+                              <p><strong className="font-black">Name:</strong> {order.customerName || "N/A"}</p>
+                              <p><strong className="font-black">Email:</strong> {order.customerEmail || "N/A"}</p>
+                              <p><strong className="font-black">Phone:</strong> {order.customerPhone || "N/A"}</p>
+                              <p><strong className="font-black">Address:</strong> {order.deliveryAddress || "N/A"}</p>
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-black mb-3 text-[#6f7573] uppercase tracking-wider text-xs">Order Details</h4>
+                            <div className="grid gap-2">
+                              <p><strong className="font-black">Order ID:</strong> {order.orderId || order.id}</p>
+                              <p><strong className="font-black">Items:</strong> {(order.items || []).join(", ") || "N/A"}</p>
+                              <p><strong className="font-black">Total Amount:</strong> {formatPrice(order.total || 0)}</p>
+                              <p><strong className="font-black">Delivery Area:</strong> {order.deliveryPincode || "N/A"}</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

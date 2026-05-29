@@ -38,7 +38,10 @@ function orderItemCount(items) {
 export async function createOrder(req, res) {
   const deliveryPincode = String(req.body.deliveryPincode || req.body.pincode || "").trim();
   const deliveryDate = String(req.body.deliveryDate || todayIso()).slice(0, 10);
-  const customerEmail = String(req.user?.email || req.body.customerEmail || "").trim().toLowerCase();
+  const customerName = String(req.body.name || req.body.customerName || req.user?.name || "").trim();
+  const customerEmail = String(req.user?.email || req.body.customerEmail || req.body.email || "").trim().toLowerCase();
+  const customerPhone = String(req.body.phone || req.body.customerPhone || req.user?.phone || "").trim();
+  const deliveryAddress = String(req.body.address || req.body.deliveryAddress || "").trim();
   const items = orderItems(req.body.items);
   const itemCount = orderItemCount(req.body.items) || items.length;
 
@@ -79,7 +82,10 @@ export async function createOrder(req, res) {
     status: "Processing",
     items,
     itemCount,
+    customerName,
     customerEmail,
+    customerPhone,
+    deliveryAddress,
     deliveryPincode,
     deliveryDate,
     payment: req.body.payment || {},

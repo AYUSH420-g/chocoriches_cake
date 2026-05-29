@@ -71,6 +71,10 @@ function Checkout() {
     try {
       const order = await createOrder({
         total,
+        name: data.name || "",
+        email: data.email || "",
+        phone: data.phone || "",
+        address: [data.address, data.city, data.landmark].filter(Boolean).join(", "),
         customerEmail: data.email || "",
         deliveryPincode: data.pincode || "",
         deliveryDate: data.deliveryDate || new Date().toISOString().slice(0, 10),
@@ -249,7 +253,7 @@ function Checkout() {
             </div>
             <div className="mt-2 flex justify-between items-center text-xs text-[#6f7573] font-black uppercase">
               <span>Total Price</span>
-              <span className="text-[#e61951] font-black">{formatPrice(placedOrder.total)}</span>
+              <span className="text-[#1f2221] font-black">{formatPrice(placedOrder.total)}</span>
             </div>
           </motion.div>
 
@@ -446,7 +450,7 @@ function Checkout() {
                 </div>
                 <div className="flex justify-between border-t border-[#ebebeb] pt-4 text-lg font-black text-[#1f2221]">
                   <span>Total</span>
-                  <span className="text-[#e61951]">{formatPrice(total)}</span>
+                  <span className="text-[#1f2221]">{formatPrice(total)}</span>
                 </div>
                 <div className="grid gap-3 rounded-lg bg-[#fff2e9] p-4 text-xs font-bold text-[#6f7573]">
                   <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#e61951]" /> Secure checkout</span>

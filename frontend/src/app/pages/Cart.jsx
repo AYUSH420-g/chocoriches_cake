@@ -1,13 +1,21 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router";
 import { ArrowRight, BadgePercent, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { motion } from "motion/react";
+import { getPublicSettings } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 
 function Cart() {
   const { cart, removeItem, setQuantity } = useCart();
+  const [siteSettings, setSiteSettings] = useState(null);
+
+  useEffect(() => {
+    getPublicSettings().then(setSiteSettings).catch(() => void 0);
+  }, []);
+
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const deliveryFee = cart.length ? 10 : 0;
+  const deliveryFee = cart.length ? (siteSettings?.deliveryFee ?? 0) : 0;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
 
@@ -102,7 +110,7 @@ function Cart() {
                 <div className="border-t border-[#ebebeb] pt-4">
                   <div className="flex items-center justify-between">
                     <span className="text-base font-black text-[#1f2221]">Total</span>
-                    <span className="text-2xl font-black text-[#e61951]">{formatPrice(total)}</span>
+                    <span className="text-2xl font-black text-[#1f2221]">{formatPrice(total)}</span>
                   </div>
                 </div>
 
