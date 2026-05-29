@@ -46,3 +46,24 @@ export async function createRazorpayOrder(req, res) {
     keyId: config.razorpayKeyId,
   });
 }
+
+export async function verifyRazorpayPayment(req, res) {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+  
+  if (!config.razorpayKeySecret) {
+    res.status(503).json({ message: "Razorpay is not configured." });
+    return;
+  }
+  
+  const sign = razorpay_order_id + "|" + razorpay_payment_id;
+  const expectedSign = crypto
+    .createHmac("sha256", config.razorpayKeySecret)
+    .update(sign)
+    .digest("hex");
+
+  if (razorpay_signature === expectedSign) {
+    res.status(200).json({ message: "Payment verified successfully", verified: true });
+  } else {
+    res.status(400).json({ message: "Invalid signature sent", verified: false });
+  }
+}

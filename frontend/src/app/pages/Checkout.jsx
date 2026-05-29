@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { checkPincode, createOrder, createRazorpayOrder } from "../api/client";
+import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
@@ -157,7 +157,17 @@ function Checkout() {
           phone: nextCheckoutData.phone || "",
         },
         onSuccess: async (paymentResponse) => {
-          await placeOrder(nextCheckoutData, paymentResponse);
+          try {
+            await verifyRazorpayPayment({
+              razorpay_order_id: paymentResponse.razorpay_order_id,
+              razorpay_payment_id: paymentResponse.razorpay_payment_id,
+              razorpay_signature: paymentResponse.razorpay_signature,
+            });
+            await placeOrder(nextCheckoutData, paymentResponse);
+          } catch (err) {
+            setLoading(false);
+            toast.error(err.message || "Payment verification failed. Please contact support.");
+          }
         },
         onDismiss: () => {
           setLoading(false);

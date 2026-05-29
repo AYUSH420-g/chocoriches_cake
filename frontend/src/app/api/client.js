@@ -224,6 +224,12 @@ function createRazorpayOrder(payload) {
     body: JSON.stringify(payload)
   });
 }
+function verifyRazorpayPayment(payload) {
+  return request("/payments/razorpay/verify", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
 function createOrder(payload = {}) {
   return request("/orders", {
     method: "POST",
@@ -450,5 +456,6 @@ export {
   getUserReviews,
   forgotPassword,
   resetPassword,
-  getProductsPaginated
+  getProductsPaginated,
+  verifyRazorpayPayment
 };
