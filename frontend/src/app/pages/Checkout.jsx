@@ -361,11 +361,8 @@ function Checkout() {
                         </label>
                       ))}
 
-                      <div className="rounded-lg bg-[#f7f7f7] p-4">
-                        <label className="mb-2 block text-sm font-black text-[#1f2221]">Message on Cake</label>
-                        <input className="bk-input h-12 px-4 text-sm" placeholder="Happy Birthday Ayush" />
-                      </div>
                       <Field label="Delivery Date" name="deliveryDate" type="date" min={minDeliveryDate} defaultValue={checkoutData.deliveryDate || minDeliveryDate} required />
+                      <Field label="Message on Cake" name="message" placeholder="Happy Birthday Ayush" defaultValue={checkoutData.message || ""} />
                     </motion.div>
                   );
                 })()}

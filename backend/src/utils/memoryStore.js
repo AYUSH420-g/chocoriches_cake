@@ -4,7 +4,10 @@ import {
   profileUser,
 } from "../data/seedData.js";
 
+import { initialReviews } from "../data/seedData.js";
+
 export const memory = {
+  reviews: structuredClone(initialReviews),
   products: structuredClone(products),
   cartItems: [],
   orders: structuredClone(initialOrders),

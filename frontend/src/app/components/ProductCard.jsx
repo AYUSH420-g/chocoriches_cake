@@ -72,10 +72,12 @@ function ProductCard({ product, compact = false }) {
           >
             <Heart size={18} fill={liked ? "currentColor" : "none"} />
           </button>
-          <span className="absolute bottom-3 left-3 bk-rating">
-            {product.ratings ? product.ratings.toFixed(1) : 0}
-            <Star size={11} fill="currentColor" />
-          </span>
+          {product.numOfReviews > 0 && (
+            <span className="absolute bottom-3 left-3 bk-rating">
+              {product.ratings ? product.ratings.toFixed(1) : 0}
+              <Star size={11} fill="currentColor" />
+            </span>
+          )}
         </div>
 
         <div className="flex flex-1 flex-col p-3">
@@ -93,10 +95,14 @@ function ProductCard({ product, compact = false }) {
               )}
             </div>
             <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1">
-              <p className="text-[11px] font-bold text-[#6f7573]">({product.numOfReviews || 0} Reviews)</p>
-              <p className="text-[11px] font-bold text-[#6f7573]">
-                Delivery: <span className="text-[#0f8b57]">Today</span>
-              </p>
+              {product.numOfReviews > 0 && (
+                <p className="text-[11px] font-bold text-[#6f7573]">({product.numOfReviews} Reviews)</p>
+              )}
+              {product.sameDayDelivery && (
+                <p className="text-[11px] font-bold text-[#6f7573]">
+                  Delivery: <span className="text-[#0f8b57]">Today</span>
+                </p>
+              )}
             </div>
           </div>
         </div>

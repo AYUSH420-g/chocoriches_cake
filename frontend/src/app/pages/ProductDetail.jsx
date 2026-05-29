@@ -100,12 +100,40 @@ function ProductDetail() {
     }
   }, [cartItem?.quantity]);
 
+  const ensureValidDelivery = async (showToast = true) => {
+    if (pincodeStatus.valid && pincodeStatus.checked) return true;
+
+    if (!pincode.trim()) {
+      setPincodeStatus({ checked: true, valid: false, message: "Enter a pincode first" });
+      if (showToast) toast.error("Please enter a pincode to check delivery availability");
+      return false;
+    }
+
+    const result = await checkPincode(pincode.trim()).catch(() => null);
+    if (result?.serviceable) {
+      setPincodeStatus({ checked: true, valid: true, message: result.message || "Delivery is available for this pincode." });
+      return true;
+    }
+    
+    setPincodeStatus({ checked: true, valid: false, message: result?.message || "Invalid pincode" });
+    if (showToast) toast.error("Sorry, delivery is not available for this pincode.");
+    return false;
+  };
+
+  const handleCheckDelivery = async () => {
+    const isValid = await ensureValidDelivery(false);
+    if (isValid) toast.success("Delivery slot available today");
+  };
+
   const handleAddToCart = async () => {
     if (!isUserLoggedIn()) {
       toast.error("Please log in to add items to your cart");
       navigate("/auth");
       return false;
     }
+
+    const isValid = await ensureValidDelivery();
+    if (!isValid) return false;
 
     try {
       if (cartItem) {
@@ -129,27 +157,7 @@ function ProductDetail() {
     toast.success(nextLiked ? "Added to wishlist" : "Removed from wishlist");
   };
 
-  const handleCheckDelivery = async () => {
-    if (!pincode.trim()) {
-      setPincodeStatus({ checked: true, valid: false, message: "Enter a pincode first" });
-      return;
-    }
-
-    const result = await checkPincode(pincode.trim()).catch(() => null);
-    if (result?.serviceable) {
-      setPincodeStatus({ checked: true, valid: true, message: result.message || "Delivery is available for this pincode." });
-      toast.success("Delivery slot available today");
-      return;
-    }
-    setPincodeStatus({ checked: true, valid: false, message: result?.message || "Invalid pincode" });
-  };
-
   const handleBuyNow = async () => {
-    if (!pincodeStatus.valid) {
-      setPincodeStatus({ checked: true, valid: false, message: "Enter a valid serviceable pincode first" });
-      return;
-    }
-
     const added = await handleAddToCart();
     if (added) {
       navigate("/cart");
@@ -232,12 +240,18 @@ function ProductDetail() {
 
           <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-5 md:p-7">
             <div className="mb-3 flex flex-wrap items-center gap-2">
-              <span className="bk-rating">
-                {product.ratings ? product.ratings.toFixed(1) : 0}
-                <Star size={11} fill="currentColor" />
-              </span>
-              <span className="text-xs font-bold text-[#6f7573]">({product.numOfReviews || 0} Reviews)</span>
-              <span className="rounded bg-[#fff2e9] px-2 py-1 text-[11px] font-black text-[#e61951]">Bestseller</span>
+              {product.numOfReviews > 0 && (
+                <>
+                  <span className="bk-rating">
+                    {product.ratings ? product.ratings.toFixed(1) : 0}
+                    <Star size={11} fill="currentColor" />
+                  </span>
+                  <span className="text-xs font-bold text-[#6f7573]">({product.numOfReviews} Reviews)</span>
+                </>
+              )}
+              {product.isBestSeller && (
+                <span className="rounded bg-[#fff2e9] px-2 py-1 text-[11px] font-black text-[#e61951]">Bestseller</span>
+              )}
             </div>
 
             <h1 className="text-3xl font-black leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
@@ -327,8 +341,7 @@ function ProductDetail() {
               <button
                 type="button"
                 onClick={handleBuyNow}
-                disabled={!pincodeStatus.valid}
-                className="bk-btn h-12 px-5 text-sm disabled:pointer-events-none disabled:opacity-45"
+                className="bk-btn h-12 px-5 text-sm"
               >
                 Buy Now
               </button>

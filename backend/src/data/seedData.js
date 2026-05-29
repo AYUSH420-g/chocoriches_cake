@@ -12,6 +12,8 @@ export const products = [
     allergens: "Contains: Wheat, Milk, Eggs. May contain traces of nuts.",
     featured: true,
     sortOrder: 1,
+    ratings: 4.5,
+    numOfReviews: 2,
   },
   {
     id: "2",
@@ -26,6 +28,8 @@ export const products = [
     allergens: "Contains: Wheat, Milk, Eggs, Alcohol.",
     featured: true,
     sortOrder: 2,
+    ratings: 4.7,
+    numOfReviews: 3,
   },
   {
     id: "3",
@@ -40,6 +44,8 @@ export const products = [
     allergens: "Contains: Wheat, Milk, Eggs.",
     featured: true,
     sortOrder: 3,
+    ratings: 4.5,
+    numOfReviews: 2,
   },
   {
     id: "4",
@@ -51,6 +57,8 @@ export const products = [
     description: "Smoked sea salt caramel layers with dark cocoa.",
     featured: false,
     sortOrder: 4,
+    ratings: 5.0,
+    numOfReviews: 2,
   },
   {
     id: "5",
@@ -62,6 +70,8 @@ export const products = [
     description: "Roasted Piedmont hazelnuts and crispy praliné crunch.",
     featured: false,
     sortOrder: 5,
+    ratings: 4.3,
+    numOfReviews: 3,
   },
   {
     id: "6",
@@ -73,6 +83,8 @@ export const products = [
     description: "Our timeless smooth milk chocolate sponge.",
     featured: false,
     sortOrder: 6,
+    ratings: 4.5,
+    numOfReviews: 2,
   },
   {
     id: "7",
@@ -84,6 +96,8 @@ export const products = [
     description: "Floral infused sponge with edible gold leaf accents.",
     featured: false,
     sortOrder: 7,
+    ratings: 5.0,
+    numOfReviews: 2,
   },
   {
     id: "8",
@@ -95,6 +109,8 @@ export const products = [
     description: "Cherries soaked in kirsch with heavy chocolate cream.",
     featured: false,
     sortOrder: 8,
+    ratings: 4.7,
+    numOfReviews: 3,
   },
 ];
 
@@ -124,3 +140,177 @@ export const initialOrders = [
 ];
 
 export const detailedProductIds = new Set(["1", "2", "3"]);
+
+export const initialReviews = [
+  {
+    "id": "cb0e4e47-ced7-4b61-b602-28b6591e171d",
+    "productId": "1",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.392Z"
+  },
+  {
+    "id": "216cb6bb-bf29-478c-9cb2-619d4f5500c1",
+    "productId": "1",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "4be41d7b-07ad-424e-8a77-0603c2a19a46",
+    "productId": "2",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "3ea30f1b-67e0-4371-aee6-4c9a691fa04f",
+    "productId": "2",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "ae8a6f89-b169-4466-944e-37707093283f",
+    "productId": "2",
+    "userId": "user-2",
+    "userName": "Charlie",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "d927a3f9-fbb4-4a22-a118-d88bef017367",
+    "productId": "3",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "3cc05a0d-c946-48c5-8a2c-75c71f2187af",
+    "productId": "3",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "afe2bdf6-619d-45ff-9afa-493319651e32",
+    "productId": "4",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "86f51a36-41da-4251-9257-17fb52590625",
+    "productId": "4",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "72012933-8b54-4909-9087-d1fcc3f9ec2d",
+    "productId": "5",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "22bb1ead-c418-4844-ad96-57e02c85bff3",
+    "productId": "5",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "f131d7af-cab3-4939-9322-0f5950dfeb8f",
+    "productId": "5",
+    "userId": "user-2",
+    "userName": "Charlie",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "87e7b456-c0bc-4006-a4c1-305ac04e2e56",
+    "productId": "6",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "04418e2d-dbf8-41cb-8d37-f2685f55ba4b",
+    "productId": "6",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "36959f5e-6b97-467a-a7ae-0864f16c5780",
+    "productId": "7",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "f2f8a7ff-1e09-4c8f-9852-ad131c816643",
+    "productId": "7",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "3acbadfc-b8bc-4a65-bdcf-1afa47c00ecb",
+    "productId": "8",
+    "userId": "user-0",
+    "userName": "Alice",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "a80a47ee-40c3-42a9-ab53-b7e216b9b9b6",
+    "productId": "8",
+    "userId": "user-1",
+    "userName": "Bob",
+    "rating": 4,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  },
+  {
+    "id": "0d448391-27d5-4ac6-b12a-d7877ad83b94",
+    "productId": "8",
+    "userId": "user-2",
+    "userName": "Charlie",
+    "rating": 5,
+    "comment": "Great product! Highly recommended.",
+    "createdAt": "2026-05-29T15:42:54.393Z"
+  }
+];

@@ -555,7 +555,7 @@ function Admin() {
 
           {activeTab === "products" && (
             <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
-              <Panel title={editingProductId ? "Edit Product" : "Add Product"}>
+              <Panel title={editingProductId ? "Edit Product" : "Add Product"} className="xl:sticky xl:top-4 self-start">
                 <form onSubmit={saveProduct} className="grid gap-4">
                   <Field label="Name" value={productForm.name} onChange={(value) => setProductForm({ ...productForm, name: value })} required />
                   <ImageField value={productForm.image} onUrlChange={(value) => setProductForm({ ...productForm, image: value })} onFileChange={handleImageFile} />
@@ -661,7 +661,7 @@ function Admin() {
 
           {activeTab === "subcategories" && (
             <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-              <Panel title={editingSubcategoryId ? "Edit Subcategory" : "Add Subcategory"}>
+              <Panel title={editingSubcategoryId ? "Edit Subcategory" : "Add Subcategory"} className="xl:sticky xl:top-4 self-start">
                 <form onSubmit={saveSubcategory} className="grid gap-4">
                   <Field label="Name" value={subcategoryForm.name} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, name: value })} required />
                   <SingleSelectCheckboxField label="Category" value={subcategoryForm.category} options={categories.filter(c => c.isActive !== false).map(c => c.name)} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, category: value })} required />
@@ -858,9 +858,9 @@ function normalizeProductForm(form) {
   };
 }
 
-function Panel({ title, children }) {
+function Panel({ title, children, className = "" }) {
   return (
-    <section className="rounded-xl border border-[#ebebeb] bg-white p-5 shadow-sm shadow-black/5">
+    <section className={`rounded-xl border border-[#ebebeb] bg-white p-5 shadow-sm shadow-black/5 ${className}`}>
       <h2 className="mb-4 text-xl font-black text-[#1f2221]">{title}</h2>
       {children}
     </section>
@@ -1139,7 +1139,7 @@ function Rows({ data, columns }) {
 function CrudPanel({ title, onSubmit, form, setForm, fields, checkboxLabel, rows, rowMain, rowSub, onEdit, onDelete }) {
   return (
     <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel title={title}>
+      <Panel title={title} className="xl:sticky xl:top-4 self-start">
         <form onSubmit={onSubmit} className="grid gap-4">
           {fields.map((field) => (
             <Field
