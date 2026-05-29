@@ -75,7 +75,7 @@ const emptyProduct = {
   image: "",
   category: "",
   categories: [],
-  subcategory: "",
+  subcategories: [],
   stock: "",
   weights: [{ label: "Half Kg", price: "" }],
   defaultWeight: "Half Kg",
@@ -133,11 +133,25 @@ function Admin() {
   }, [categories, selectedCategories]);
 
   const subcategoryOptions = useMemo(() => {
-    const options = subcategories
+    const names = subcategories
       .filter((sub) => sub.isActive !== false && selectedCategories.includes(sub.category?.name || sub.category))
       .map((sub) => sub.name)
       .filter(Boolean);
-    return ["", ...options];
+    return [...new Set(names)];
+  }, [subcategories, selectedCategories]);
+
+  const groupedSubcategories = useMemo(() => {
+    const groups = [];
+    selectedCategories.forEach((catName) => {
+      const subs = subcategories
+        .filter((sub) => sub.isActive !== false && (sub.category?.name || sub.category) === catName)
+        .map((sub) => sub.name)
+        .filter(Boolean);
+      if (subs.length > 0) {
+        groups.push({ category: catName, subcategories: subs });
+      }
+    });
+    return groups;
   }, [subcategories, selectedCategories]);
 
 
@@ -355,7 +369,7 @@ function Admin() {
       image: product.image || product.images?.[0]?.url || "",
       category: product.category || "Cakes",
       categories: product.categories?.length ? product.categories : [product.category || "Cakes"],
-      subcategory: product.subcategory || "",
+      subcategories: product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : []),
       stock: product.stock || "",
       weights: normalizeFormWeights(product.weights || product.weightOptions || [{ label: product.weight || "Half Kg", price: product.price || "" }]),
       defaultWeight: product.defaultWeight || product.weight || product.weightOptions?.[0]?.label || "Half Kg",
@@ -550,7 +564,24 @@ function Admin() {
                     <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
                   </div>
                   <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
-                  <SingleSelectCheckboxField label="Subcategory" value={productForm.subcategory} options={subcategoryOptions.filter(Boolean)} onChange={(value) => setProductForm({ ...productForm, subcategory: value })} />
+                  <GroupedSubcategoryField
+                    label="Subcategories"
+                    values={productForm.subcategories}
+                    groups={groupedSubcategories}
+                    onToggle={(subName) => {
+                      setProductForm((current) => {
+                        const currentSubs = current.subcategories || [];
+                        const exists = currentSubs.includes(subName);
+                        return {
+                          ...current,
+                          subcategories: exists
+                            ? currentSubs.filter((s) => s !== subName)
+                            : [...currentSubs, subName],
+                        };
+                      });
+                    }}
+                    onClear={() => setProductForm({ ...productForm, subcategories: [] })}
+                  />
                   <WeightEditor
                     weights={productForm.weights}
                     defaultWeight={productForm.defaultWeight}
@@ -587,7 +618,7 @@ function Admin() {
                       <div>
                         <h3 className="font-black">{product.name}</h3>
                         <p className="text-sm font-bold text-[#6f7573]">
-                          {(product.categories?.length ? product.categories.join(", ") : product.category)}{product.subcategory ? ` / ${product.subcategory}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
+                          {(product.categories?.length ? product.categories.join(", ") : product.category)}{(product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : [])).length > 0 ? ` / ${(product.subcategories?.length ? product.subcategories : [product.subcategory]).join(", ")}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
                         </p>
                         <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-black ${product.isActive === false ? "bg-red-50 text-red-600" : "bg-[#e8f8ef] text-[#0f8b57]"}`}>
                           {product.isActive === false ? "Disabled" : "Active"}
@@ -800,6 +831,7 @@ function normalizeFormWeights(weights = []) {
 
 function normalizeProductForm(form) {
   const categories = form.categories?.length ? form.categories : [form.category].filter(Boolean);
+  const subcategories = Array.isArray(form.subcategories) ? form.subcategories.filter(Boolean) : (form.subcategory ? [form.subcategory] : []);
   const weights = normalizeFormWeights(form.weights)
     .map((weight) => ({ label: weight.label, price: Number(weight.price || 0) }))
     .filter((weight) => weight.price > 0);
@@ -816,6 +848,8 @@ function normalizeProductForm(form) {
     discountPercent: Math.max(0, Math.min(95, Number(form.discountPercent || 0))),
     category: categories[0] || "Cakes",
     categories,
+    subcategory: subcategories[0] || "",
+    subcategories,
     stock: Number(form.stock || 0),
     weights: safeWeights,
     defaultWeight,
@@ -980,6 +1014,66 @@ function SingleSelectCheckboxField({ label, value, options, onChange, required }
           </label>
         ))}
         {options.length === 0 && <p className="text-xs text-[#6f7573] p-2">No options available</p>}
+      </div>
+    </div>
+  );
+}
+
+function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear }) {
+  const allEmpty = groups.length === 0 || groups.every((g) => g.subcategories.length === 0);
+  return (
+    <div>
+      <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
+      {values.length > 0 && (
+        <div className="mb-2 flex flex-wrap gap-1.5">
+          {values.map((sub) => (
+            <span
+              key={sub}
+              className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-xs font-bold text-[#e61951]"
+            >
+              {sub}
+              <button type="button" onClick={() => onToggle(sub)} className="ml-0.5 text-[#e61951]/60 hover:text-[#e61951]">&times;</button>
+            </span>
+          ))}
+        </div>
+      )}
+      <div className="max-h-52 overflow-y-auto rounded-lg border border-[#ebebeb] bg-white p-2">
+        {allEmpty && <p className="text-xs text-[#6f7573] p-2">Select a category first to see subcategories</p>}
+        {groups.map((group) => (
+          <div key={group.category}>
+            <p className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#e61951]">{group.category}</p>
+            {group.subcategories.map((subName) => {
+              const isSelected = values.includes(subName);
+              return (
+                <label
+                  key={`${group.category}--${subName}`}
+                  className={`flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-bold transition ${
+                    isSelected
+                      ? "bg-[#fff2e9] text-[#e61951]"
+                      : "text-[#5f6663] hover:bg-[#fff2e9]"
+                  }`}
+                >
+                  {subName}
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    onChange={() => onToggle(subName)}
+                    className="h-4 w-4 accent-[#e61951]"
+                  />
+                </label>
+              );
+            })}
+          </div>
+        ))}
+        {values.length > 0 && (
+          <button
+            type="button"
+            onClick={onClear}
+            className="mt-1 w-full rounded-md px-3 py-1.5 text-xs font-bold text-[#6f7573] hover:bg-[#f7f7f7] hover:text-[#e61951] transition"
+          >
+            Clear all
+          </button>
+        )}
       </div>
     </div>
   );

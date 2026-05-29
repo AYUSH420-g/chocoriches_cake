@@ -18,6 +18,7 @@ const productSchema = new mongoose.Schema(
     category: { type: String, required: true, index: true },
     categories: [{ type: String, index: true }],
     subcategory: { type: String, index: true },
+    subcategories: [{ type: String, index: true }],
     description: { type: String, required: true },
     longDescription: { type: String },
     ingredients: { type: String },

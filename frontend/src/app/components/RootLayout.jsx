@@ -134,7 +134,17 @@ function RootLayout() {
     if (location.pathname !== path) {
       return false;
     }
-    return (location.search || "").replace(/^\?/, "") === query;
+    // Exact match OR the current URL's query starts with the category query
+    // e.g. cat=Birthday matches cat=Birthday&subcat=Bento
+    const currentQuery = (location.search || "").replace(/^\?/, "");
+    if (!query) return currentQuery === "";
+    return currentQuery === query || currentQuery.startsWith(query + "&");
+  };
+
+  const isActiveSubcategory = (catLabel, subName) => {
+    if (location.pathname !== "/shop") return false;
+    const params = new URLSearchParams(location.search);
+    return params.get("cat") === catLabel && params.get("subcat") === subName;
   };
 
   if (settings.maintenanceMode) {
@@ -282,7 +292,11 @@ function RootLayout() {
                             <Link
                               key={sub.id}
                               to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                              className={`block px-4 py-2 text-sm font-normal transition hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                                isActiveSubcategory(item.label, sub.name)
+                                  ? "bg-[#fff2e9] text-[#e61951] font-semibold"
+                                  : "text-[#323635]"
+                              }`}
                               onClick={() => setHoveredCat(null)}
                             >
                               {sub.name}
@@ -391,7 +405,11 @@ function RootLayout() {
                             <Link
                               key={sub.id}
                               to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className="block rounded-lg px-4 py-2 text-sm font-medium text-[#6f7573] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                              className={`block rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                                isActiveSubcategory(item.label, sub.name)
+                                  ? "bg-[#fff2e9] text-[#e61951]"
+                                  : "text-[#6f7573]"
+                              }`}
                             >
                               {sub.name}
                             </Link>

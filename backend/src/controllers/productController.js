@@ -47,7 +47,7 @@ export async function listProducts(req, res) {
     query.$or = [{ category }, { categories: category }];
   }
   if (subcategory) {
-    query.subcategory = subcategory;
+    query.$and = [...(query.$and || []), { $or: [{ subcategory }, { subcategories: subcategory }] }];
   }
   if (sameDay === "true") {
     query.sameDayDelivery = true;
@@ -70,7 +70,7 @@ export async function listProducts(req, res) {
     const searchRegex = new RegExp(String(q).trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
     query.$and = [
       ...(query.$and || []),
-      { $or: [{ name: searchRegex }, { description: searchRegex }, { category: searchRegex }, { categories: searchRegex }, { subcategory: searchRegex }] },
+      { $or: [{ name: searchRegex }, { description: searchRegex }, { category: searchRegex }, { categories: searchRegex }, { subcategory: searchRegex }, { subcategories: searchRegex }] },
     ];
   }
 
@@ -105,7 +105,7 @@ export async function listProducts(req, res) {
     // Memory store fallback with pagination
     let source = memory.products
       .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
-      .filter((product) => !subcategory || product.subcategory === subcategory)
+      .filter((product) => !subcategory || product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory)))
       .filter((product) => product.isActive !== false)
       .filter((product) => featured !== "true" || product.featured || product.isFeatured)
       .filter((product) => sameDay !== "true" || product.sameDayDelivery)
@@ -113,7 +113,7 @@ export async function listProducts(req, res) {
       .filter((product) => !maxPrice || Number(product.price) <= Number(maxPrice))
       .filter((product) => {
         if (!q) return true;
-        const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""}`.toLowerCase();
+        const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""} ${(product.subcategories || []).join(" ")}`.toLowerCase();
         return searchText.includes(String(q).trim().toLowerCase());
       })
       .sort((left, right) => {
@@ -141,7 +141,7 @@ export async function listProducts(req, res) {
     ? await Product.find(query).sort(sortCriteria).lean()
     : memory.products
         .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
-        .filter((product) => !subcategory || product.subcategory === subcategory)
+        .filter((product) => !subcategory || product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory)))
         .filter((product) => product.isActive !== false)
         .filter((product) => featured !== "true" || product.featured || product.isFeatured)
         .filter((product) => sameDay !== "true" || product.sameDayDelivery)
@@ -151,7 +151,7 @@ export async function listProducts(req, res) {
           if (!q) {
             return true;
           }
-          const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""}`.toLowerCase();
+          const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""} ${(product.subcategories || []).join(" ")}`.toLowerCase();
           return searchText.includes(String(q).trim().toLowerCase());
         })
         .sort((left, right) => {
