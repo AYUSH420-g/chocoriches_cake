@@ -209,6 +209,7 @@ export function settingView(setting = memory.setting) {
     maintenanceMode: Boolean(setting?.maintenanceMode),
     maintenanceMessage: setting?.maintenanceMessage || memory.setting.maintenanceMessage,
     dailyCakeLimit: Number(setting?.dailyCakeLimit || 0),
+    deliveryFee: Number(setting?.deliveryFee || 0),
   };
 }
 

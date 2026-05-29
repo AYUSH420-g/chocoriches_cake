@@ -9,6 +9,7 @@ const siteSettingSchema = new mongoose.Schema(
       default: "We are under maintenance. Please check back shortly.",
     },
     dailyCakeLimit: { type: Number, default: 0 },
+    deliveryFee: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

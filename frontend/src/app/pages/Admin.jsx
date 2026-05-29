@@ -797,6 +797,12 @@ function Admin() {
                   value={settings.dailyCakeLimit || ""}
                   onChange={(value) => setSettings({ ...settings, dailyCakeLimit: Number(value || 0) })}
                 />
+                <Field
+                  label="Global Delivery Fee"
+                  type="number"
+                  value={settings.deliveryFee ?? ""}
+                  onChange={(value) => setSettings({ ...settings, deliveryFee: Number(value || 0) })}
+                />
                 <div className="flex flex-wrap gap-3">
                   <button type="button" onClick={toggleMaintenance} className={settings.maintenanceMode ? "bk-btn h-11 px-5 text-sm" : "bk-outline-btn h-11 px-5 text-sm"}>
                     <AlertTriangle size={16} />

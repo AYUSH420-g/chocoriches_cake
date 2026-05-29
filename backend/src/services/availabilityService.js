@@ -21,6 +21,7 @@ export async function updateSiteSetting(updates) {
     maintenanceMode: Boolean(updates.maintenanceMode),
     maintenanceMessage: updates.maintenanceMessage || memory.setting.maintenanceMessage,
     dailyCakeLimit: Math.max(0, Number(updates.dailyCakeLimit || 0)),
+    deliveryFee: Math.max(0, Number(updates.deliveryFee || 0)),
   };
 
   if (isDatabaseConnected()) {

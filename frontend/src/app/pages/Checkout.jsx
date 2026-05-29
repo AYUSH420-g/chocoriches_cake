@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment } from "../api/client";
+import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
@@ -40,9 +40,14 @@ function Checkout() {
   const [loading, setLoading] = useState(false);
   const [checkoutData, setCheckoutData] = useState({});
   const [placedOrder, setPlacedOrder] = useState(null);
+  const [siteSettings, setSiteSettings] = useState(null);
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const storedUser = getStoredUser();
+
+  useEffect(() => {
+    getPublicSettings().then(setSiteSettings).catch(() => void 0);
+  }, []);
 
   const hasSameDayOnly = cart.every((item) => item.sameDayDelivery);
   const minDeliveryDate = hasSameDayOnly ? todayIso() : tomorrowIso();
@@ -57,7 +62,7 @@ function Checkout() {
   }, [minDeliveryDate, checkoutData.deliveryDate]);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const deliveryFee = cart.length ? 10 : 0;
+  const deliveryFee = cart.length ? (siteSettings?.deliveryFee ?? 0) : 0;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
   const amountInPaise = priceToRupees(total) * 100;
