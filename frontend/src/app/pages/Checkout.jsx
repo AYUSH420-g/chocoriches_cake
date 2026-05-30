@@ -11,8 +11,8 @@ import { getStoredUser } from "../utils/session";
 
 const steps = ["Details", "Delivery", "Payment"];
 const deliverySlots = [
-  { value: "today-2-5", label: "Today, 2 PM - 5 PM", copy: "Fastest delivery slot", price: "Rs. 80", type: "today" },
-  { value: "today-6-9", label: "Today, 6 PM - 9 PM", copy: "Evening celebration slot", price: "Rs. 80", type: "today" },
+  { value: "today-2-5", label: "Today, 2 PM - 5 PM", copy: "Fastest delivery slot", price: "Free", type: "today" },
+  { value: "today-6-9", label: "Today, 6 PM - 9 PM", copy: "Evening celebration slot", price: "Free", type: "today" },
   { value: "scheduled-10-1", label: "Selected Date, 10 AM - 1 PM", copy: "Scheduled fresh delivery", price: "Free", type: "selected" },
 ];
 
@@ -376,12 +376,12 @@ function Checkout() {
                               <span className="mt-1 block text-xs font-bold text-[#6f7573]">{slot.copy}</span>
                             </span>
                           </span>
-                          <span className="shrink-0 text-sm font-black text-[#e61951]">{slot.price}</span>
+                          {/* <span className="shrink-0 text-sm font-black text-[#e61951]">{slot.price}</span> */}
                         </label>
                       ))}
 
                       <Field label="Delivery Date" name="deliveryDate" type="date" min={minDeliveryDate} defaultValue={checkoutData.deliveryDate || minDeliveryDate} required />
-                      <Field label="Message on Cake" name="message" placeholder="Happy Birthday Ayush" defaultValue={checkoutData.message || ""} />
+                      <Field label="Message on Cake" name="message" placeholder="Happy Birthday Ayush" defaultValue={checkoutData.message || ""} maxLength={30} />
                     </motion.div>
                   );
                 })()}
@@ -465,11 +465,11 @@ function Checkout() {
   );
 }
 
-function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min }) {
+function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength }) {
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
-      <input name={name} type={type} placeholder={placeholder} required={required} defaultValue={defaultValue} min={min} className="bk-input h-12 px-4 text-sm" />
+      <input name={name} type={type} placeholder={placeholder} required={required} defaultValue={defaultValue} min={min} maxLength={maxLength} className="bk-input h-12 px-4 text-sm" />
     </label>
   );
 }

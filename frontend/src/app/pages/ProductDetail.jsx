@@ -34,6 +34,7 @@ function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isBuying, setIsBuying] = useState(false);
   const [liked, setLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
@@ -158,10 +159,12 @@ function ProductDetail() {
   };
 
   const handleBuyNow = async () => {
+    setIsBuying(true);
     const added = await handleAddToCart();
     if (added) {
       navigate("/cart");
     }
+    setIsBuying(false);
   };
 
   const handleQuantityChange = (nextQuantity) => {
@@ -341,9 +344,17 @@ function ProductDetail() {
               <button
                 type="button"
                 onClick={handleBuyNow}
-                className="bk-btn h-12 px-5 text-sm"
+                disabled={isBuying}
+                className="bk-btn h-12 px-5 text-sm flex items-center justify-center gap-2"
               >
-                Buy Now
+                {isBuying ? (
+                  <>
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Processing...
+                  </>
+                ) : (
+                  "Buy Now"
+                )}
               </button>
               <button
                 type="button"

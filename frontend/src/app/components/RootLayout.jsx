@@ -191,7 +191,7 @@ function RootLayout() {
               </span>
             </Link>
 
-            <button
+            {/* <button
               type="button"
               className="hidden min-w-[172px] items-center justify-between rounded-lg border border-[#ebebeb] px-3 py-2 text-left lg:flex"
               title="Deliver to"
@@ -203,7 +203,7 @@ function RootLayout() {
                   <span className="block truncate text-sm font-black text-[#1f2221]">Gujrat</span>
                 </span>
               </span>
-            </button>
+            </button> */}
 
             <form onSubmit={handleSearchSubmit} className="relative hidden flex-1 max-w-md mr-auto lg:max-w-lg xl:max-w-xl md:block lg:ml-4">
               <Search size={19} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#7f8583]" />
@@ -254,7 +254,7 @@ function RootLayout() {
             
           </div>
 
-          <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto lg:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex min-w-0 flex-1 lg:justify-center gap-1">
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
