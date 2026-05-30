@@ -632,15 +632,27 @@ function Admin() {
                       label="Subcategories"
                       values={productForm.subcategories}
                       groups={groupedSubcategories}
-                      onToggle={(subName) => {
+                      onToggle={(category, subName) => {
                         setProductForm((current) => {
                           const currentSubs = current.subcategories || [];
-                          const exists = currentSubs.includes(subName);
+                          const specificName = category ? `${category}::${subName}` : subName;
+                          const legacyName = subName;
+                          
+                          const hasSpecific = currentSubs.includes(specificName);
+                          const hasLegacy = currentSubs.includes(legacyName);
+                          
+                          const exists = hasSpecific || hasLegacy;
+                          
+                          let nextSubs = [...currentSubs];
+                          if (exists) {
+                            nextSubs = nextSubs.filter((sub) => sub !== specificName && sub !== legacyName);
+                          } else {
+                            nextSubs.push(specificName);
+                          }
+                          
                           return {
                             ...current,
-                            subcategories: exists
-                              ? currentSubs.filter((s) => s !== subName)
-                              : [...currentSubs, subName],
+                            subcategories: nextSubs,
                           };
                         });
                       }}
@@ -688,7 +700,7 @@ function Admin() {
                         <div>
                           <h3 className="font-black">{product.name}</h3>
                           <p className="text-sm font-bold text-[#6f7573]">
-                            {(product.categories?.length ? product.categories.join(", ") : product.category)}{(product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : [])).length > 0 ? ` / ${(product.subcategories?.length ? product.subcategories : [product.subcategory]).join(", ")}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
+                            {(product.categories?.length ? product.categories.join(", ") : product.category)}{(product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : [])).length > 0 ? ` / ${(product.subcategories?.length ? product.subcategories : [product.subcategory]).map(s => s.includes("::") ? s.split("::")[1] : s).join(", ")}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
                           </p>
                           <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-black ${product.isActive === false ? "bg-red-50 text-red-600" : "bg-[#e8f8ef] text-[#0f8b57]"}`}>
                             {product.isActive === false ? "Disabled" : "Active"}
@@ -1146,15 +1158,18 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
       {values.length > 0 && (
         <div className="mb-2 flex flex-wrap gap-1.5">
-          {values.map((sub) => (
-            <span
-              key={sub}
-              className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-xs font-bold text-[#e61951]"
-            >
-              {sub}
-              <button type="button" onClick={() => onToggle(sub)} className="ml-0.5 text-[#e61951]/60 hover:text-[#e61951]">&times;</button>
-            </span>
-          ))}
+          {values.map((sub) => {
+            const display = sub.includes("::") ? `${sub.split("::")[0]} > ${sub.split("::")[1]}` : sub;
+            return (
+              <span
+                key={sub}
+                className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-xs font-bold text-[#e61951]"
+              >
+                {display}
+                <button type="button" onClick={() => onToggle(sub.includes("::") ? sub.split("::")[0] : null, sub.includes("::") ? sub.split("::")[1] : sub)} className="ml-0.5 text-[#e61951]/60 hover:text-[#e61951]">&times;</button>
+              </span>
+            );
+          })}
         </div>
       )}
       <div className="max-h-52 overflow-y-auto rounded-lg border border-[#ebebeb] bg-white p-2">
@@ -1163,10 +1178,11 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
           <div key={group.category}>
             <p className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#e61951]">{group.category}</p>
             {group.subcategories.map((subName) => {
-              const isSelected = values.includes(subName);
+              const specificName = `${group.category}::${subName}`;
+              const isSelected = values.includes(specificName) || values.includes(subName);
               return (
                 <label
-                  key={`${group.category}--${subName}`}
+                  key={specificName}
                   className={`flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-bold transition ${
                     isSelected
                       ? "bg-[#fff2e9] text-[#e61951]"
@@ -1177,7 +1193,7 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
                   <input
                     type="checkbox"
                     checked={isSelected}
-                    onChange={() => onToggle(subName)}
+                    onChange={() => onToggle(group.category, subName)}
                     className="h-4 w-4 accent-[#e61951]"
                   />
                 </label>

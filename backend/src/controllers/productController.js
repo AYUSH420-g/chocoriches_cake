@@ -47,7 +47,26 @@ export async function listProducts(req, res) {
     query.$or = [{ category }, { categories: category }];
   }
   if (subcategory) {
-    query.$and = [...(query.$and || []), { $or: [{ subcategory }, { subcategories: subcategory }] }];
+    if (category && category !== "All") {
+      query.$and = [...(query.$and || []), {
+        $or: [
+          { subcategory: subcategory },
+          { subcategories: subcategory },
+          { subcategory: `${category}::${subcategory}` },
+          { subcategories: `${category}::${subcategory}` }
+        ]
+      }];
+    } else {
+      const regex = new RegExp(`::${String(subcategory).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+      query.$and = [...(query.$and || []), {
+        $or: [
+          { subcategory: subcategory },
+          { subcategories: subcategory },
+          { subcategory: regex },
+          { subcategories: regex }
+        ]
+      }];
+    }
   }
   if (sameDay === "true") {
     query.sameDayDelivery = true;
@@ -105,7 +124,18 @@ export async function listProducts(req, res) {
     // Memory store fallback with pagination
     let source = memory.products
       .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
-      .filter((product) => !subcategory || product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory)))
+      .filter((product) => {
+        if (!subcategory) return true;
+        const matchOld = product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory));
+        if (category && category !== "All") {
+          const matchNew = product.subcategory === `${category}::${subcategory}` || (product.subcategories && product.subcategories.includes(`${category}::${subcategory}`));
+          return matchOld || matchNew;
+        } else {
+          const regex = new RegExp(`::${String(subcategory).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+          const matchNew = (product.subcategory && regex.test(product.subcategory)) || (product.subcategories && product.subcategories.some(s => regex.test(s)));
+          return matchOld || matchNew;
+        }
+      })
       .filter((product) => product.isActive !== false)
       .filter((product) => featured !== "true" || product.featured || product.isFeatured)
       .filter((product) => sameDay !== "true" || product.sameDayDelivery)
@@ -140,8 +170,19 @@ export async function listProducts(req, res) {
   const source = isDatabaseConnected()
     ? await Product.find(query).sort(sortCriteria).lean()
     : memory.products
-        .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
-        .filter((product) => !subcategory || product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory)))
+      .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
+      .filter((product) => {
+        if (!subcategory) return true;
+        const matchOld = product.subcategory === subcategory || (product.subcategories && product.subcategories.includes(subcategory));
+        if (category && category !== "All") {
+          const matchNew = product.subcategory === `${category}::${subcategory}` || (product.subcategories && product.subcategories.includes(`${category}::${subcategory}`));
+          return matchOld || matchNew;
+        } else {
+          const regex = new RegExp(`::${String(subcategory).replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}$`);
+          const matchNew = (product.subcategory && regex.test(product.subcategory)) || (product.subcategories && product.subcategories.some(s => regex.test(s)));
+          return matchOld || matchNew;
+        }
+      })
         .filter((product) => product.isActive !== false)
         .filter((product) => featured !== "true" || product.featured || product.isFeatured)
         .filter((product) => sameDay !== "true" || product.sameDayDelivery)
