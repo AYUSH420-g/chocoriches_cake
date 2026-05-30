@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   AlertTriangle,
   Ban,
@@ -39,6 +39,7 @@ import {
   getAdminOrders,
   getAdminPincodes,
   getAdminProducts,
+  getAdminProductsPaginated,
   getAdminSettings,
   getAdminSummary,
   getAdminUsers,
@@ -67,7 +68,7 @@ const tabs = [
   ["settings", "Settings", AlertTriangle]
 ];
 
-const weightChoices = ["Half Kg", "1 Kg", "1.5 Kg", "2 Kg", "3 Kg", "4 Kg", "5 Kg"];
+const weightChoices = ["250 gm", "300 gm", "Half Kg", "1 Kg", "1.5 Kg", "2 Kg", "3 Kg", "4 Kg", "5 Kg"];
 
 const emptyProduct = {
   name: "",
@@ -123,6 +124,11 @@ function Admin() {
   const [dateForm, setDateForm] = useState(emptyDate);
   const [editingDateId, setEditingDateId] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [productsPage, setProductsPage] = useState(1);
+  const [hasMoreProducts, setHasMoreProducts] = useState(true);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [isLoadingMoreProducts, setIsLoadingMoreProducts] = useState(false);
+  const sentinelRef = useRef(null);
 
   const handleStatusChange = async (order, targetStatus) => {
     const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
@@ -284,6 +290,34 @@ function Admin() {
     }
   };
 
+  const loadMoreProducts = useCallback(async (page) => {
+    try {
+      const res = await getAdminProductsPaginated(page, 8);
+      setProducts((prev) => [...prev, ...res.products]);
+      setProductsPage(res.currentPage);
+      setHasMoreProducts(res.hasMore);
+      setTotalProducts(res.totalProducts);
+    } catch {
+      // Ignore
+    }
+  }, []);
+
+  useEffect(() => {
+    const sentinel = sentinelRef.current;
+    if (!sentinel || activeTab !== "products") return undefined;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMoreProducts && !isLoadingMoreProducts && !isFetchingTab) {
+          setIsLoadingMoreProducts(true);
+          loadMoreProducts(productsPage + 1).finally(() => setIsLoadingMoreProducts(false));
+        }
+      },
+      { rootMargin: "200px" }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [hasMoreProducts, isLoadingMoreProducts, isFetchingTab, productsPage, loadMoreProducts, activeTab]);
+
   useEffect(() => {
     if (token) {
       loadAdmin();
@@ -298,10 +332,17 @@ function Admin() {
       setIsFetchingTab(true);
       try {
         if (activeTab === "products") {
-          const [nextProducts, nextCats, nextSubcats] = await Promise.all([
-            getAdminProducts(), getAdminCategories(), getAdminSubcategories()
+          const [nextProductsRes, nextCats, nextSubcats] = await Promise.all([
+            getAdminProductsPaginated(1, 8), getAdminCategories(), getAdminSubcategories()
           ]);
-          if (mounted) { setProducts(nextProducts); setCategories(nextCats); setSubcategories(nextSubcats); }
+          if (mounted) { 
+            setProducts(nextProductsRes.products || []); 
+            setProductsPage(nextProductsRes.currentPage || 1);
+            setHasMoreProducts(nextProductsRes.hasMore || false);
+            setTotalProducts(nextProductsRes.totalProducts || (nextProductsRes.products || []).length);
+            setCategories(nextCats); 
+            setSubcategories(nextSubcats); 
+          }
         } else if (activeTab === "categories") {
           const nextCats = await getAdminCategories();
           if (mounted) setCategories(nextCats);
@@ -574,91 +615,108 @@ function Admin() {
 
           {activeTab === "products" && (
             <div className="grid gap-5 xl:grid-cols-[420px_1fr]">
-              <Panel title={editingProductId ? "Edit Product" : "Add Product"} className="xl:sticky xl:top-4 self-start">
-                <form onSubmit={saveProduct} className="grid gap-4">
-                  <Field label="Name" value={productForm.name} onChange={(value) => setProductForm({ ...productForm, name: value })} required />
-                  <ImageField value={productForm.image} onUrlChange={(value) => setProductForm({ ...productForm, image: value })} onFileChange={handleImageFile} />
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <MultiSelectField label="Categories" values={selectedCategories} options={categoryOptions} onToggle={toggleProductCategory} />
-                    <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
-                  </div>
-                  <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
-                  <GroupedSubcategoryField
-                    label="Subcategories"
-                    values={productForm.subcategories}
-                    groups={groupedSubcategories}
-                    onToggle={(subName) => {
-                      setProductForm((current) => {
-                        const currentSubs = current.subcategories || [];
-                        const exists = currentSubs.includes(subName);
-                        return {
-                          ...current,
-                          subcategories: exists
-                            ? currentSubs.filter((s) => s !== subName)
-                            : [...currentSubs, subName],
-                        };
-                      });
-                    }}
-                    onClear={() => setProductForm({ ...productForm, subcategories: [] })}
-                  />
-                  <WeightEditor
-                    weights={productForm.weights}
-                    defaultWeight={productForm.defaultWeight}
-                    onToggle={toggleProductWeight}
-                    onPriceChange={updateProductWeight}
-                    onDefaultChange={setDefaultWeight}
-                  />
-                  <Textarea label="Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
-                  <div className="grid gap-2 sm:grid-cols-2">
-                    {[
-                      ["isActive", "Active"],
-                      ["isFeatured", "Featured"],
-                      ["isBestSeller", "Bestseller"],
-                      ["isTrending", "Trending"],
-                      ["customizable", "Customizable"],
-                      ["sameDayDelivery", "Same Day Delivery"]
-                    ].map(([key, label]) => (
-                      <Check
-                        key={key}
-                        label={label}
-                        checked={productForm[key]}
-                        onChange={(checked) => setProductForm({ ...productForm, [key]: checked })}
-                      />
+              <div className="xl:sticky xl:top-4 self-start max-h-[calc(100vh-140px)] overflow-y-auto rounded-xl border border-[#ebebeb] bg-white shadow-sm shadow-black/5 scrollbar-hide">
+                <div className="sticky top-0 z-10 bg-white px-5 pt-5 pb-3 border-b border-[#f1f1f1]">
+                  <h2 className="text-xl font-black text-[#1f2221]">{editingProductId ? "Edit Product" : "Add Product"}</h2>
+                </div>
+                <div className="p-5 pt-4">
+                  <form onSubmit={saveProduct} className="grid gap-4">
+                    <Field label="Name" value={productForm.name} onChange={(value) => setProductForm({ ...productForm, name: value })} required />
+                    <ImageField value={productForm.image} onUrlChange={(value) => setProductForm({ ...productForm, image: value })} onFileChange={handleImageFile} />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <MultiSelectField label="Categories" values={selectedCategories} options={categoryOptions} onToggle={toggleProductCategory} />
+                      <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
+                    </div>
+                    <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
+                    <GroupedSubcategoryField
+                      label="Subcategories"
+                      values={productForm.subcategories}
+                      groups={groupedSubcategories}
+                      onToggle={(subName) => {
+                        setProductForm((current) => {
+                          const currentSubs = current.subcategories || [];
+                          const exists = currentSubs.includes(subName);
+                          return {
+                            ...current,
+                            subcategories: exists
+                              ? currentSubs.filter((s) => s !== subName)
+                              : [...currentSubs, subName],
+                          };
+                        });
+                      }}
+                      onClear={() => setProductForm({ ...productForm, subcategories: [] })}
+                    />
+                    <WeightEditor
+                      weights={productForm.weights}
+                      defaultWeight={productForm.defaultWeight}
+                      onToggle={toggleProductWeight}
+                      onPriceChange={updateProductWeight}
+                      onDefaultChange={setDefaultWeight}
+                    />
+                    <Textarea label="Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {[
+                        ["isActive", "Active"],
+                        ["isFeatured", "Featured"],
+                        ["isBestSeller", "Bestseller"],
+                        ["isTrending", "Trending"],
+                        ["customizable", "Customizable"],
+                        ["sameDayDelivery", "Same Day Delivery"]
+                      ].map(([key, label]) => (
+                        <Check
+                          key={key}
+                          label={label}
+                          checked={productForm[key]}
+                          onChange={(checked) => setProductForm({ ...productForm, [key]: checked })}
+                        />
+                      ))}
+                    </div>
+                    <button className="bk-btn h-11 text-sm"><Save size={16} /> Save Product</button>
+                  </form>
+                </div>
+              </div>
+              <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-xl border border-[#ebebeb] bg-white shadow-sm shadow-black/5 scrollbar-hide">
+                <div className="sticky top-0 z-10 bg-white px-5 pt-5 pb-3 border-b border-[#f1f1f1] flex items-center justify-between">
+                  <h2 className="text-xl font-black text-[#1f2221]">Product Catalog</h2>
+                  <span className="text-sm font-bold text-[#6f7573]">{totalProducts} products</span>
+                </div>
+                <div className="p-5 pt-4">
+                  <div className="grid gap-3">
+                    {products.map((product) => (
+                      <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[72px_1fr_auto] sm:items-center">
+                        <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
+                        <div>
+                          <h3 className="font-black">{product.name}</h3>
+                          <p className="text-sm font-bold text-[#6f7573]">
+                            {(product.categories?.length ? product.categories.join(", ") : product.category)}{(product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : [])).length > 0 ? ` / ${(product.subcategories?.length ? product.subcategories : [product.subcategory]).join(", ")}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
+                          </p>
+                          <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-black ${product.isActive === false ? "bg-red-50 text-red-600" : "bg-[#e8f8ef] text-[#0f8b57]"}`}>
+                            {product.isActive === false ? "Disabled" : "Active"}
+                          </span>
+                        </div>
+                        <div className="flex gap-2">
+                          <IconButton
+                            label={product.isActive === false ? "Enable" : "Disable"}
+                            icon={Power}
+                            onClick={async () => {
+                              await updateAdminProduct(product.id, { ...product, isActive: product.isActive === false });
+                              await loadAdmin();
+                            }}
+                          />
+                          <IconButton label="Edit" icon={Edit3} onClick={() => editProduct(product)} />
+                          <IconButton label="Delete" icon={Trash2} danger onClick={async () => { await deleteAdminProduct(product.id); await loadAdmin(); }} />
+                        </div>
+                      </div>
                     ))}
                   </div>
-                  <button className="bk-btn h-11 text-sm"><Save size={16} /> Save Product</button>
-                </form>
-              </Panel>
-              <Panel title="Product Catalog">
-                <div className="grid gap-3">
-                  {products.map((product) => (
-                    <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[72px_1fr_auto] sm:items-center">
-                      <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
-                      <div>
-                        <h3 className="font-black">{product.name}</h3>
-                        <p className="text-sm font-bold text-[#6f7573]">
-                          {(product.categories?.length ? product.categories.join(", ") : product.category)}{(product.subcategories?.length ? product.subcategories : (product.subcategory ? [product.subcategory] : [])).length > 0 ? ` / ${(product.subcategories?.length ? product.subcategories : [product.subcategory]).join(", ")}` : ""} | {formatPrice(product.price)} | {product.defaultWeight || product.weight} | Stock {product.stock || 0}
-                        </p>
-                        <span className={`mt-2 inline-flex rounded-full px-3 py-1 text-[11px] font-black ${product.isActive === false ? "bg-red-50 text-red-600" : "bg-[#e8f8ef] text-[#0f8b57]"}`}>
-                          {product.isActive === false ? "Disabled" : "Active"}
-                        </span>
-                      </div>
-                      <div className="flex gap-2">
-                        <IconButton
-                          label={product.isActive === false ? "Enable" : "Disable"}
-                          icon={Power}
-                          onClick={async () => {
-                            await updateAdminProduct(product.id, { ...product, isActive: product.isActive === false });
-                            await loadAdmin();
-                          }}
-                        />
-                        <IconButton label="Edit" icon={Edit3} onClick={() => editProduct(product)} />
-                        <IconButton label="Delete" icon={Trash2} danger onClick={async () => { await deleteAdminProduct(product.id); await loadAdmin(); }} />
-                      </div>
+                  {isLoadingMoreProducts && (
+                    <div className="flex justify-center py-4">
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#ebebeb] border-t-[#e61951]" />
                     </div>
-                  ))}
+                  )}
+                  <div ref={sentinelRef} className="h-2" />
                 </div>
-              </Panel>
+              </div>
             </div>
           )}
 

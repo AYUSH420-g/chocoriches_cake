@@ -275,6 +275,9 @@ function blockAdminUser(id, payload) {
 function getAdminProducts() {
   return adminRequest("/products");
 }
+function getAdminProductsPaginated(page = 1, limit = 8) {
+  return adminRequest(`/products?page=${page}&limit=${limit}`);
+}
 function createAdminProduct(payload) {
   return adminRequest("/products", {
     method: "POST",
@@ -418,6 +421,7 @@ export {
   getAdminOrders,
   getAdminPincodes,
   getAdminProducts,
+  getAdminProductsPaginated,
   getAdminSettings,
   getAdminSummary,
   getAdminUsers,

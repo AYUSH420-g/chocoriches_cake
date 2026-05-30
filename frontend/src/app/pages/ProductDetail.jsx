@@ -272,7 +272,7 @@ function ProductDetail() {
                 <h2 className="text-base font-black text-[#1f2221]">Select Weight</h2>
                 <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span>
               </div>
-              <div className="grid gap-3 sm:grid-cols-3">
+              <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
                 {weightOptions.map((option) => (
                   <button
                     key={option.label}

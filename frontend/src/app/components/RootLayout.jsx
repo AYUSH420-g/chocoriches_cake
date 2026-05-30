@@ -254,8 +254,8 @@ function RootLayout() {
             
           </div>
 
-          <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1]">
-            <div className="flex min-w-0 flex-1 justify-center gap-1">
+          <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+            <div className="flex min-w-0 flex-1 lg:justify-center gap-1">
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
                 const hasSubs = subs && subs.length > 0;

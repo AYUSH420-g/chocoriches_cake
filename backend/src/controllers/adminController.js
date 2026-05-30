@@ -167,12 +167,44 @@ export async function blockUser(req, res) {
   res.json(adminViewUser(updatedUser));
 }
 
-export async function products(_req, res) {
-  const source = isDatabaseConnected()
-    ? await Product.find({}).sort({ createdAt: -1 }).lean()
-    : memory.products;
+export async function products(req, res) {
+  const page = parseInt(req.query.page, 10) || 0;
+  const limit = parseInt(req.query.limit, 10) || 0;
 
-  res.json(source.map(adminProductView));
+  // If no pagination params, return all (backward compatible)
+  if (!page || !limit) {
+    const source = isDatabaseConnected()
+      ? await Product.find({}).sort({ createdAt: -1 }).lean()
+      : memory.products;
+    res.json(source.map(adminProductView));
+    return;
+  }
+
+  const skip = (page - 1) * limit;
+
+  if (isDatabaseConnected()) {
+    const [source, total] = await Promise.all([
+      Product.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Product.countDocuments(),
+    ]);
+    res.json({
+      products: source.map(adminProductView),
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalProducts: total,
+      hasMore: skip + source.length < total,
+    });
+  } else {
+    const total = memory.products.length;
+    const sliced = memory.products.slice(skip, skip + limit);
+    res.json({
+      products: sliced.map(adminProductView),
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalProducts: total,
+      hasMore: skip + sliced.length < total,
+    });
+  }
 }
 
 export async function createProduct(req, res) {
