@@ -51,11 +51,15 @@ function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const pageRef = useRef(1);
+  const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
 
-  const loadPage = useCallback(async (page) => {
+  const loadPage = useCallback(async (page, requestId = requestIdRef.current) => {
     try {
       const data = await getProductsPaginated({}, page, 8);
+      if (requestId !== requestIdRef.current) {
+        return null;
+      }
       if (page === 1) {
         setAllCakes(data.products);
       } else {
@@ -63,14 +67,39 @@ function Home() {
       }
       setHasMore(data.hasMore);
       pageRef.current = data.currentPage;
+      return data;
     } catch {
-      if (page === 1) setAllCakes([]);
+      if (requestId === requestIdRef.current && page === 1) {
+        setAllCakes([]);
+        setHasMore(false);
+      }
+      return null;
     }
   }, []);
 
   useEffect(() => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    let cancelled = false;
     setIsLoading(true);
-    loadPage(1).finally(() => setIsLoading(false));
+    setLoadingMore(false);
+    setHasMore(true);
+    pageRef.current = 1;
+    loadPage(1, requestId).then((firstPage) => {
+      if (cancelled || requestId !== requestIdRef.current) return;
+      setIsLoading(false);
+      if (!firstPage?.hasMore) return;
+
+      setLoadingMore(true);
+      loadPage(firstPage.currentPage + 1, requestId).finally(() => {
+        if (!cancelled && requestId === requestIdRef.current) {
+          setLoadingMore(false);
+        }
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [loadPage]);
 
   useEffect(() => {
@@ -79,8 +108,13 @@ function Home() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
+          const requestId = requestIdRef.current;
           setLoadingMore(true);
-          loadPage(pageRef.current + 1).finally(() => setLoadingMore(false));
+          loadPage(pageRef.current + 1, requestId).finally(() => {
+            if (requestId === requestIdRef.current) {
+              setLoadingMore(false);
+            }
+          });
         }
       },
       { rootMargin: "200px" }
@@ -161,7 +195,7 @@ function Home() {
                   <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
                 </div>
               ))
-            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} oneLineTitleOnMobile />)}
+            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} oneLineTitleOnMobile inlineRating />)}
         </div>
         {!isLoading && !allCakes.length && (
           <div className="bk-card py-10 text-center md:py-12">

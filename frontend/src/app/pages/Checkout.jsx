@@ -16,6 +16,10 @@ const deliverySlots = [
   { value: "scheduled-10-1", label: "Selected Date, 10 AM - 1 PM", copy: "Scheduled fresh delivery", price: "Free", type: "selected" },
 ];
 
+function normalizePincode(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 6);
+}
+
 function getLocalDateString(offsetDays = 0) {
   const d = new Date();
   if (offsetDays) {
@@ -98,6 +102,9 @@ function Checkout() {
     event.preventDefault();
     const currentStepData = Object.fromEntries(new FormData(event.currentTarget).entries());
     const nextCheckoutData = { ...checkoutData, ...currentStepData };
+    if (nextCheckoutData.pincode) {
+      nextCheckoutData.pincode = normalizePincode(nextCheckoutData.pincode);
+    }
     setCheckoutData(nextCheckoutData);
 
     if (!cart.length) {
@@ -108,6 +115,10 @@ function Checkout() {
 
     if (step < 3) {
       if (step === 1) {
+        if (normalizePincode(nextCheckoutData.pincode).length !== 6) {
+          toast.error("Please enter a valid 6-digit pincode");
+          return;
+        }
         const pincodeResult = await checkPincode(nextCheckoutData.pincode).catch(() => null);
         if (!pincodeResult?.serviceable) {
           toast.error("Delivery is not available for this pincode");
@@ -466,10 +477,22 @@ function Checkout() {
 }
 
 function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength }) {
+  const isPincode = name === "pincode";
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
-      <input name={name} type={type} placeholder={placeholder} required={required} defaultValue={defaultValue} min={min} maxLength={maxLength} className="bk-input h-12 px-3 text-sm md:px-4" />
+      <input
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        defaultValue={isPincode ? normalizePincode(defaultValue) : defaultValue}
+        min={min}
+        maxLength={isPincode ? 6 : maxLength}
+        inputMode={isPincode ? "numeric" : undefined}
+        onInput={isPincode ? (event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); } : undefined}
+        className="bk-input h-12 px-3 text-sm md:px-4"
+      />
     </label>
   );
 }

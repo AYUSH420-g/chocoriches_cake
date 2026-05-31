@@ -9,6 +9,10 @@ import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
 import { wishlistIds } from "../utils/wishlist";
 
+function normalizePincode(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 6);
+}
+
 function Profile() {
   const navigate = useNavigate();
   const [orders, setOrders] = useState([]);
@@ -82,6 +86,11 @@ function Profile() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const payload = Object.fromEntries(formData.entries());
+    payload.pincode = normalizePincode(payload.pincode);
+    if (payload.pincode.length !== 6) {
+      toast.error("Please enter a valid 6-digit pincode");
+      return;
+    }
     try {
       const updatedUser = await addAddress(payload);
       setProfile(updatedUser);
@@ -606,7 +615,14 @@ function Profile() {
                       </label>
                       <label className="block">
                         <span className="mb-1 block text-xs font-bold text-[#6f7573]">Pincode</span>
-                        <input name="pincode" required className="bk-input h-10 px-3 text-sm" />
+                        <input
+                          name="pincode"
+                          required
+                          inputMode="numeric"
+                          maxLength={6}
+                          onInput={(event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); }}
+                          className="bk-input h-10 px-3 text-sm"
+                        />
                       </label>
                       <label className="block">
                         <span className="mb-1 block text-xs font-bold text-[#6f7573]">City</span>

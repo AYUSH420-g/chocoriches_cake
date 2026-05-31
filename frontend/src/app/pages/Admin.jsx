@@ -96,6 +96,10 @@ const emptySubcategory = { name: "", category: "", isActive: true, sortOrder: 0 
 const emptyPincode = { pincode: "", city: "", state: "", deliveryFee: 0, isActive: true };
 const emptyDate = { date: "", reason: "", isActive: true };
 
+function normalizePincode(value) {
+  return String(value || "").replace(/\D/g, "").slice(0, 6);
+}
+
 function Admin() {
   const [token, setToken] = useState(() => localStorage.getItem("chocoriches_admin_token") || "");
   const [loginForm, setLoginForm] = useState({ email: "", password: "" });
@@ -474,11 +478,16 @@ function Admin() {
 
   const savePincode = async (event) => {
     event.preventDefault();
+    const payload = { ...pincodeForm, pincode: normalizePincode(pincodeForm.pincode) };
+    if (payload.pincode.length !== 6) {
+      toast.error("Please enter a valid 6-digit pincode");
+      return;
+    }
     if (editingPincodeId) {
-      await updateAdminPincode(editingPincodeId, pincodeForm);
+      await updateAdminPincode(editingPincodeId, payload);
       toast.success("Pincode updated");
     } else {
-      await createAdminPincode(pincodeForm);
+      await createAdminPincode(payload);
       toast.success("Pincode added");
     }
     setPincodeForm(emptyPincode);
@@ -1075,7 +1084,7 @@ function WeightEditor({ weights, defaultWeight, onToggle, onPriceChange, onDefau
   );
 }
 
-function Field({ label, type = "text", value, onChange, required = false, className = "" }) {
+function Field({ label, type = "text", value, onChange, required = false, className = "", maxLength, inputMode }) {
   return (
     <label className={`block ${className}`}>
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
@@ -1084,6 +1093,8 @@ function Field({ label, type = "text", value, onChange, required = false, classN
         value={value ?? ""}
         onChange={(event) => onChange(event.target.value)}
         required={required}
+        maxLength={maxLength}
+        inputMode={inputMode}
         className="bk-input h-11 px-3 text-sm"
       />
     </label>
@@ -1283,8 +1294,10 @@ function CrudPanel({ title, onSubmit, form, setForm, fields, checkboxLabel, rows
               label={field.replace(/([A-Z])/g, " $1")}
               type={field === "date" ? "date" : field.toLowerCase().includes("fee") || field === "sortOrder" ? "number" : "text"}
               value={form[field]}
-              onChange={(value) => setForm({ ...form, [field]: value })}
+              onChange={(value) => setForm({ ...form, [field]: field === "pincode" ? normalizePincode(value) : value })}
               required={field === "name" || field === "pincode" || field === "date"}
+              maxLength={field === "pincode" ? 6 : undefined}
+              inputMode={field === "pincode" ? "numeric" : undefined}
             />
           ))}
           <Check label={checkboxLabel} checked={form.isActive} onChange={(checked) => setForm({ ...form, isActive: checked })} />

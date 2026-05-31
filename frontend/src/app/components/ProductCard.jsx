@@ -6,7 +6,7 @@ import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 
-function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, mobileShopCard = false }) {
+function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, mobileShopCard = false, inlineRating = false }) {
   const { addProduct, itemForProduct, setQuantity } = useCart();
   const defaultWeight = product.defaultWeight || product.weightOptions?.[0]?.label || "Half Kg";
   const cartItem = itemForProduct(product.id, defaultWeight);
@@ -77,7 +77,7 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
           >
             <Heart size={17} fill={liked ? "currentColor" : "none"} />
           </button>
-          {product.numOfReviews > 0 && (
+          {product.numOfReviews > 0 && !inlineRating && (
             <span className={`bk-rating absolute bottom-2.5 left-2.5 md:bottom-3 md:left-3 ${mobileShopCard ? "hidden md:inline-flex" : ""}`}>
               {product.ratings ? product.ratings.toFixed(1) : 0}
               <Star size={11} fill="currentColor" />
@@ -99,8 +99,8 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
                 <span className="pb-0.5 text-xs font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(product.price, product.discountPercent)}</span>
               )}
             </div>
-            {mobileShopCard && product.numOfReviews > 0 && (
-              <div className="mb-1.5 flex items-center justify-between gap-2 md:hidden">
+            {(mobileShopCard || inlineRating) && product.numOfReviews > 0 && (
+              <div className={`mb-1.5 flex items-center justify-between gap-2 ${mobileShopCard && !inlineRating ? "md:hidden" : ""}`}>
                 <span className="bk-rating">
                   {product.ratings ? product.ratings.toFixed(1) : 0}
                   <Star size={11} fill="currentColor" />
@@ -109,14 +109,14 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
               </div>
             )}
             <div className={`${mobileShopCard ? "hidden md:flex" : "flex"} flex-wrap items-center justify-between gap-x-2 gap-y-1`}>
-              {product.numOfReviews > 0 && (
+              {product.numOfReviews > 0 && !inlineRating && (
                 <p className="text-[11px] font-bold text-[#6f7573]">({product.numOfReviews} Reviews)</p>
               )}
-              {product.sameDayDelivery && (
+              {/* {product.sameDayDelivery && (
                 <p className="text-[11px] font-bold text-[#6f7573]">
                   Delivery: <span className="text-[#0f8b57]">Today</span>
                 </p>
-              )}
+              )} */}
             </div>
           </div>
         </div>

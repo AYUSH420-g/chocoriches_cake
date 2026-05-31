@@ -27,6 +27,7 @@ function Shop() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const pageRef = useRef(1);
+  const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
   const searchQuery = searchParams.get("q") || "";
 
@@ -37,7 +38,7 @@ function Shop() {
     setActiveFilters(filter && filters.includes(filter) ? [filter] : []);
   }, [searchParams]);
 
-  const loadPage = useCallback(async (page, query, cat, subcat, filterArr, sort) => {
+  const loadPage = useCallback(async (page, query, cat, subcat, filterArr, sort, requestId = requestIdRef.current) => {
     try {
       const options = { q: query };
       if (cat && cat !== "All") options.category = cat;
@@ -48,6 +49,9 @@ function Shop() {
       if (sort) options.sortBy = sort;
 
       const data = await getProductsPaginated(options, page, 8);
+      if (requestId !== requestIdRef.current) {
+        return null;
+      }
       if (page === 1) {
         setProducts(data.products);
       } else {
@@ -55,25 +59,53 @@ function Shop() {
       }
       setHasMore(data.hasMore);
       pageRef.current = data.currentPage;
+      return data;
     } catch {
-      if (page === 1) setProducts([]);
+      if (requestId === requestIdRef.current && page === 1) {
+        setProducts([]);
+        setHasMore(false);
+      }
+      return null;
     }
   }, []);
 
   useEffect(() => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    let cancelled = false;
     setIsLoading(true);
+    setLoadingMore(false);
     setProducts([]);
     pageRef.current = 1;
     setHasMore(true);
-    loadPage(1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy).finally(() => setIsLoading(false));
+    loadPage(1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).then((firstPage) => {
+      if (cancelled || requestId !== requestIdRef.current) return;
+      setIsLoading(false);
+      if (!firstPage?.hasMore) return;
 
-    // Load categories/subcategories with slight delay so products API gets priority
-    const timer = setTimeout(() => {
-      getCategories().then(setCategories).catch(() => {});
-      getSubcategories().then(setSubcategories).catch(() => {});
-    }, 300);
-    return () => clearTimeout(timer);
+      setLoadingMore(true);
+      loadPage(firstPage.currentPage + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).finally(() => {
+        if (!cancelled && requestId === requestIdRef.current) {
+          setLoadingMore(false);
+        }
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, loadPage]);
+
+  useEffect(() => {
+    let mounted = true;
+    const timer = setTimeout(() => {
+      getCategories().then((items) => { if (mounted) setCategories(items); }).catch(() => {});
+      getSubcategories().then((items) => { if (mounted) setSubcategories(items); }).catch(() => {});
+    }, 300);
+    return () => {
+      mounted = false;
+      clearTimeout(timer);
+    };
+  }, []);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -81,8 +113,13 @@ function Shop() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && hasMore && !loadingMore && !isLoading) {
+          const requestId = requestIdRef.current;
           setLoadingMore(true);
-          loadPage(pageRef.current + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy).finally(() => setLoadingMore(false));
+          loadPage(pageRef.current + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).finally(() => {
+            if (requestId === requestIdRef.current) {
+              setLoadingMore(false);
+            }
+          });
         }
       },
       { rootMargin: "200px" }

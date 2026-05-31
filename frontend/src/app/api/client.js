@@ -2,6 +2,8 @@ import { getCartSessionId, getUserToken } from "../utils/session";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 const API_BASE_URLS = apiBaseUrls(API_BASE_URL);
+const productDetailRequests = new Map();
+let publicSettingsRequest = null;
 
 function apiBaseUrls(baseUrl) {
   const normalizedBase = baseUrl.replace(/\/$/, "");
@@ -115,7 +117,17 @@ function getProductsPaginated(filters = {}, page = 1, limit = 12) {
   return request(`/products?${searchParams.toString()}`);
 }
 function getProduct(id) {
-  return request(`/products/${id}`);
+  const productId = String(id || "");
+  if (!productDetailRequests.has(productId)) {
+    productDetailRequests.set(
+      productId,
+      request(`/products/${encodeURIComponent(productId)}`).catch((error) => {
+        productDetailRequests.delete(productId);
+        throw error;
+      })
+    );
+  }
+  return productDetailRequests.get(productId);
 }
 function getCart() {
   return request("/cart");
@@ -207,7 +219,10 @@ function getRazorpayConfig() {
   return request("/payments/razorpay/config");
 }
 function getPublicSettings() {
-  return request("/settings");
+  if (!publicSettingsRequest) {
+    publicSettingsRequest = request("/settings");
+  }
+  return publicSettingsRequest;
 }
 function getCategories() {
   return request("/categories");

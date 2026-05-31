@@ -14,7 +14,7 @@ import {
   User,
   X
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { Toaster } from "sonner";
 import { getPublicSettings, getCategories, getSubcategories } from "../api/client";
@@ -41,6 +41,7 @@ function RootLayout() {
   const [dbSubcategories, setDbSubcategories] = useState([]);
   const [hoveredCat, setHoveredCat] = useState(null);
   const [mobileExpandedCat, setMobileExpandedCat] = useState(null);
+  const closeMenuTimerRef = useRef(null);
   const { cartCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ function RootLayout() {
 
   useEffect(() => {
     let mounted = true;
-    const loadSettings = () => getPublicSettings()
+    getPublicSettings()
       .then((nextSettings) => {
         if (mounted) {
           setSettings(nextSettings);
@@ -101,12 +102,8 @@ function RootLayout() {
       })
       .catch(() => void 0);
 
-    loadSettings();
-    const intervalId = window.setInterval(loadSettings, 60000);
-
     return () => {
       mounted = false;
-      window.clearInterval(intervalId);
     };
   }, []);
 
@@ -122,6 +119,12 @@ function RootLayout() {
         .catch(() => {});
     }, 500);
     return () => { mounted = false; clearTimeout(timer); };
+  }, []);
+
+  useEffect(() => () => {
+    if (closeMenuTimerRef.current) {
+      window.clearTimeout(closeMenuTimerRef.current);
+    }
   }, []);
 
   const handleSearchSubmit = (event) => {
@@ -146,6 +149,29 @@ function RootLayout() {
     if (location.pathname !== "/shop") return false;
     const params = new URLSearchParams(location.search);
     return params.get("cat") === catLabel && params.get("subcat") === subName;
+  };
+
+  const keepDesktopMenuOpen = () => {
+    if (closeMenuTimerRef.current) {
+      window.clearTimeout(closeMenuTimerRef.current);
+      closeMenuTimerRef.current = null;
+    }
+  };
+
+  const openDesktopMenu = (label, target) => {
+    keepDesktopMenuOpen();
+    const rect = target.getBoundingClientRect();
+    const menuWidth = 220;
+    setHoveredCat({
+      label,
+      left: Math.max(16, Math.min(rect.left, window.innerWidth - menuWidth - 16)),
+      top: rect.bottom,
+    });
+  };
+
+  const scheduleDesktopMenuClose = () => {
+    keepDesktopMenuOpen();
+    closeMenuTimerRef.current = window.setTimeout(() => setHoveredCat(null), 120);
   };
 
   if (settings.maintenanceMode) {
@@ -262,52 +288,24 @@ function RootLayout() {
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
                 const hasSubs = subs && subs.length > 0;
-                const isOpen = hoveredCat === item.label;
+                const isOpen = hoveredCat?.label === item.label;
                 return (
                   <div
                     key={item.label}
                     className="relative"
-                    onMouseEnter={() => hasSubs && setHoveredCat(item.label)}
-                    onMouseLeave={() => setHoveredCat(null)}
+                    onMouseEnter={(event) => hasSubs && openDesktopMenu(item.label, event.currentTarget)}
+                    onMouseLeave={hasSubs ? scheduleDesktopMenuClose : undefined}
                   >
                     <Link
                       to={item.to}
                       className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-bold transition md:py-2 ${
-                        isActiveCategory(item.to)
+                        isActiveCategory(item.to) || isOpen
                           ? "bg-[#fff2e9] text-[#e61951]"
                           : "text-[#323635] hover:bg-[#fff2e9] hover:text-[#e61951]"
                       }`}
                     >
                       {item.label}
                     </Link>
-                    {hasSubs && isOpen && (
-                      <div className="absolute left-0 top-full z-[100] pt-1">
-                        <div className="min-w-[180px] rounded-xl border border-[#ebebeb] bg-white py-2 shadow-xl">
-                          <Link
-                            to={item.to}
-                            className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
-                            onClick={() => setHoveredCat(null)}
-                          >
-                            {item.label}
-                          </Link>
-                          <div className="my-1 border-t border-[#f1f1f1]" />
-                          {subs.map((sub) => (
-                            <Link
-                              key={sub.id}
-                              to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className={`block px-4 py-2 text-sm font-normal transition hover:bg-[#fff2e9] hover:text-[#e61951] ${
-                                isActiveSubcategory(item.label, sub.name)
-                                  ? "bg-[#fff2e9] text-[#e61951] font-semibold"
-                                  : "text-[#323635]"
-                              }`}
-                              onClick={() => setHoveredCat(null)}
-                            >
-                              {sub.name}
-                            </Link>
-                          ))}
-                        </div>
-                      </div>
-                    )}
                   </div>
                 );
               })}
@@ -320,6 +318,39 @@ function RootLayout() {
               Order Custom
             </Link>
           </div>
+          {hoveredCat?.label && subcatsByCategory[hoveredCat.label]?.length > 0 && (
+            <div
+              className="fixed z-[200] hidden pt-1 lg:block"
+              style={{ left: hoveredCat.left, top: hoveredCat.top }}
+              onMouseEnter={keepDesktopMenuOpen}
+              onMouseLeave={scheduleDesktopMenuClose}
+            >
+              <div className="min-w-[220px] rounded-xl border border-[#ebebeb] bg-white py-2 shadow-xl shadow-black/10">
+                <Link
+                  to={`/shop?cat=${encodeURIComponent(hoveredCat.label)}`}
+                  className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                  onClick={() => setHoveredCat(null)}
+                >
+                  {hoveredCat.label}
+                </Link>
+                <div className="my-1 border-t border-[#f1f1f1]" />
+                {subcatsByCategory[hoveredCat.label].map((sub) => (
+                  <Link
+                    key={sub.id}
+                    to={`/shop?cat=${encodeURIComponent(hoveredCat.label)}&subcat=${encodeURIComponent(sub.name)}`}
+                    className={`block px-4 py-2 text-sm font-normal transition hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                      isActiveSubcategory(hoveredCat.label, sub.name)
+                        ? "bg-[#fff2e9] text-[#e61951] font-semibold"
+                        : "text-[#323635]"
+                    }`}
+                    onClick={() => setHoveredCat(null)}
+                  >
+                    {sub.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </header>
 
@@ -403,12 +434,12 @@ function RootLayout() {
                         )}
                       </div>
                       {hasSubs && isExpanded && (
-                        <div className="ml-4 mb-1 border-l-2 border-[#fff2e9] pl-2">
+                        <div className="mb-1 grid gap-1">
                           {subs.map((sub) => (
                             <Link
                               key={sub.id}
                               to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className={`block rounded-lg px-4 py-2 text-sm font-medium hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                              className={`block rounded-lg px-8 py-2.5 text-sm font-medium hover:bg-[#fff2e9] hover:text-[#e61951] ${
                                 isActiveSubcategory(item.label, sub.name)
                                   ? "bg-[#fff2e9] text-[#e61951]"
                                   : "text-[#6f7573]"

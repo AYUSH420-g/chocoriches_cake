@@ -163,7 +163,7 @@ function Auth() {
                   <Link to="/forgot-password" className=" font-normal text-[#e61951]">Forgot Password?</Link>
                 </div>
               )}
-              <button type="submit" disabled={loading} className="bk-btn h-[58px] w-full text-base disabled:opacity-60">
+              <button type="submit" disabled={loading} className="bk-btn h-[48px] w-full text-base disabled:opacity-60">
                 {loading ? "Please wait..." : "Continue"}
               </button>
             </motion.form>
@@ -179,7 +179,7 @@ function Auth() {
             type="button"
             onClick={() => handleGoogleLogin()}
             disabled={loading}
-            className="flex h-[58px] w-full items-center justify-center gap-3 rounded-[10px] border border-[#dfe3e1] bg-white text-sm font-black text-[#1f2221] transition hover:bg-[#f7f7f7] disabled:opacity-60"
+            className="flex h-[48px] w-full items-center justify-center gap-3 rounded-[10px] border border-[#dfe3e1] bg-white text-sm font-black text-[#1f2221] transition hover:bg-[#f7f7f7] disabled:opacity-60"
           >
             <GoogleLogo />
             Continue with Google
