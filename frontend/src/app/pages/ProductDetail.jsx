@@ -192,9 +192,9 @@ function ProductDetail() {
   const effectivePrice = Number(selectedWeight.price || product.price || 0);
 
   return (
-    <div className="bk-page">
-      <div className="bk-shell py-5">
-        <nav className="mb-5 flex flex-wrap items-center gap-2 text-xs font-bold text-[#6f7573]">
+    <div className="bk-page max-md:pb-20">
+      <div className="bk-shell py-4 max-md:px-0 md:py-5">
+        <nav className="mb-3 flex flex-wrap items-center gap-1.5 px-4 text-xs font-bold text-[#6f7573] md:mb-5 md:gap-2 md:px-0">
           <Link to="/" className="hover:text-[#e61951]">Home</Link>
           <ChevronRight size={13} />
           <Link to="/shop" className="hover:text-[#e61951]">Cakes</Link>
@@ -202,13 +202,13 @@ function ProductDetail() {
           <span className="text-[#1f2221]">{product.name}</span>
         </nav>
 
-        <div className="grid gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid gap-4 md:gap-5 lg:grid-cols-[0.85fr_1.15fr]">
           <motion.div
             initial={{ opacity: 0, x: -18 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bk-card overflow-hidden p-3 self-start"
+            className="bk-card self-start overflow-hidden p-3 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:shadow-none"
           >
-            <div className="relative aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
+            <div className="relative aspect-square overflow-hidden bg-[#f1f1f1] md:rounded-lg">
               <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
               <button
                 type="button"
@@ -216,32 +216,32 @@ function ProductDetail() {
                 aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
                 aria-pressed={liked}
                 onClick={handleWishlist}
-                className={`absolute right-4 top-4 grid h-11 w-11 place-items-center rounded-full bg-white shadow-sm ${
+                className={`absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white shadow-sm md:right-4 md:top-4 md:h-11 md:w-11 ${
                   liked ? "text-[#e61951]" : "text-[#1f2221] hover:text-[#e61951]"
                 }`}
               >
                 <Heart size={21} fill={liked ? "currentColor" : "none"} />
               </button>
-              <span className="absolute bottom-4 left-4 bk-chip px-3 py-2 text-xs">
+              <span className="bk-chip absolute bottom-3 left-3 px-3 py-2 text-xs md:bottom-4 md:left-4">
                 <CakeSlice size={14} />
                 Freshly Baked
               </span>
             </div>
             
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="mt-0 grid grid-cols-2 gap-0 border-y border-[#ebebeb] bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent">
               {[
                 [ShieldCheck, "Secure Checkout"],
                 [Clock, "Freshly Prepared"]
               ].map(([Icon, title]) => (
-                <div key={title} className="rounded-lg bg-[#ffffff] p-3 text-center">
+                <div key={title} className="bg-[#ffffff] p-3 text-center md:rounded-lg">
                   <Icon className="mx-auto text-[#e61951]" size={20} />
-                  <p className="mt-2 text-[11px] font-black uppercase tracking-[0.05em] text-[#1f2221]">{title}</p>
+                  <p className="mt-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
                 </div>
               ))}
             </div>
           </motion.div>
 
-          <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-5 md:p-7">
+          <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-4 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:shadow-none md:p-7">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
                 <>
@@ -257,11 +257,11 @@ function ProductDetail() {
               )}
             </div>
 
-            <h1 className="text-3xl font-black leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
-            <p className="mt-3 text-sm leading-6 text-[#6f7573]">{product.description}</p>
+            <h1 className="text-base font-black leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
+            <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p>
 
-            <div className="mt-5 flex flex-wrap items-end gap-3 border-y border-[#ebebeb] py-5">
-              <span className="text-3xl font-black text-[#1f2221]">{formatPrice(effectivePrice)}</span>
+            <div className="mt-4 flex flex-wrap items-end gap-3 border-y border-[#ebebeb] py-4 md:mt-5 md:py-5">
+              <span className="text-[22px] font-black text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>
               {Number(product.discountPercent || 0) > 0 && (
                 <>
                   <span className="pb-1 text-sm font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(effectivePrice, product.discountPercent)}</span>
@@ -270,12 +270,12 @@ function ProductDetail() {
               )}
             </div>
 
-            <div className="mt-5">
+            <div className="mt-4 md:mt-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-base font-black text-[#1f2221]">Select Weight</h2>
+                <h2 className="text-sm font-black text-[#1f2221] md:text-base">Select Weight</h2>
                 <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span>
               </div>
-              <div className="grid gap-3 grid-cols-2 sm:grid-cols-3">
+              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:gap-3">
                 {weightOptions.map((option) => (
                   <button
                     key={option.label}
@@ -295,7 +295,7 @@ function ProductDetail() {
               </div>
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-[1fr_auto]">
+            <div className="mt-4 grid gap-4 md:mt-5 md:grid-cols-[1fr_auto]">
               <div>
                 <label className="mb-2 block text-sm font-black text-[#1f2221]">Check Delivery</label>
                 <div className="flex overflow-hidden rounded-lg border border-[#ebebeb] bg-white">
@@ -336,8 +336,8 @@ function ProductDetail() {
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-[1fr_1fr_auto]">
-              <button type="button" onClick={handleAddToCart} className="bk-outline-btn h-12 px-5 text-sm">
+            <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#ebebeb] bg-white p-3 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:pb-[calc(12px+env(safe-area-inset-bottom))] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.1)] sm:grid-cols-[1fr_1fr_auto] md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
+              <button type="button" onClick={handleAddToCart} className="bk-outline-btn h-12 px-3 text-sm md:px-5">
                 <ShoppingCart size={18} />
                 Add To Cart
               </button>
@@ -345,7 +345,7 @@ function ProductDetail() {
                 type="button"
                 onClick={handleBuyNow}
                 disabled={isBuying}
-                className="bk-btn h-12 px-5 text-sm flex items-center justify-center gap-2"
+                className="bk-btn flex h-12 items-center justify-center gap-2 px-3 text-sm md:px-5"
               >
                 {isBuying ? (
                   <>
@@ -362,7 +362,7 @@ function ProductDetail() {
                 aria-label={liked ? "Remove from wishlist" : "Add to wishlist"}
                 aria-pressed={liked}
                 onClick={handleWishlist}
-                className={`grid h-12 w-full place-items-center rounded-lg border border-[#ebebeb] hover:bg-[#fff2e9] sm:w-12 ${
+                className={`hidden h-12 w-full place-items-center rounded-lg border border-[#ebebeb] hover:bg-[#fff2e9] sm:grid sm:w-12 ${
                   liked ? "text-[#e61951]" : "text-[#1f2221] hover:text-[#e61951]"
                 }`}
               >

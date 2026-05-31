@@ -410,14 +410,14 @@ function Profile() {
 
   return (
     <div className="bk-page">
-      <div className="bk-shell py-6">
-        <div className="grid gap-5 lg:grid-cols-[300px_1fr]">
-          <aside className="space-y-5">
-            <div className="bk-card pt-5 pb-4 px-5 text-center">
-              <span className="mx-auto grid h-24 w-24 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-4xl font-black uppercase text-white">
+      <div className="bk-shell py-5 md:py-6">
+        <div className="grid gap-4 md:gap-5 lg:grid-cols-[300px_1fr]">
+          <aside className="space-y-4 md:space-y-5">
+            <div className="bk-card px-4 pb-4 pt-4 text-center md:px-5 md:pt-5">
+              <span className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-3xl font-black uppercase text-white md:h-24 md:w-24 md:text-4xl">
                 {(profile.name || profile.email || "U").slice(0, 1)}
               </span>
-              <h1 className="mt-4 text-2xl font-black text-[#1f2221]">{profile.name}</h1>
+              <h1 className="mt-3 text-xl font-black text-[#1f2221] md:mt-4 md:text-2xl">{profile.name}</h1>
               <p className="mt-1 break-words text-sm font-bold text-[#6f7573]">{profile.email}</p>
             </div>
 
@@ -434,15 +434,15 @@ function Profile() {
             </nav>
           </aside>
 
-          <main className="space-y-5">
-            <section className="grid gap-4 md:grid-cols-2">
+          <main className="space-y-4 md:space-y-5">
+            <section className="grid gap-3 md:grid-cols-2 md:gap-4">
               {[
                 ["Total Orders", orders.length],
                 ["Saved Addresses", profile.addresses?.length || 0]
               ].map(([label, value]) => (
-                <div key={label} className="bk-card p-5">
+                <div key={label} className="bk-card p-4 md:p-5">
                   <p className="text-sm font-bold text-[#6f7573]">{label}</p>
-                  <p className="mt-2 text-3xl font-black text-[#1f2221]">{value}</p>
+                  <p className="mt-2 text-2xl font-black text-[#1f2221] md:text-3xl">{value}</p>
                 </div>
               ))}
             </section>
@@ -509,7 +509,7 @@ function Profile() {
                 ) : (
                   <div className="p-8 text-center">
                     <Package className="mx-auto text-[#e61951]" size={40} />
-                    <h3 className="mt-4 text-xl font-black text-[#1f2221]">No orders yet</h3>
+                    <h3 className="mt-4 text-lg font-black text-[#1f2221] md:text-xl">No orders yet</h3>
                     <p className="mt-2 text-sm text-[#6f7573]">Your cake orders will appear here after checkout.</p>
                     <Link to="/shop" className="bk-btn mt-5 h-11 px-5 text-sm">Shop Cakes</Link>
                   </div>
@@ -560,8 +560,8 @@ function Profile() {
             )}
 
             {activeSection === "favourites" && (
-              <section className="bk-card p-5">
-                <h2 className="text-2xl font-black text-[#1f2221]">My Favourites</h2>
+              <section className="bk-card p-4 md:p-5">
+                <h2 className="text-xl font-black text-[#1f2221] md:text-2xl">My Favourites</h2>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
                   {favouriteProducts.length ? favouriteProducts.map((product) => (
                     <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e61951]">
@@ -722,18 +722,18 @@ function Profile() {
                   className="bk-input w-full resize-none px-4 py-3 text-sm"
                 />
               </div>
-              <div className="flex justify-end gap-3">
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setReviewModal({ open: false, product: null, rating: 5, comment: "", submitting: false })}
-                  className="bk-outline-btn h-10 px-5 text-sm disabled:opacity-50"
+                  className="bk-outline-btn h-11 px-5 text-sm disabled:opacity-50 sm:h-10"
                   disabled={reviewModal.submitting}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bk-btn h-10 px-5 text-sm disabled:opacity-50"
+                  className="bk-btn h-11 px-5 text-sm disabled:opacity-50 sm:h-10"
                   disabled={reviewModal.submitting}
                 >
                   {reviewModal.submitting ? "Submitting..." : "Submit Review"}

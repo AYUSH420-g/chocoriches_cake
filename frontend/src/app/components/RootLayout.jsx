@@ -44,6 +44,7 @@ function RootLayout() {
   const { cartCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+  const isAuthPage = location.pathname === "/auth";
 
   const categoryLinks = useMemo(() => {
     const links = [{ label: "Cakes", to: "/shop" }];
@@ -168,25 +169,27 @@ function RootLayout() {
       <TopLoader />
       <Toaster position="top-center" richColors />
 
+      {!isAuthPage && (
+        <>
       <header className={`fixed inset-x-0 top-0 z-50 bg-white transition-shadow ${scrolled ? "shadow-md shadow-black/5" : "shadow-sm shadow-black/5"}`}>
         <div className="bk-shell">
-          <div className="flex h-[72px] items-center gap-3">
+          <div className="flex h-16 items-center gap-2 md:h-[72px] md:gap-3">
             <button
               type="button"
               aria-label="Open menu"
               title="Menu"
               onClick={() => setIsMenuOpen(true)}
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-[#ebebeb] text-[#1f2221] lg:hidden"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-full  text-[#1f2221] lg:hidden"
             >
-              <Menu size={21} />
+              <Menu size={20} />
             </button>
 
-            <Link to="/" className="flex shrink-0 items-center gap-2 pr-2" aria-label="ChocoRiches home">
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
-                <CakeSlice size={22} />
+            <Link to="/" className="flex min-w-0 shrink-0 items-center gap-2 pr-1 md:pr-2" aria-label="ChocoRiches home">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:h-10 md:w-10">
+                <CakeSlice size={21} />
               </span>
-              <span className="leading-none">
-                <span className="block text-[22px] font-black tracking-tight text-[#e61951]">ChocoRiches</span>
+              <span className="min-w-0 leading-none">
+                <span className="block truncate text-[20px] font-black tracking-tight text-[#e61951] md:text-[22px]">ChocoRiches</span>
                 <span className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-[#6f7573] sm:block">Fresh Cakes Online</span>
               </span>
             </Link>
@@ -231,7 +234,7 @@ function RootLayout() {
                 to="/cart"
                 title="Cart"
                 aria-label="Cart"
-                className="relative grid h-11 w-11 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                className="relative grid h-10 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
               >
                 <ShoppingCart size={21} />
                 <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#e61951] px-1 text-[10px] font-black leading-none text-white">{cartCount}</span>
@@ -240,7 +243,7 @@ function RootLayout() {
                 to={loggedIn ? "/profile" : "/auth"}
                 title={loggedIn ? "My profile" : "Login or signup"}
                 aria-label={loggedIn ? "My profile" : "Login or signup"}
-                className="grid h-11 w-11 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
+                className="grid h-10 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
               >
                 {loggedIn && user?.name ? (
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-[#fff2e9] text-xs font-black text-[#e61951] border-[#e6195150] border">
@@ -254,7 +257,7 @@ function RootLayout() {
             
           </div>
 
-          <div className="flex h-[46px] min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto lg:overflow-visible scrollbar-hide" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex h-11 min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide md:h-[46px] lg:overflow-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex min-w-0 flex-1 lg:justify-center gap-1">
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
@@ -269,7 +272,7 @@ function RootLayout() {
                   >
                     <Link
                       to={item.to}
-                      className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-bold transition ${
+                      className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-bold transition md:py-2 ${
                         isActiveCategory(item.to)
                           ? "bg-[#fff2e9] text-[#e61951]"
                           : "text-[#323635] hover:bg-[#fff2e9] hover:text-[#e61951]"
@@ -337,7 +340,7 @@ function RootLayout() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="fixed inset-y-0 left-0 z-[70] w-[86vw] max-w-sm bg-white shadow-2xl"
+              className="fixed inset-y-0 left-0 z-[70] flex w-[86vw] max-w-sm flex-col bg-white shadow-2xl"
             >
               <div className="flex h-16 items-center justify-between border-b border-[#ebebeb] px-5">
                 <Link to="/" className="flex items-center gap-2 text-xl font-black text-[#e61951]">
@@ -371,7 +374,7 @@ function RootLayout() {
                   />
                 </form>
               </div>
-              <nav className="flex flex-col p-3">
+              <nav className="flex flex-1 flex-col overflow-y-auto p-3 pb-28">
                 {categoryLinks.map((item) => {
                   const subs = subcatsByCategory[item.label];
                   const hasSubs = subs && subs.length > 0;
@@ -429,11 +432,14 @@ function RootLayout() {
           </>
         )}
       </AnimatePresence>
+        </>
+      )}
 
-      <main className="pt-[118px]">
+      <main className={isAuthPage ? "" : "pt-[108px] md:pt-[118px]"}>
         <Outlet />
       </main>
 
+      {!isAuthPage && (
       <footer className="border-t border-[#e8e8e8] bg-white">
         <div className="bk-shell py-10">
           <div className="grid gap-8 lg:grid-cols-[1.3fr_2fr_1fr]">
@@ -502,6 +508,7 @@ function RootLayout() {
           </div>
         </div>
       </footer>
+      )}
     </div>
   );
 }

@@ -44,11 +44,11 @@ export default function ResetPassword() {
   };
 
   return (
-    <div className="bk-page flex min-h-screen items-center justify-center bg-[#f7f7f7] py-12">
+    <div className="bk-page flex min-h-screen items-center justify-center bg-[#f7f7f7] py-6 md:py-12">
       <div className="bk-shell w-full max-w-md">
-        <div className="rounded-2xl border border-[#ebebeb] bg-white p-6 shadow-sm md:p-10">
-          <div className="mb-8 text-center">
-            <h1 className="text-2xl font-black tracking-tight text-[#1f2221]">Create New Password</h1>
+        <div className="rounded-lg border border-[#ebebeb] bg-white p-5 shadow-sm md:rounded-2xl md:p-10">
+          <div className="mb-6 text-center md:mb-8">
+            <h1 className="text-[22px] font-black tracking-tight text-[#1f2221] md:text-2xl">Create New Password</h1>
             <p className="mt-2 text-sm leading-6 text-[#6f7573]">
               Your new password must be different from previous used passwords.
             </p>

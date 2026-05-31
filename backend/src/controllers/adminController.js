@@ -23,6 +23,7 @@ import {
 } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
 import { adminOrders, updateOrder } from "./orderController.js";
+import { clearProductListCache } from "./productController.js";
 
 function objectIdOrField(id, field) {
   return /^[0-9a-fA-F]{24}$/.test(String(id || "")) ? { _id: id } : { [field]: id };
@@ -212,11 +213,13 @@ export async function createProduct(req, res) {
 
   if (isDatabaseConnected()) {
     const product = await Product.create(payload);
+    clearProductListCache();
     res.status(201).json(adminProductView(product.toObject()));
     return;
   }
 
   memory.products.push(payload);
+  clearProductListCache();
   res.status(201).json(adminProductView(payload));
 }
 
@@ -234,6 +237,7 @@ export async function updateProduct(req, res) {
       return;
     }
 
+    clearProductListCache();
     res.json(adminProductView(product));
     return;
   }
@@ -252,6 +256,7 @@ export async function updateProduct(req, res) {
     return;
   }
 
+  clearProductListCache();
   res.json(adminProductView(updatedProduct));
 }
 
@@ -262,6 +267,7 @@ export async function deleteProduct(req, res) {
     memory.products = memory.products.filter((product) => productId(product) !== req.params.id);
   }
 
+  clearProductListCache();
   res.status(204).end();
 }
 

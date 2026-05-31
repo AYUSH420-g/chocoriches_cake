@@ -118,8 +118,8 @@ function Shop() {
   return (
     <div className="bk-page">
       <div className="border-b border-[#ebebeb] bg-white">
-        <div className="bk-shell py-6">
-          <nav className="mb-4 flex gap-2 text-xs font-bold text-[#6f7573]">
+        <div className="bk-shell py-3 md:py-6">
+          <nav className="flex gap-2 text-xs font-bold text-[#6f7573] md:mb-4">
             <Link to="/" className="hover:text-[#e61951]">Home</Link>
             <span>/</span>
             {activeCategory !== "All" && (
@@ -130,11 +130,11 @@ function Shop() {
             )}
             <span className="text-[#1f2221]">{activeSubcategory || (activeCategory === "All" ? "All Cakes" : activeCategory)}</span>
           </nav>
-          <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div className=" flex-col items-center gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left hidden md:flex sm:flex">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight text-[#1f2221] md:text-4xl">{pageTitle}</h1>
+              <h1 className="text-[20px] font-bold tracking-tight text-[#1f2221] md:text-4xl">{pageTitle}</h1>
             </div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-full bg-[#fff2e9] px-4 py-2 text-sm font-bold text-[#e61951]">
+            <div className=" w-fit items-center gap-2 rounded-full bg-[#fff2e9] px-3 py-1.5 text-xs font-bold text-[#e61951] md:px-4 md:py-2 md:text-sm hidden md:inline-flex sm:inline-flex">
               <Truck size={18} />
               Same Day Delivery Available
             </div>
@@ -142,24 +142,24 @@ function Shop() {
         </div>
       </div>
 
-      <div className="sticky top-[118px] z-30 border-b border-[#ebebeb] bg-white/95 backdrop-blur">
-        <div className="bk-shell flex items-center justify-between gap-3 py-3">
-          <div className="flex items-center gap-2">
+      <div className="sticky top-[108px] z-30 border-b border-[#ebebeb] bg-white/95 backdrop-blur md:top-[118px]">
+        <div className="bk-shell grid grid-cols-2 items-center gap-3 py-2.5 md:flex md:justify-between md:py-3">
+          <div className="flex min-w-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-4 text-sm font-bold text-[#1f2221] lg:hidden"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-3 text-sm font-bold text-[#1f2221] lg:hidden md:w-auto md:px-4"
             >
               <Filter size={17} />
               Filter
             </button>
           </div>
-          <label className="inline-flex h-10 items-center gap-1 rounded-lg border border-[#ebebeb] bg-white pl-3 pr-2 text-sm font-bold text-[#6f7573]">
-            Sort by:
+          <label className="inline-flex h-10 w-full min-w-0 items-center justify-center gap-1 rounded-lg border border-[#ebebeb] bg-white pl-3 pr-2 text-xs font-bold text-[#6f7573] md:w-auto md:text-sm">
+            <span className="shrink-0 whitespace-nowrap">Sort by:</span>
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="appearance-none bg-transparent px-1 font-semibold text-[#1f2221] outline-none"
+              className="min-w-0 max-w-[88px] appearance-none truncate bg-transparent px-1 font-semibold text-[#1f2221] outline-none md:max-w-none"
             >
               {sortOptions.map((option) => <option key={option}>{option}</option>)}
             </select>
@@ -168,7 +168,7 @@ function Shop() {
         </div>
       </div>
 
-      <div className="bk-shell grid gap-5 py-6 lg:grid-cols-[250px_1fr]">
+      <div className="bk-shell grid gap-2 py-3 md:gap-5 md:py-6 lg:grid-cols-[250px_1fr] bg-white">
         <aside className="hidden lg:block">
           <div className="bk-card sticky top-[190px] p-5">
             <div className="mb-5 flex items-center gap-2">
@@ -195,8 +195,8 @@ function Shop() {
           </div>
         </aside>
 
-        <main>
-          <div className="mb-4 flex items-center justify-between">
+        <main className="bg-white">
+          <div className="mb-3 flex items-center justify-between md:mb-4">
             <p className="text-sm font-bold text-[#6f7573]">
               {isLoading ? (
                 "Loading cakes..."
@@ -207,11 +207,11 @@ function Shop() {
             {/* <p className="hidden text-sm font-bold text-[#6f7573] md:block">Ratings, price, and delivery slot visible on every card</p> */}
           </div>
 
-          <div className="grid gap-4 grid-cols-2 xl:grid-cols-3">
+          <div className="grid grid-cols-2 gap-[8px] md:gap-4 xl:grid-cols-3">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
-                  <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
+                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
+                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
                   <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
                   <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
                 </div>
@@ -227,7 +227,7 @@ function Shop() {
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.22 }}
                   >
-                    <ProductCard product={product} />
+                    <ProductCard product={product} mobileShopCard />
                   </motion.div>
                 ))}
               </AnimatePresence>
@@ -235,10 +235,10 @@ function Shop() {
           </div>
 
           {!isLoading && products.length === 0 && (
-            <div className="bk-card py-20 text-center">
-              <h3 className="text-2xl font-black text-[#1f2221]">No cakes found</h3>
+            <div className="bk-card py-12 text-center md:py-20">
+              <h3 className="text-xl font-black text-[#1f2221] md:text-2xl">No cakes found</h3>
               <p className="mt-2 text-sm text-[#6f7573]">Try another category or clear filters.</p>
-              <button type="button" onClick={clearFilters} className="bk-btn mt-6 h-11 px-6 text-sm">
+              <button type="button" onClick={clearFilters} className="bk-btn mt-5 h-12 px-6 text-sm md:mt-6 md:h-11">
                 Show All Cakes
               </button>
             </div>
@@ -269,7 +269,7 @@ function Shop() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 230 }}
-              className="fixed inset-x-0 bottom-0 z-[90] rounded-t-2xl bg-white p-5 shadow-2xl lg:hidden"
+              className="fixed inset-x-0 bottom-0 z-[90] rounded-t-[14px] bg-white p-4 pb-[calc(16px+env(safe-area-inset-bottom))] shadow-2xl lg:hidden md:p-5"
             >
               <div className="mb-4 flex items-center justify-between">
                 <h2 className="text-lg font-black">Filters</h2>
@@ -290,7 +290,7 @@ function Shop() {
                   </label>
                 ))}
               </div>
-              <button type="button" onClick={() => setIsFilterOpen(false)} className="bk-btn mt-5 h-11 w-full text-sm">Apply Filters</button>
+              <button type="button" onClick={() => setIsFilterOpen(false)} className="bk-btn mt-5 h-12 w-full text-sm md:h-11">Apply Filters</button>
             </motion.aside>
           </>
         )}

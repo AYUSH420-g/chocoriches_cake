@@ -325,4 +325,26 @@
     background: #f7f7f7;
     color: #1f2221;
   }
+
+  @media (max-width: 767px) {
+    .bk-shell {
+      padding-inline: 16px;
+    }
+
+    .bk-card,
+    .bk-soft-card {
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.045);
+    }
+
+    .bk-section-title {
+      font-size: 20px;
+      line-height: 1.25;
+    }
+
+    .bk-btn,
+    .bk-outline-btn {
+      min-height: 44px;
+    }
+  }
 }

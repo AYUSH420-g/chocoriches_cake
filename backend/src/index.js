@@ -5,6 +5,7 @@ import { connectDatabase } from "./db.js";
 import { apiPrefixRewrite } from "./middleware/apiPrefix.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { errorHandler, notFound } from "./middleware/errorHandler.js";
+import { warmProductListCache } from "./controllers/productController.js";
 import { apiRouter } from "./routes/apiRoutes.js";
 import { seedDatabase } from "./services/seedService.js";
 
@@ -30,6 +31,10 @@ app.use(errorHandler);
 
 await connectDatabase(process.env.MONGODB_URI);
 await seedDatabase();
+warmProductListCache().catch((error) => {
+  console.warn("Product list cache warmup failed.");
+  console.warn(error.message);
+});
 
 const preferredPort = Number(config.port) || 3001;
 

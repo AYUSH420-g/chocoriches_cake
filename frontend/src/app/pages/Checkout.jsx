@@ -192,8 +192,8 @@ function Checkout() {
 
   if (placedOrder) {
     return (
-      <div className="bk-page grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-12">
-        <div className="bk-card w-full max-w-md p-8 text-center shadow-xl bg-white border border-[#ebebeb] rounded-2xl">
+    <div className="bk-page grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-8 md:py-12">
+        <div className="bk-card w-full max-w-md rounded-lg border border-[#ebebeb] bg-white p-6 text-center shadow-xl md:rounded-2xl md:p-8">
           <div className="mb-6">
             <motion.div
               initial={{ scale: 0 }}
@@ -223,7 +223,7 @@ function Checkout() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="text-3xl font-black text-[#1f2221] tracking-tight"
+            className="text-2xl font-black tracking-tight text-[#1f2221] md:text-3xl"
           >
             Order Placed!
           </motion.h1>
@@ -284,10 +284,10 @@ function Checkout() {
 
   return (
     <div className="bk-page">
-      <div className="bk-shell py-6">
-        <div className="mb-5 text-center">
-          <Link to="/" className="text-3xl font-black tracking-tight text-[#e61951]">ChocoRiches</Link>
-          <div className="mt-5 flex items-center justify-center gap-2 text-xs font-black">
+      <div className="bk-shell py-5 md:py-6">
+        <div className="mb-4 text-center md:mb-5">
+          <Link to="/" className="text-2xl font-black tracking-tight text-[#e61951] md:text-3xl">ChocoRiches</Link>
+          <div className="mt-4 flex items-center justify-center gap-1.5 overflow-x-auto text-xs font-black md:mt-5 md:gap-2">
             {steps.map((label, index) => {
               const current = index + 1;
               return (
@@ -306,14 +306,14 @@ function Checkout() {
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           <section className="bk-card overflow-hidden">
             <form onSubmit={handleNext}>
-              <div className="border-b border-[#ebebeb] bg-white p-5 md:p-7">
-                <h1 className="text-2xl font-black text-[#1f2221]">{steps[step - 1]}</h1>
+              <div className="border-b border-[#ebebeb] bg-white p-4 md:p-7">
+                <h1 className="text-xl font-black text-[#1f2221] md:text-2xl">{steps[step - 1]}</h1>
                 {/* <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p> */}
               </div>
 
-              <div className="p-5 md:p-7">
+              <div className="p-4 md:p-7">
                 {step === 1 && (
-                  <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-5">
+                  <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-4 md:gap-5">
                     {storedUser?.addresses?.length > 0 && (
                       <div className="mb-2">
                         <h3 className="mb-3 text-sm font-black text-[#1f2221]">Select Saved Address</h3>
@@ -346,16 +346,16 @@ function Checkout() {
                         </div>
                       </div>
                     )}
-                    <div className="grid gap-5 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 md:gap-5">
                       <Field label="Full Name" name="name" placeholder="Ayush Sharma" defaultValue={checkoutData.name || storedUser?.name || ""} required />
                       <Field label="Mobile Number" name="phone" placeholder="98765 43210" defaultValue={checkoutData.phone || storedUser?.phone || ""} required />
                     </div>
                     <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" defaultValue={checkoutData.email || storedUser?.email || ""} required />
-                    <div className="grid gap-5 md:grid-cols-[1fr_150px]">
+                    <div className="grid gap-4 md:grid-cols-[1fr_150px] md:gap-5">
                       <Field label="Delivery Address" name="address" placeholder="House no, street, locality" defaultValue={checkoutData.address || ""} required />
                       <Field label="Pincode" name="pincode" placeholder="560001" defaultValue={checkoutData.pincode || ""} required />
                     </div>
-                    <div className="grid gap-5 md:grid-cols-2">
+                    <div className="grid gap-4 md:grid-cols-2 md:gap-5">
                       <Field label="City" name="city" placeholder="Bangalore" defaultValue={checkoutData.city || ""} required />
                       <Field label="Landmark" name="landmark" placeholder="Near metro station" defaultValue={checkoutData.landmark || ""} />
                     </div>
@@ -411,7 +411,7 @@ function Checkout() {
                 )}
               </div>
 
-              <div className="flex flex-col gap-3 border-t border-[#ebebeb] bg-white p-5 md:flex-row md:items-center md:justify-between md:p-7">
+              <div className="flex flex-col-reverse gap-3 border-t border-[#ebebeb] bg-white p-4 md:flex-row md:items-center md:justify-between md:p-7">
                 <button
                   type="button"
                   onClick={() => (step > 1 ? setStep(step - 1) : navigate("/cart"))}
@@ -419,7 +419,7 @@ function Checkout() {
                 >
                   {step === 1 ? "Return To Cart" : "Go Back"}
                 </button>
-                <button type="submit" disabled={loading} className="bk-btn h-12 px-7 text-sm disabled:opacity-60">
+                <button type="submit" disabled={loading} className="bk-btn h-12 w-full px-7 text-sm disabled:opacity-60 md:w-auto">
                   {loading ? "Processing..." : step === 3 ? "Place Order" : "Continue"}
                   {!loading && <ChevronRight size={17} />}
                 </button>
@@ -428,11 +428,11 @@ function Checkout() {
           </section>
 
           <aside>
-            <div className="bk-card sticky top-[138px] overflow-hidden">
-              <div className="border-b border-[#ebebeb] p-5">
-                <h2 className="text-xl font-black text-[#1f2221]">Order Summary</h2>
+            <div className="bk-card overflow-hidden lg:sticky lg:top-[138px]">
+              <div className="border-b border-[#ebebeb] p-4 md:p-5">
+                <h2 className="text-lg font-black text-[#1f2221] md:text-xl">Order Summary</h2>
               </div>
-              <div className="space-y-4 p-5">
+              <div className="space-y-4 p-4 md:p-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <img src={item.image} alt={item.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
@@ -469,7 +469,7 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
-      <input name={name} type={type} placeholder={placeholder} required={required} defaultValue={defaultValue} min={min} maxLength={maxLength} className="bk-input h-12 px-4 text-sm" />
+      <input name={name} type={type} placeholder={placeholder} required={required} defaultValue={defaultValue} min={min} maxLength={maxLength} className="bk-input h-12 px-3 text-sm md:px-4" />
     </label>
   );
 }

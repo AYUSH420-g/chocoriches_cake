@@ -2,19 +2,19 @@ import { PackageX } from "lucide-react";
 
 export default function ReturnPolicy() {
   return (
-    <div className="bk-page min-h-screen bg-[#f7f7f7] py-12 md:py-16">
+    <div className="bk-page min-h-screen bg-[#f7f7f7] py-6 md:py-16">
       <div className="bk-shell max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <span className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
+        <div className="mb-6 text-center md:mb-10">
+          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-14 md:w-14">
             <PackageX size={28} />
           </span>
-          <h1 className="text-3xl font-black text-[#e61951] tracking-tight sm:text-4xl">
+          <h1 className="text-2xl font-black tracking-tight text-[#e61951] sm:text-4xl">
             Return Policy
           </h1>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-sm border border-[#ebebeb] p-8 md:p-12 space-y-6 text-[#1f2221]">
-          <div className="rounded-xl bg-[#fff2e9] p-5">
+        <div className="space-y-5 rounded-lg border border-[#ebebeb] bg-white p-5 text-[#1f2221] shadow-sm md:space-y-6 md:rounded-2xl md:p-12">
+          <div className="rounded-lg bg-[#fff2e9] p-4 md:rounded-xl md:p-5">
             <h2 className="text-lg font-black text-[#e61951] mb-2">No Return After Payment</h2>
             <p className="text-sm leading-7 text-[#6f7573]">
               At ChocoRiches, all cakes are freshly prepared only after receiving your order. Due to the perishable nature of our products, we do not accept any returns once the payment has been completed.
@@ -47,7 +47,7 @@ export default function ReturnPolicy() {
             </p>
           </section>
 
-          <div className="rounded-xl border border-[#ebebeb] bg-[#f7f7f7] p-5 text-center">
+          <div className="rounded-lg border border-[#ebebeb] bg-[#f7f7f7] p-4 text-center md:rounded-xl md:p-5">
             <p className="text-sm font-bold text-[#6f7573]">
               By placing an order, you agree to our return and refund policy as stated above.
             </p>

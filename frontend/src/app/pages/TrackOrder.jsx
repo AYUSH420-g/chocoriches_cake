@@ -57,16 +57,16 @@ function TrackOrder() {
 
   return (
     <div className="bk-page">
-      <div className="bk-shell py-6">
-        <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <div className="bk-shell py-5 md:py-6">
+        <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-[#1f2221] md:text-5xl">Track Order</h1>
-            <p className="mt-2 text-sm leading-6 text-[#6f7573]">Live order status from the admin panel, refreshed automatically.</p>
+            <h1 className="text-[22px] font-black tracking-tight text-[#1f2221] md:text-5xl">Track Order</h1>
+            <p className="mt-1.5 text-sm leading-6 text-[#6f7573] md:mt-2">Live order status from the admin panel, refreshed automatically.</p>
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[380px_1fr] items-start">
-          <section className="bk-card p-5">
+        <div className="grid items-start gap-4 md:gap-5 lg:grid-cols-[380px_1fr]">
+          <section className="bk-card p-4 md:p-5">
             <form onSubmit={handleSubmit} className="grid gap-4">
               <label className="block">
                 <span className="mb-2 block text-sm font-black text-[#1f2221]">Order ID</span>
@@ -83,17 +83,17 @@ function TrackOrder() {
           <section className="bk-card overflow-hidden">
             {order ? (
               <>
-                <div className="border-b border-[#ebebeb] bg-white p-5">
+                <div className="border-b border-[#ebebeb] bg-white p-4 md:p-5">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase text-[#6f7573]">Order {order.orderId || order.id}</p>
-                      <h2 className="mt-1 text-2xl font-black text-[#1f2221]">{order.items?.join(", ") || "Cake order"}</h2>
+                      <h2 className="mt-1 text-xl font-black text-[#1f2221] md:text-2xl">{order.items?.join(", ") || "Cake order"}</h2>
                     </div>
                     <span className="w-fit rounded-full bg-[#fff2e9] px-4 py-2 text-sm font-black text-[#e61951]">{order.status}</span>
                   </div>
                 </div>
 
-                <div className="grid gap-5 p-5">
+                <div className="grid gap-4 p-4 md:gap-5 md:p-5">
                   <div className="grid gap-4 sm:grid-cols-3">
                     <Info icon={ClipboardList} label="Placed On" value={order.date} />
                     <Info icon={MapPin} label="Pincode" value={order.deliveryPincode || "Not added"} />
@@ -128,10 +128,10 @@ function TrackOrder() {
                 </div>
               </>
             ) : (
-              <div className="grid min-h-[360px] place-items-center p-8 text-center">
+              <div className="grid min-h-[280px] place-items-center p-6 text-center md:min-h-[360px] md:p-8">
                 <div>
                   <Truck className="mx-auto text-[#e61951]" size={48} />
-                  <h2 className="mt-5 text-2xl font-black text-[#1f2221]">Enter an order ID</h2>
+                  <h2 className="mt-5 text-xl font-black text-[#1f2221] md:text-2xl">Enter an order ID</h2>
                   <p className="mt-2 text-sm text-[#6f7573]">Use the order number from checkout or your profile.</p>
                 </div>
               </div>

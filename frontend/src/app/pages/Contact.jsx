@@ -2,10 +2,10 @@ import { Clock, Mail, MessageCircle, Phone } from "lucide-react";
 
 export default function Contact() {
   return (
-    <div className="bk-page min-h-screen bg-[#f7f7f7] py-12 md:py-16">
+    <div className="bk-page min-h-screen bg-[#f7f7f7] py-6 md:py-16">
       <div className="bk-shell max-w-4xl mx-auto">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-black text-[#e61951] tracking-tight sm:text-4xl">
+        <div className="mb-6 text-center md:mb-10">
+          <h1 className="text-2xl font-black tracking-tight text-[#e61951] sm:text-4xl">
             Contact Us
           </h1>
         </div>
@@ -16,7 +16,7 @@ export default function Contact() {
             href="https://wa.me/919429304484"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-3 rounded-md bg-[#25D366] px-5 py-4 text-white shadow-sm transition hover:bg-[#20b858] hover:shadow-md"
+            className="flex min-h-12 items-center gap-3 rounded-md bg-[#25D366] px-4 py-3 text-white shadow-sm transition hover:bg-[#20b858] hover:shadow-md md:px-5 md:py-4"
           >
             <MessageCircle size={22} className="shrink-0" />
             <span className="text-base font-bold">Chat with us</span>
@@ -25,7 +25,7 @@ export default function Contact() {
           {/* Email */}
           <a
             href="mailto:chocoriches.help@gmail.com"
-            className="flex items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-5 py-4 shadow-sm transition hover:border-[#e61951] hover:shadow-md"
+            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e61951] hover:shadow-md md:px-5 md:py-4"
           >
             <Mail size={22} className="shrink-0 text-[#1f2221]" />
             <span className="text-base text-[#6f7573]">
@@ -34,7 +34,7 @@ export default function Contact() {
           </a>
 
           {/* Support Hours */}
-          <div className="flex items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-5 py-4 shadow-sm">
+          <div className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm md:px-5 md:py-4">
             <span className="text-base text-[#6f7573]">
               Call & Email Support: <span className="font-bold text-[#1f2221]">10:00 AM - 10:00 PM</span>
             </span>
@@ -43,7 +43,7 @@ export default function Contact() {
           {/* Call us */}
           <a
             href="tel:+919429304484"
-            className="flex items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-5 py-4 shadow-sm transition hover:border-[#e61951] hover:shadow-md"
+            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e61951] hover:shadow-md md:px-5 md:py-4"
           >
             <Phone size={22} className="shrink-0 text-[#1f2221]" />
             <span className="text-base text-[#6f7573]">

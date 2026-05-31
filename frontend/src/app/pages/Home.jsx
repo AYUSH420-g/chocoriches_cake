@@ -91,22 +91,28 @@ function Home() {
 
   return (
     <div className="bk-page overflow-hidden">
-      <section className="bk-shell pt-6 pb-3 md:pt-8 md:pb-4">
-        <Link to="/custom" className="mx-auto block max-w-6xl overflow-hidden rounded-2xl bg-[#fff2e9] shadow-sm hover:opacity-95 transition">
-          <motion.img
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
+      <section className="bk-shell pt-4 pb-2 md:pt-8 md:pb-4">
+        <Link
+          to="/custom"
+          className="mx-auto block max-w-6xl overflow-hidden rounded-[10px] bg-[#fff2e9] shadow-sm transition hover:opacity-95 md:rounded-2xl"
+          style={{ aspectRatio: "2017 / 528" }}
+        >
+          <img
             src="/hero-banner.png"
             alt="Theme Cakes Delivery"
-            className="w-full h-auto object-contain"
+            width="2017"
+            height="528"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            className="h-full w-full object-contain"
           />
         </Link>
       </section>
 
-      <section className="bk-shell py-7">
-        <div className="mb-5 flex items-end justify-between gap-4">
-          <div>
+      <section className="bk-shell py-5 md:py-7">
+        <div className="mb-4 flex items-end justify-center gap-4 md:mb-5 md:justify-between">
+          <div className="text-center md:text-left">
             {/* <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">menu</p> */}
             <h2 className="bk-section-title">What will you wish for?</h2>
           </div>
@@ -115,7 +121,7 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="max-w-5xl grid grid-cols-3 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div className="grid max-w-5xl grid-cols-3 gap-x-[18px] gap-y-5 sm:grid-cols-3 lg:grid-cols-6">
           {wishCategories.map((category, index) => (
             <motion.div
               key={category.name}
@@ -125,18 +131,18 @@ function Home() {
               transition={{ delay: index * 0.05 }}
             >
               <Link to={category.to} className="group block text-center">
-                <span className="block aspect-square overflow-hidden rounded-2xl bg-[#f5f0ec]">
+                <span className="block aspect-square overflow-hidden rounded-[10px] bg-[#f5f0ec] md:rounded-2xl">
                   <img src={category.image} alt={category.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </span>
-                <span className="mt-2.5 block text-sm font-semibold text-[#1f2221]">{category.name}</span>
+                <span className="mt-2 block text-sm font-semibold text-[#1f2221] md:mt-2.5">{category.name}</span>
               </Link>
             </motion.div>
           ))}
         </div>
       </section>
 
-      <section className="bk-shell py-8">
-        <div className="mb-5 flex items-end justify-between gap-4">
+      <section className="bk-shell py-6 md:py-8">
+        <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
           <div>
             <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">explore</p>
             <h2 className="bk-section-title">Our Collection</h2>
@@ -146,20 +152,20 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[14px] md:gap-4 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-2xl bg-white p-3 shadow-sm border border-[#ebebeb]">
-                  <div className="aspect-square w-full rounded-xl bg-[#f5f0ec]"></div>
+                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
+                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
                   <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
                   <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
                 </div>
               ))
-            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} />)}
+            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} oneLineTitleOnMobile />)}
         </div>
         {!isLoading && !allCakes.length && (
-          <div className="bk-card py-12 text-center">
-            <h3 className="text-xl font-black text-[#1f2221]">No cakes found</h3>
+          <div className="bk-card py-10 text-center md:py-12">
+            <h3 className="text-lg font-black text-[#1f2221] md:text-xl">No cakes found</h3>
             <p className="mt-2 text-sm text-[#6f7573]">Add products from admin to show them here.</p>
           </div>
         )}
@@ -171,30 +177,30 @@ function Home() {
         <div ref={sentinelRef} className="h-1" />
       </section>
 
-      <section className="bg-white py-10">
+      <section className="bg-white py-8 md:py-10">
         <div className="bk-shell">
-          <div className="mb-5 flex items-end justify-between gap-4">
+          <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
             <div>
-              <p className="text-base font-black lowercase tracking-[0.08em] text-[#e61951]">our promise</p>
+              <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951] md:text-base">our promise</p>
               <h2 className="bk-section-title">Fresh bakes, On Time delivery</h2>
             </div>
           </div>
-          <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-[14px] md:gap-4 lg:grid-cols-4">
             {promiseItems.map(({ icon: Icon, title, copy }) => (
-              <div key={title} className="rounded-xl border border-[#ebebeb] bg-[#f7f7f7] p-5">
-                <span className="mb-4 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
+              <div key={title} className="rounded-lg border border-[#ebebeb] bg-[#f7f7f7] p-4 md:p-5">
+                <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-12 md:w-12">
                   <Icon size={22} />
                 </span>
-                <h3 className="text-base font-black uppercase tracking-[0.06em] text-[#1f2221]">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-[#6f7573]">{copy}</p>
+                <h3 className="text-sm font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-base md:tracking-[0.06em]">{title}</h3>
+                <p className="mt-2 text-xs leading-5 text-[#6f7573] md:text-sm md:leading-6">{copy}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="bk-shell grid gap-4 py-10 lg:grid-cols-2">
-        <Link to="/custom" className="group relative min-h-[260px] overflow-hidden rounded-xl bg-[#1f2221] p-8 text-white">
+      <section className="bk-shell grid gap-4 py-8 md:py-10 lg:grid-cols-2">
+        <Link to="/custom" className="group relative min-h-[220px] overflow-hidden rounded-lg bg-[#1f2221] p-5 text-white md:min-h-[260px] md:rounded-xl md:p-8">
           <img
             src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&q=80&w=1200"
             alt="Celebration cake"
@@ -207,12 +213,12 @@ function Home() {
               <Sparkles size={13} />
               Personalized
             </span>
-            <h2 className="mt-5 max-w-sm text-3xl font-black leading-tight md:text-4xl">Make your own cake hamper</h2>
+            <h2 className="mt-4 max-w-sm text-2xl font-black leading-tight md:mt-5 md:text-4xl">Make your own cake hamper</h2>
             <p className="mt-3 max-w-sm text-sm font-bold leading-6 text-white/85">Pick the flavour, theme, note, and delivery slot for a celebration built around your story.</p>
           </div>
         </Link>
 
-        <Link to="/shop?cat=Wedding" className="group relative min-h-[260px] overflow-hidden rounded-xl bg-[#e61951] p-8 text-white">
+        <Link to="/shop?cat=Wedding" className="group relative min-h-[220px] overflow-hidden rounded-lg bg-[#e61951] p-5 text-white md:min-h-[260px] md:rounded-xl md:p-8">
           <img
             src="https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&q=80&w=1200"
             alt="Designer wedding cake"
@@ -225,24 +231,24 @@ function Home() {
               <Gift size={13} />
               Designer Picks
             </span>
-            <h2 className="mt-5 max-w-sm text-3xl font-black leading-tight md:text-4xl">Designer cakes for grand moments</h2>
+            <h2 className="mt-4 max-w-sm text-2xl font-black leading-tight md:mt-5 md:text-4xl">Designer cakes for grand moments</h2>
             <p className="mt-3 max-w-sm text-sm font-bold leading-6 text-white/90">Elegant multi-tier styles, anniversary favourites, and celebration showstoppers.</p>
           </div>
         </Link>
       </section>
 
       <section className="bk-shell pb-12">
-        <div className="rounded-xl bg-[#fff2e9] px-5 py-6 md:flex md:items-center md:justify-between md:px-8">
+        <div className="rounded-lg bg-[#fff2e9] px-4 py-5 md:flex md:items-center md:justify-between md:rounded-xl md:px-8 md:py-6">
           <div className="flex items-start gap-4">
             <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-[#e61951]">
               <Clock size={22} />
             </span>
             <div>
-              <h2 className="text-xl font-black text-[#1f2221]">Need it today?</h2>
+              <h2 className="text-lg font-black text-[#1f2221] md:text-xl">Need it today?</h2>
               <p className="mt-1 text-sm leading-6 text-[#6f7573]">Choose express slots and send fresh cakes across major cities.</p>
             </div>
           </div>
-          <Link to="/shop?filter=Same%20Day" className="bk-btn mt-5 h-11 px-5 text-sm md:mt-0">Explore Same Day Cakes</Link>
+          <Link to="/shop?filter=Same%20Day" className="bk-btn mt-5 h-12 w-full px-5 text-sm md:mt-0 md:h-11 md:w-auto">Explore Same Day Cakes</Link>
         </div>
       </section>
     </div>

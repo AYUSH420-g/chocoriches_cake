@@ -11,6 +11,100 @@ import {
 } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
 
+const LIST_PRODUCT_FIELDS = [
+  "id",
+  "name",
+  "price",
+  "discountPrice",
+  "discountPercent",
+  "image",
+  "images",
+  "category",
+  "categories",
+  "subcategory",
+  "subcategories",
+  "description",
+  "longDescription",
+  "weights",
+  "weight",
+  "defaultWeight",
+  "ratings",
+  "numOfReviews",
+  "featured",
+  "isFeatured",
+  "isBestSeller",
+  "isTrending",
+  "stock",
+  "tags",
+  "sortOrder",
+  "sameDayDelivery",
+  "createdAt",
+].join(" ");
+const PRODUCT_LIST_CACHE_TTL_MS = 60_000;
+const productListCache = new Map();
+
+function productListCacheKey({ category = "", subcategory = "", featured = "", sameDay = "", bestseller = "", maxPrice = "", sortBy = "", q = "", pageNum, limitNum }) {
+  return JSON.stringify([category, subcategory, featured, sameDay, bestseller, maxPrice, sortBy, q, pageNum, limitNum]);
+}
+
+function getCachedProductList(key) {
+  const cached = productListCache.get(key);
+  if (!cached || cached.expiresAt <= Date.now()) {
+    productListCache.delete(key);
+    return null;
+  }
+  return cached.payload;
+}
+
+function setCachedProductList(key, payload) {
+  productListCache.set(key, {
+    expiresAt: Date.now() + PRODUCT_LIST_CACHE_TTL_MS,
+    payload,
+  });
+}
+
+async function databaseProductPage(query, sortCriteria, pageNum, limitNum) {
+  const productsWithLookahead = await Product.find(query)
+    .sort(sortCriteria)
+    .skip((pageNum - 1) * limitNum)
+    .limit(limitNum + 1)
+    .select(LIST_PRODUCT_FIELDS)
+    .lean();
+  const hasMore = productsWithLookahead.length > limitNum;
+  const products = hasMore ? productsWithLookahead.slice(0, limitNum) : productsWithLookahead;
+
+  return {
+    products: products.map(listProduct),
+    currentPage: pageNum,
+    totalPages: hasMore ? pageNum + 1 : pageNum,
+    hasMore,
+  };
+}
+
+export function clearProductListCache() {
+  productListCache.clear();
+}
+
+export async function warmProductListCache() {
+  if (!isDatabaseConnected()) {
+    return;
+  }
+
+  const baseQuery = { isActive: { $ne: false } };
+  const pageNum = 1;
+  const limitNum = 8;
+  const defaultSort = { sortOrder: 1, createdAt: 1 };
+  const newestSort = { createdAt: -1 };
+
+  const [defaultPayload, newestPayload] = await Promise.all([
+    databaseProductPage(baseQuery, defaultSort, pageNum, limitNum),
+    databaseProductPage(baseQuery, newestSort, pageNum, limitNum),
+  ]);
+
+  setCachedProductList(productListCacheKey({ pageNum, limitNum }), defaultPayload);
+  setCachedProductList(productListCacheKey({ pageNum, limitNum, sortBy: "Newest" }), newestPayload);
+}
+
 export async function findProductForCart(productIdValue) {
   const requestedId = String(productIdValue || "");
 
@@ -105,20 +199,27 @@ export async function listProducts(req, res) {
     const limitNum = Math.min(60, Math.max(1, parseInt(rawLimit, 10) || 12));
 
     if (isDatabaseConnected()) {
-      const total = await Product.countDocuments(query);
-      const totalPages = Math.ceil(total / limitNum);
-      const products = await Product.find(query)
-        .sort(sortCriteria)
-        .skip((pageNum - 1) * limitNum)
-        .limit(limitNum)
-        .lean();
-
-      return res.json({
-        products: products.map(listProduct),
-        currentPage: pageNum,
-        totalPages,
-        hasMore: pageNum < totalPages,
+      const cacheKey = productListCacheKey({
+        category,
+        subcategory,
+        featured,
+        sameDay,
+        bestseller,
+        maxPrice,
+        sortBy,
+        q,
+        pageNum,
+        limitNum,
       });
+      const cached = getCachedProductList(cacheKey);
+      if (cached) {
+        return res.json(cached);
+      }
+
+      const payload = await databaseProductPage(query, sortCriteria, pageNum, limitNum);
+      setCachedProductList(cacheKey, payload);
+
+      return res.json(payload);
     }
 
     // Memory store fallback with pagination
@@ -154,21 +255,22 @@ export async function listProducts(req, res) {
         return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
       });
 
-    const total = source.length;
-    const totalPages = Math.ceil(total / limitNum);
-    const paged = source.slice((pageNum - 1) * limitNum, pageNum * limitNum);
+    const start = (pageNum - 1) * limitNum;
+    const pagedWithLookahead = source.slice(start, start + limitNum + 1);
+    const hasMore = pagedWithLookahead.length > limitNum;
+    const paged = hasMore ? pagedWithLookahead.slice(0, limitNum) : pagedWithLookahead;
 
     return res.json({
       products: paged.map(listProduct),
       currentPage: pageNum,
-      totalPages,
-      hasMore: pageNum < totalPages,
+      totalPages: hasMore ? pageNum + 1 : pageNum,
+      hasMore,
     });
   }
 
   // No page param → return flat array (backward compat for ProductDetail, Profile, etc.)
   const source = isDatabaseConnected()
-    ? await Product.find(query).sort(sortCriteria).lean()
+    ? await Product.find(query).sort(sortCriteria).select(LIST_PRODUCT_FIELDS).lean()
     : memory.products
       .filter((product) => !category || category === "All" || product.category === category || product.categories?.includes(category))
       .filter((product) => {
@@ -207,11 +309,15 @@ export async function listProducts(req, res) {
 }
 
 export async function productDetail(req, res) {
-  const source = isDatabaseConnected()
-    ? await Product.find({ isActive: { $ne: false } }).sort({ sortOrder: 1 }).lean()
-    : memory.products.filter((item) => item.isActive !== false);
   const requestedId = String(req.params.id || "");
-  const product = source.find((item) => productId(item) === requestedId);
+  const product = isDatabaseConnected()
+    ? await Product.findOne(/^[0-9a-fA-F]{24}$/.test(requestedId)
+      ? {
+          isActive: { $ne: false },
+          $or: [{ id: requestedId }, { _id: requestedId }],
+        }
+      : { id: requestedId, isActive: { $ne: false } }).lean()
+    : memory.products.filter((item) => item.isActive !== false).find((item) => productId(item) === requestedId);
 
   if (!product) {
     res.status(404).json({ message: "Product not found." });
