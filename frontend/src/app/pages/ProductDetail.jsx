@@ -202,7 +202,7 @@ function ProductDetail() {
           <span className="text-[#1f2221]">{product.name}</span>
         </nav>
 
-        <div className="grid gap-4 md:gap-5 lg:grid-cols-[0.85fr_1.15fr]">
+        <div className="grid  md:gap-5 lg:grid-cols-[0.85fr_1.15fr]">
           <motion.div
             initial={{ opacity: 0, x: -18 }}
             animate={{ opacity: 1, x: 0 }}
@@ -228,21 +228,35 @@ function ProductDetail() {
               </span>
             </div>
             
-            <div className="mt-0 grid grid-cols-2 gap-0 border-y border-[#ebebeb] bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent">
+            <div className="mt-0 flex gap-0 border-y border-[#ebebeb] bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent justify-around">
               {[
                 [ShieldCheck, "Secure Checkout"],
                 [Clock, "Freshly Prepared"]
               ].map(([Icon, title]) => (
-                <div key={title} className="bg-[#ffffff] p-3 text-center md:rounded-lg">
-                  <Icon className="mx-auto text-[#e61951]" size={20} />
-                  <p className="mt-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
+                <div key={title} className="flex  bg-[#ffffff] p-3 text-center md:rounded-lg">
+                  <Icon className="my-auto text-[#e61951]" size={16} />
+                  <p className="ml-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
                 </div>
               ))}
             </div>
           </motion.div>
 
           <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-4 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:shadow-none md:p-7">
-            <div className="mb-3 flex flex-wrap items-center gap-2">
+            
+            <h1 className="text-base font-normal leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
+            {/* <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p> */}
+
+            <div className="flex flex-wrap items-end gap-3  py-2 md:mt-5 md:py-5">
+              <span className="text-[22px] font-semibold text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>
+              
+              {Number(product.discountPercent || 0) > 0 && (
+                <>
+                  <span className="pb-1 text-sm font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(effectivePrice, product.discountPercent)}</span>
+                  <span className="mb-1 rounded bg-[#fff2e9] px-2 py-1 text-xs font-black text-[#e61951]">{product.discountPercent}% OFF</span>
+                </>
+              )}
+            </div>
+              <div className="mb-3 flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
                 <>
                   <span className="bk-rating">
@@ -257,23 +271,10 @@ function ProductDetail() {
               )}
             </div>
 
-            <h1 className="text-base font-black leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
-            <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p>
-
-            <div className="mt-4 flex flex-wrap items-end gap-3 border-y border-[#ebebeb] py-4 md:mt-5 md:py-5">
-              <span className="text-[22px] font-black text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>
-              {Number(product.discountPercent || 0) > 0 && (
-                <>
-                  <span className="pb-1 text-sm font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(effectivePrice, product.discountPercent)}</span>
-                  <span className="mb-1 rounded bg-[#fff2e9] px-2 py-1 text-xs font-black text-[#e61951]">{product.discountPercent}% OFF</span>
-                </>
-              )}
-            </div>
-
             <div className="mt-4 md:mt-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-black text-[#1f2221] md:text-base">Select Weight</h2>
-                <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span>
+                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Weight</h2>
+                {/* <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
               </div>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:gap-3">
                 {weightOptions.map((option) => (
@@ -283,13 +284,13 @@ function ProductDetail() {
                     onClick={() => setSelectedWeight(option)}
                     className={`rounded-lg border p-3 text-left transition ${
                       selectedWeight.label === option.label
-                        ? "border-[#e61951] bg-[#fff2e9]"
+                        ? "border-[#e61951]/30 bg-[#fff2e9]/70"
                         : "border-[#ebebeb] bg-white hover:border-[#e61951]"
                     }`}
                   >
-                    <span className="block text-sm font-black text-[#1f2221]">{option.label}</span>
-                    <span className="mt-1 block text-xs font-bold text-[#6f7573]">Freshly baked</span>
-                    <span className="mt-2 block text-sm font-black text-[#e61951]">{formatPrice(option.price)}</span>
+                    <span className="block text-sm font-normal text-[#1f2221]">{option.label}</span>
+                    {/* <span className="mt-1 block text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
+                    <span className="mt-1 block text-sm font-black text-[#e61951]">{formatPrice(option.price)}</span>
                   </button>
                 ))}
               </div>

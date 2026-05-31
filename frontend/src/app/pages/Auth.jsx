@@ -133,13 +133,13 @@ function Auth() {
         </div>
 
         <div className="relative -mt-8 rounded-t-[28px] bg-white px-6 pb-10 pt-16 shadow-[0_-10px_22px_rgba(0,0,0,0.08)]">
-          <div className="absolute left-1/2 top-0 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[#e61951] shadow-lg shadow-black/15">
+          <div className="absolute left-1/2 top-0 grid h-18 w-18 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[#e61951] shadow-lg shadow-black/15">
             <CakeSlice size={32} />
             
           </div>
 
           <div className="text-center">
-            <h1 className="text-[26px] font-black leading-tight text-[#171a17] sm:text-[28px]">
+            <h1 className="text-[18px] font-black leading-tight text-[#171a17] sm:text-[28px]">
               {isLogin ? "Sign Up/Login to ChocoRiches!" : "Create Account"}
             </h1>
             {/* <p className="mt-3 text-base font-bold leading-6 text-[#4e5350]">For a personalized experience & faster checkout</p> */}
@@ -193,7 +193,7 @@ function Auth() {
           </p>
 
           <p className="mt-8 text-center text-xs leading-5 text-[#6f7573]">
-            By continuing you agree to ChocoRiches <Link to="/terms" className="underline font-semibold ">Terms & Conditions</Link>, Privacy Policy & Disclaimer
+            By continuing you agree to ChocoRiches <Link to="/terms" className="underline font-semibold ">Terms & Conditions</Link>
           </p>
         </div>
       </div>
@@ -331,7 +331,7 @@ function MobileField({ icon: Icon, label, name, type = "text", placeholder, requ
           type={type}
           placeholder={placeholder}
           required={required}
-          className="h-[58px] w-full rounded-[10px] border border-[#dfe3e1] bg-white px-4 pl-14 text-base font-bold text-[#1f2221] outline-none transition focus:border-[#e61951] focus:ring-4 focus:ring-[#e61951]/10"
+          className="h-[48px] w-full rounded-[10px] border border-[#dfe3e1] bg-white px-4 pl-14 text-base font-bold text-[#1f2221] outline-none transition focus:border-[#e61951] focus:ring-4 focus:ring-[#e61951]/10"
         />
       </span>
     </label>
