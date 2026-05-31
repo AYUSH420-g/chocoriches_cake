@@ -133,16 +133,16 @@ function Auth() {
         </div>
 
         <div className="relative -mt-8 rounded-t-[28px] bg-white px-6 pb-10 pt-16 shadow-[0_-10px_22px_rgba(0,0,0,0.08)]">
-          <div className="absolute left-1/2 top-0 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[#777a24] shadow-lg shadow-black/15">
-            <CakeSlice size={22} />
-            <span className="ml-1 text-2xl font-black leading-none">cr</span>
+          <div className="absolute left-1/2 top-0 grid h-20 w-20 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[#e61951] shadow-lg shadow-black/15">
+            <CakeSlice size={32} />
+            
           </div>
 
           <div className="text-center">
-            <h1 className="text-[28px] font-black leading-tight text-[#171a17]">
+            <h1 className="text-[26px] font-black leading-tight text-[#171a17] sm:text-[28px]">
               {isLogin ? "Sign Up/Login to ChocoRiches!" : "Create Account"}
             </h1>
-            <p className="mt-3 text-base font-bold leading-6 text-[#4e5350]">For a personalized experience & faster checkout</p>
+            {/* <p className="mt-3 text-base font-bold leading-6 text-[#4e5350]">For a personalized experience & faster checkout</p> */}
           </div>
 
           <AnimatePresence mode="wait">
@@ -160,7 +160,7 @@ function Auth() {
               <MobileField icon={Lock} label="Password" name="password" type="password" placeholder="Enter password" required />
               {isLogin && (
                 <div className="flex justify-end text-sm">
-                  <Link to="/forgot-password" className="font-black text-[#e61951]">Forgot Password?</Link>
+                  <Link to="/forgot-password" className=" font-normal text-[#e61951]">Forgot Password?</Link>
                 </div>
               )}
               <button type="submit" disabled={loading} className="bk-btn h-[58px] w-full text-base disabled:opacity-60">
@@ -169,9 +169,9 @@ function Auth() {
             </motion.form>
           </AnimatePresence>
 
-          <div className="my-7 flex items-center gap-3">
+          <div className="my-3 flex items-center gap-3">
             <span className="h-px flex-1 bg-[#eeeeee]" />
-            <span className="text-base font-bold text-[#777]">{isLogin ? "or Login with" : "or Sign up with"}</span>
+            <span className="text-[12px] font-bold text-[#777]">{isLogin ? "or Login with" : "or Sign up with"}</span>
             <span className="h-px flex-1 bg-[#eeeeee]" />
           </div>
 
@@ -193,7 +193,7 @@ function Auth() {
           </p>
 
           <p className="mt-8 text-center text-xs leading-5 text-[#6f7573]">
-            By continuing you agree to ChocoRiches Terms & Conditions, Privacy Policy & Disclaimer
+            By continuing you agree to ChocoRiches <Link to="/terms" className="underline font-semibold ">Terms & Conditions</Link>, Privacy Policy & Disclaimer
           </p>
         </div>
       </div>
