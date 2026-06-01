@@ -186,7 +186,7 @@ function Home() {
             <ArrowRight size={16} />
           </Link>
         </div>
-        <div className="grid grid-cols-2 gap-[14px] md:gap-4 lg:grid-cols-4">
+        <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
                 <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
@@ -219,7 +219,7 @@ function Home() {
               <h2 className="bk-section-title">Fresh bakes, On Time delivery</h2>
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-[14px] md:gap-4 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
             {promiseItems.map(({ icon: Icon, title, copy }) => (
               <div key={title} className="rounded-lg border border-[#ebebeb] bg-[#f7f7f7] p-4 md:p-5">
                 <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-12 md:w-12">
@@ -241,6 +241,7 @@ function Home() {
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 group-hover:scale-105"
           />
+          
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/10" />
           <div className="relative">
             <span className="bk-chip px-3 py-1 text-xs">
