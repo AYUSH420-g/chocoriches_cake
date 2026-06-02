@@ -213,8 +213,8 @@ function ProductDetail() {
   const activeReviewDate = activeReview ? formatReviewDate(activeReview.createdAt) : "";
 
   return (
-    <div className="bk-page max-md:pb-20">
-      <div className="bk-shell py-4 max-md:px-0 md:py-5">
+    <div className="bk-page min-h-[420px]">
+      <div className="bk-shell pt-4 max-md:px-0 md:py-5">
         <nav className="mb-3 flex flex-wrap items-center gap-1.5 px-4 text-xs font-bold text-[#6f7573] md:mb-5 md:gap-2 md:px-0">
           <Link to="/" className="hover:text-[#e61951]">Home</Link>
           <ChevronRight size={13} />
@@ -277,7 +277,7 @@ function ProductDetail() {
                 </>
               )}
             </div>
-              <div className="mb-3 flex flex-wrap items-center gap-2">
+              <div className=" flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
                 <>
                   <span className="bk-rating">
@@ -292,9 +292,9 @@ function ProductDetail() {
               )}
             </div>
 
-            <div className="mt-4 md:mt-5">
+            <div className="md:mt-5">
               <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Weight</h2>
+                <h2 className="text-sm font-normal text-[#363636] md:text-base">Select Weight</h2>
                 {/* <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
               </div>
               <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:gap-3">

@@ -191,7 +191,7 @@ function RootLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">
+    <div className="flex min-h-screen flex-col bg-[#f7f7f7] text-[#1f2221]">
       <TopLoader />
       <Toaster position="top-center" richColors />
 
@@ -466,12 +466,12 @@ function RootLayout() {
         </>
       )}
 
-      <main className={isAuthPage ? "" : "pt-[108px] md:pt-[118px]"}>
+      <main className={isAuthPage ? "flex-1" : "min-h-[100svh] flex-1 pt-[108px] md:pt-[118px]"}>
         <Outlet />
       </main>
 
       {!isAuthPage && (
-      <footer className="border-t border-[#e8e8e8] bg-white">
+      <footer className="min-h-[520px] shrink-0 border-t border-[#e8e8e8] bg-white sm:min-h-[340px] lg:min-h-[300px]">
         <div className="bk-shell py-10">
           <div className="grid gap-8 lg:grid-cols-[1.3fr_2fr_1fr]">
             <div>
@@ -493,7 +493,7 @@ function RootLayout() {
             <div className="grid gap-8 sm:grid-cols-3">
               {footerLinks.map(([heading, ...links]) => (
                 <div key={heading}>
-                  <h4 className="mb-4 text-sm font-black text-[#1f2221]">{heading}</h4>
+                  <p className="mb-4 text-sm font-black text-[#1f2221]">{heading}</p>
                   <ul className="space-y-3 text-sm text-[#6f7573]">
                     {links.map((link) => {
                       let url = "/";

@@ -45,6 +45,9 @@ const promiseItems = [
   { icon: ShieldCheck, title: "Baked Fresh", copy: "Prepared after order" }
 ];
 
+const heroImageSrcSet = "/hero-banner-640.webp 640w, /hero-banner-960.webp 960w, /hero-banner-1280.webp 1280w, /hero-banner-2017.webp 2017w";
+const heroImageSizes = "(min-width: 1184px) 1152px, calc(100vw - 32px)";
+
 function Home() {
   const [allCakes, setAllCakes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -131,16 +134,19 @@ function Home() {
           className="mx-auto block max-w-6xl overflow-hidden rounded-[10px] bg-[#fff2e9] shadow-sm transition hover:opacity-95 md:rounded-2xl"
           style={{ aspectRatio: "2017 / 528" }}
         >
-          <img
-            src="/hero-banner.png"
-            alt="Theme Cakes Delivery"
-            width="2017"
-            height="528"
-            loading="eager"
-            fetchPriority="high"
-            decoding="async"
-            className="h-full w-full object-contain"
-          />
+          <picture className="block h-full w-full">
+            <source type="image/webp" srcSet={heroImageSrcSet} sizes={heroImageSizes} />
+            <img
+              src="/hero-banner.png"
+              alt="Theme Cakes Delivery"
+              width="2017"
+              height="528"
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+              className="block h-full w-full object-contain"
+            />
+          </picture>
         </Link>
       </section>
 
@@ -166,7 +172,7 @@ function Home() {
             >
               <Link to={category.to} className="group block text-center">
                 <span className="block aspect-square overflow-hidden rounded-[10px] bg-[#f5f0ec] md:rounded-2xl">
-                  <img src={category.image} alt={category.name} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+                  <img src={category.image} alt={category.name+"image"} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
                 </span>
                 <span className="mt-2 block text-sm font-semibold text-[#1f2221] md:mt-2.5">{category.name}</span>
               </Link>
@@ -178,7 +184,7 @@ function Home() {
       <section className="bk-shell py-6 md:py-8">
         <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
           <div>
-            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">explore</p>
+            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#DC184D]">explore</p>
             <h2 className="bk-section-title">Our Collection</h2>
           </div>
           <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
@@ -195,7 +201,7 @@ function Home() {
                   <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
                 </div>
               ))
-            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake} oneLineTitleOnMobile inlineRating />)}
+            : allCakes.map((cake) => <ProductCard key={cake.id} product={cake}  mobileShopCard={true} />)}
         </div>
         {!isLoading && !allCakes.length && (
           <div className="bk-card py-10 text-center md:py-12">
@@ -226,7 +232,7 @@ function Home() {
                   <Icon size={22} />
                 </span>
                 <h3 className="text-sm font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-base md:tracking-[0.06em]">{title}</h3>
-                <p className="mt-2 text-xs leading-5 text-[#6f7573] md:text-sm md:leading-6">{copy}</p>
+                <p className="mt-2 text-xs leading-5 text-[#6A716E] md:text-sm md:leading-6">{copy}</p>
               </div>
             ))}
           </div>
@@ -241,7 +247,6 @@ function Home() {
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 group-hover:scale-105"
           />
-          
           <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-black/10" />
           <div className="relative">
             <span className="bk-chip px-3 py-1 text-xs">

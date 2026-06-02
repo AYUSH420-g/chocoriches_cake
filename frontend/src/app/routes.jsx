@@ -2,8 +2,8 @@ import { lazy, Suspense } from "react";
 import { createBrowserRouter } from "react-router";
 import RootLayout from "./components/RootLayout";
 import PageLoader from "./components/PageLoader";
+import Home from "./pages/Home";
 
-const Home = lazy(() => import("./pages/Home"));
 const Shop = lazy(() => import("./pages/Shop"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
 const CustomCake = lazy(() => import("./pages/CustomCake"));
@@ -35,7 +35,7 @@ const router = createBrowserRouter([
     path: "/",
     Component: RootLayout,
     children: [
-      { index: true, element: <LazyPage Component={Home} /> },
+      { index: true, element: <Home /> },
       { path: "shop", element: <LazyPage Component={Shop} /> },
       { path: "product/:id", element: <LazyPage Component={ProductDetail} /> },
       { path: "custom", element: <LazyPage Component={CustomCake} /> },
