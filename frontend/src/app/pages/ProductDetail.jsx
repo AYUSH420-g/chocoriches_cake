@@ -56,7 +56,7 @@ function ProductDetail() {
       .then((item) => {
         if (mounted) {
           setProduct(item);
-          const weights = item.weightOptions?.length ? item.weightOptions : [{ label: "Half Kg", price: item.price }];
+          const weights = item.weightOptions?.length ? item.weightOptions : [{ label: "0.5 Kg", price: item.price }];
           setSelectedWeight(weights.find((weight) => weight.label === item.defaultWeight) || weights[0]);
 
           getProductReviews(item.id).then((revs) => {
@@ -207,7 +207,7 @@ function ProductDetail() {
     );
   }
 
-  const weightOptions = product.weightOptions?.length ? product.weightOptions : [{ label: "Half Kg", price: product.price }];
+  const weightOptions = product.weightOptions?.length ? product.weightOptions : [{ label: "0.5 Kg", price: product.price }];
   const effectivePrice = Number(selectedWeight.price || product.price || 0);
   const activeReview = reviews.length ? reviews[activeReviewIndex % reviews.length] : null;
   const activeReviewDate = activeReview ? formatReviewDate(activeReview.createdAt) : "";
@@ -264,11 +264,11 @@ function ProductDetail() {
 
           <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-4 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:shadow-none md:p-7">
             
-            <h1 className="text-base font-normal leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
+            <h1 className="text-base font-semibold leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
             {/* <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p> */}
 
             <div className="flex flex-wrap items-end gap-3  py-2 md:mt-5 md:py-5">
-              <span className="text-[22px] font-semibold text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>
+              <span className="text-[22px] font-[600] text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>
               
               {Number(product.discountPercent || 0) > 0 && (
                 <>
@@ -293,11 +293,11 @@ function ProductDetail() {
             </div>
 
             <div className="md:mt-5">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-normal text-[#363636] md:text-base">Select Weight</h2>
+              {/* <div className="mb-3 flex items-center justify-between"> */}
+                {/* <h2 className="text-sm font-normal text-[#363636] md:text-base">Select Weight</h2> */}
                 {/* <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
-              </div>
-              <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:gap-3">
+              {/* </div> */}
+              <div className="mt-3 grid grid-cols-4 gap-2.5 sm:grid-cols-3 md:gap-3">
                 {weightOptions.map((option) => (
                   <button
                     key={option.label}
@@ -318,7 +318,7 @@ function ProductDetail() {
             </div>
 
             <div className="mt-4 md:mt-5">
-              <label className="mb-2 block text-sm font-normal text-[#1f2221]">Check Delivery</label>
+              <label className="mb-2 block text-sm font-normal text-[#1f2221]">Delivery Location</label>
               <div className="flex overflow-hidden rounded-lg border border-[#ebebeb] bg-white">
                 <span className="grid w-11 place-items-center text-[#e61951]">
                   <MapPin size={18} />

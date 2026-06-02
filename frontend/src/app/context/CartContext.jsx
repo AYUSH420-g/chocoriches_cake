@@ -60,7 +60,7 @@ function CartProvider({ children }) {
   }, [refreshCart]);
 
   const addProduct = useCallback(
-    async (product, quantity = 1, size = "Half kg") => {
+    async (product, quantity = 1, size = "Half Kg") => {
       const item = await addCartItem({ productId: product.id, size, quantity });
       await refreshCart();
       return item;

@@ -45,7 +45,7 @@ export async function addCartItem(req, res) {
   }
 
   const requestedProductId = productId(product);
-  const requestedSize = String(size || "Half kg");
+  const requestedSize = String(size || "Half Kg");
   const nextQuantity = Math.max(1, Number(quantity) || 1);
   const owner = cartOwner(req);
   const capacity = await cakeCapacityStatus(new Date().toISOString().slice(0, 10), nextQuantity, await ownerCartQuantity(owner));

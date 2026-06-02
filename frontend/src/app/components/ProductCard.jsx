@@ -8,7 +8,7 @@ import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist"
 
 function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, mobileShopCard = false, inlineRating = false }) {
   const { addProduct, itemForProduct, setQuantity } = useCart();
-  const defaultWeight = product.defaultWeight || product.weightOptions?.[0]?.label || "Half Kg";
+  const defaultWeight = product.defaultWeight || product.weightOptions?.[0]?.label || "0.5 Kg";
   const cartItem = itemForProduct(product.id, defaultWeight);
   const [liked, setLiked] = useState(() => isWishlisted(product.id));
 

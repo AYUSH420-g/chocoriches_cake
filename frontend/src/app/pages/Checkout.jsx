@@ -294,10 +294,12 @@ function Checkout() {
   }
 
   return (
-    <div className="bk-page">
+    <div className="bk-page bg-[#f8f8f8] min-h-screen">
       <div className="bk-shell py-5 md:py-6">
         <div className="mb-4 text-center md:mb-5">
-          <Link to="/" className="text-2xl font-black tracking-tight text-[#e61951] md:text-3xl">ChocoRiches</Link>
+         <h1 className="text-xl font-bold">
+            Add delivery address
+          </h1>
           <div className="mt-4 flex items-center justify-center gap-1.5 overflow-x-auto text-xs font-black md:mt-5 md:gap-2">
             {steps.map((label, index) => {
               const current = index + 1;
@@ -315,10 +317,10 @@ function Checkout() {
         </div>
 
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-          <section className="bk-card overflow-hidden">
+          <section className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-200">
             <form onSubmit={handleNext}>
-              <div className="border-b border-[#ebebeb] bg-white p-4 md:p-7">
-                <h1 className="text-xl font-black text-[#1f2221] md:text-2xl">{steps[step - 1]}</h1>
+              <div className="sticky top-0 z-10 border-b bg-white px-6 py-5">
+                <h1 className="text-2xl font-extrabold text-black">{steps[step - 1]}</h1>
                 {/* <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p> */}
               </div>
 
@@ -345,7 +347,11 @@ function Checkout() {
                                   landmark: addr.landmark,
                                 });
                               }}
-                              className={`rounded-lg border p-3 text-left transition ${checkoutData.addressId === addr.id ? "border-[#e61951] bg-[#fff2e9]" : "border-[#ebebeb] bg-white hover:border-[#e61951]"}`}
+                              className={`rounded-lg border p-3 text-left transition ${
+                                  checkoutData.addressId === addr.id
+                                    ? "border-[#e61951] bg-[#fff2e9]"
+                                    : "border-[#ebebeb] bg-white hover:border-[#e61951]"
+                                }`}
                             >
                               <div className="mb-1 flex items-center justify-between">
                                 <span className="text-xs font-black uppercase tracking-wider text-[#6f7573]">{addr.label}</span>
@@ -422,7 +428,14 @@ function Checkout() {
                 )}
               </div>
 
-              <div className="flex flex-col-reverse gap-3 border-t border-[#ebebeb] bg-white p-4 md:flex-row md:items-center md:justify-between md:p-7">
+              <div className="
+                      sticky
+                      bottom-0
+                      bg-white
+                      border-t
+                      p-4
+                      shadow-[0_-4px_20px_rgba(0,0,0,0.06)]
+                      ">
                 <button
                   type="button"
                   onClick={() => (step > 1 ? setStep(step - 1) : navigate("/cart"))}
@@ -430,7 +443,16 @@ function Checkout() {
                 >
                   {step === 1 ? "Return To Cart" : "Go Back"}
                 </button>
-                <button type="submit" disabled={loading} className="bk-btn h-12 w-full px-7 text-sm disabled:opacity-60 md:w-auto">
+                <button type="submit" disabled={loading} className="
+                        h-14
+                        w-full
+                        rounded-2xl
+                        bg-[#0c8d25]
+                        text-white
+                        font-bold
+                        text-base
+                        hover:bg-[#09711d]
+                        ">
                   {loading ? "Processing..." : step === 3 ? "Place Order" : "Continue"}
                   {!loading && <ChevronRight size={17} />}
                 </button>
@@ -463,7 +485,7 @@ function Checkout() {
                   <span>Total</span>
                   <span className="text-[#1f2221]">{formatPrice(total)}</span>
                 </div>
-                <div className="grid gap-3 rounded-lg bg-[#fff2e9] p-4 text-xs font-bold text-[#6f7573]">
+                <div className="grid gap-3 rounded-lg bg-[#f7fff8] p-4 text-xs font-bold text-[#6f7573]">
                   <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#e61951]" /> Secure checkout</span>
                   <span className="flex items-center gap-2"><MapPin size={16} className="text-[#e61951]" /> Delivery address verified</span>
                 </div>
@@ -491,7 +513,22 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
         maxLength={isPincode ? 6 : maxLength}
         inputMode={isPincode ? "numeric" : undefined}
         onInput={isPincode ? (event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); } : undefined}
-        className="bk-input h-12 px-3 text-sm md:px-4"
+        className="
+            h-14
+            w-full
+            rounded-2xl
+            border
+            border-gray-300
+            bg-white
+            px-4
+            text-sm
+            font-medium
+            outline-none
+            transition
+            focus:border-[#0c8d25]
+            focus:ring-4
+            focus:ring-[#0c8d25]/10
+            "
       />
     </label>
   );
