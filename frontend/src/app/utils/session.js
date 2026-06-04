@@ -36,13 +36,22 @@ export function getStoredUser() {
 }
 
 export function saveUserSession({ token, user }) {
-  clearLegacySharedSession();
-  if (token) {
-    localStorage.setItem(USER_TOKEN_KEY, token);
+  if (token !== undefined) {
+    if (token) {
+      localStorage.setItem(USER_TOKEN_KEY, token);
+    } else {
+      localStorage.removeItem(USER_TOKEN_KEY);
+    }
   }
-  if (user) {
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
+  
+  if (user !== undefined) {
+    if (user) {
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_KEY);
+    }
   }
+  
   window.dispatchEvent(new Event(SESSION_EVENT));
 }
 

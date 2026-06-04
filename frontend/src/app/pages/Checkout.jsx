@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase } from "lucide-react";
+import { CheckCircle2, ChevronRight, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings } from "../api/client";
@@ -9,35 +9,11 @@ import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
 import { getStoredUser } from "../utils/session";
 
-const steps = ["Details", "Delivery", "Payment"];
-const valueOfSteps = ["Delivery Address", "Delivery", "Payment"];
-const deliverySlots = [
-  { value: "today-2-5", label: "Today, 2 PM - 5 PM", copy: "Fastest delivery slot", price: "Free", type: "today" },
-  { value: "today-6-9", label: "Today, 6 PM - 9 PM", copy: "Evening celebration slot", price: "Free", type: "today" },
-  { value: "scheduled-10-1", label: "Selected Date, 10 AM - 1 PM", copy: "Scheduled fresh delivery", price: "Free", type: "selected" },
-];
+const steps = ["Details", "Review"];
+const valueOfSteps = ["Delivery Address", "Order Summary"];
 
 function normalizePincode(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 6);
-}
-
-function getLocalDateString(offsetDays = 0) {
-  const d = new Date();
-  if (offsetDays) {
-    d.setDate(d.getDate() + offsetDays);
-  }
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
-
-function todayIso() {
-  return getLocalDateString(0);
-}
-
-function tomorrowIso() {
-  return getLocalDateString(1);
 }
 
 function Checkout() {
@@ -54,17 +30,7 @@ function Checkout() {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
   }, []);
 
-  const hasSameDayOnly = cart.every((item) => item.sameDayDelivery);
-  const minDeliveryDate = hasSameDayOnly ? todayIso() : tomorrowIso();
 
-  useEffect(() => {
-    if (checkoutData.deliveryDate && checkoutData.deliveryDate < minDeliveryDate) {
-      setCheckoutData((prev) => ({
-        ...prev,
-        deliveryDate: minDeliveryDate,
-      }));
-    }
-  }, [minDeliveryDate, checkoutData.deliveryDate]);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const deliveryFee = cart.length ? (siteSettings?.deliveryFee ?? 0) : 0;
@@ -82,7 +48,7 @@ function Checkout() {
         address: [data.houseNo, data.street || data.address, data.city, data.landmark].filter(Boolean).join(", "),
         customerEmail: data.email || "",
         deliveryPincode: data.pincode || "",
-        deliveryDate: data.deliveryDate || new Date().toISOString().slice(0, 10),
+        deliveryDate: data.deliveryDate || sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10),
         items: cart.map((item) => ({
           name: item.name,
           quantity: item.quantity,
@@ -114,7 +80,7 @@ function Checkout() {
       return;
     }
 
-    if (step < 3) {
+    if (step < 2) {
       if (step === 1) {
         if (normalizePincode(nextCheckoutData.pincode).length !== 6) {
           toast.error("Please enter a valid 6-digit pincode");
@@ -124,29 +90,6 @@ function Checkout() {
         if (!pincodeResult?.serviceable) {
           toast.error("Delivery is not available for this pincode");
           return;
-        }
-      }
-
-      if (step === 2) {
-        const selectedDate = String(nextCheckoutData.deliveryDate || "").slice(0, 10);
-        const minDate = hasSameDayOnly ? todayIso() : tomorrowIso();
-        const selectedSlot = deliverySlots.find((slot) => slot.value === nextCheckoutData.slot) || deliverySlots[0];
-        const today = todayIso();
-
-        if (!selectedDate || selectedDate < minDate) {
-          toast.error(hasSameDayOnly ? "Please select today or a future delivery date" : "Please select tomorrow or a future delivery date");
-          return;
-        }
-
-        if (selectedSlot.type === "today") {
-          if (!hasSameDayOnly) {
-            toast.error("Today delivery slots are not available for these products");
-            return;
-          }
-          if (selectedDate !== today) {
-            toast.error("Today delivery slots can only be used for today's date");
-            return;
-          }
         }
       }
 
@@ -317,15 +260,15 @@ function Checkout() {
           </div>
         </div>
 
-        <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
+        <div className="mx-auto max-w-2xl">
           <section className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-200">
             <form onSubmit={handleNext}>
               <div className="sticky top-0 z-10 border-b bg-white px-5 py-4">
                 <h1 className="text-[22px] font-bold text-semibold">{valueOfSteps[step - 1]}</h1>
-                {/* <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p> */}
               </div>
 
               <div className="p-4 md:p-7">
+
                 {step === 1 && (
                   <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-2 md:gap-5">
                     {storedUser?.addresses?.length > 0 && (
@@ -436,60 +379,62 @@ function Checkout() {
                   </motion.div>
                 )}
 
+
+
                 {step === 2 && (() => {
-                  const filteredSlots = deliverySlots.filter((slot) => hasSameDayOnly || slot.type !== "today");
-                  const defaultSlotVal = filteredSlots.find((slot) => slot.value === checkoutData.slot)?.value || filteredSlots[0]?.value;
+                  const savedDate = sessionStorage.getItem("chocoriches_delivery_date");
+                  const displayDate = savedDate ? new Date(savedDate).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" }) : "No date selected";
                   return (
-                    <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-4">
-                      {filteredSlots.map((slot, index) => (
-                        <label key={slot.value} className={`flex cursor-pointer items-center justify-between gap-4 rounded-lg border p-4 ${index === 0 ? "border-[#e61951] bg-[#fff2e9]" : "border-[#ebebeb] bg-white hover:border-[#e61951]"}`}>
-                          <span className="flex items-center gap-3">
-                            <input type="radio" name="slot" value={slot.value} defaultChecked={defaultSlotVal === slot.value} className="h-4 w-4 accent-[#e61951]" />
-                            <span>
-                              <span className="block text-sm font-black text-[#1f2221]">{slot.label}</span>
-                              <span className="mt-1 block text-xs font-bold text-[#6f7573]">{slot.copy}</span>
-                            </span>
-                          </span>
-                          {/* <span className="shrink-0 text-sm font-black text-[#e61951]">{slot.price}</span> */}
-                        </label>
-                      ))}
-
-                      <Field label="Delivery Date" name="deliveryDate" type="date" min={minDeliveryDate} defaultValue={checkoutData.deliveryDate || minDeliveryDate} required />
-                      <Field label="Message on Cake" name="message" placeholder="Happy Birthday Ayush" defaultValue={checkoutData.message || ""} maxLength={30} />
-                    </motion.div>
-                  );
-                })()}
-
-                {step === 3 && (
-                  <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-5">
-                    <div className="grid gap-3">
-                      <button type="button" className="flex h-14 w-full items-center justify-center gap-2 rounded-lg border border-[#e61951] bg-[#fff2e9] text-sm font-black text-[#e61951]">
-                        <Wallet size={18} />
-                        Razorpay UPI
-                      </button>
-                    </div>
-                    
-                    <div className="rounded-lg bg-[#f7f7f7] p-6 text-center">
-                      <ShieldCheck size={32} className="mx-auto mb-3 text-[#0f8b57]" />
-                      <h3 className="mb-2 text-lg font-black text-[#1f2221]">Secure UPI Payment</h3>
-                      <p className="text-sm leading-6 text-[#6f7573]">
-                        Click <strong>Place Order</strong> below to open the secure Razorpay payment window. You can complete the payment using any UPI app (GPay, PhonePe, Paytm, etc).
-                      </p>
+                  <motion.div initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="space-y-6">
+                    <div>
+                      {/* <h3 className="mb-4 text-lg font-black text-[#1f2221]">Order Items</h3> */}
+                      <div className="space-y-3">
+                        {cart.map((item) => (
+                          <div key={item.id} className="flex gap-4 rounded-xl border border-[#ebebeb] p-4">
+                            <img src={item.image} alt={item.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
+                            <div className="min-w-0 flex-1 flex flex-col justify-center">
+                              <p className="line-clamp-1 text-base font-black text-[#1f2221]">{item.name}</p>
+                              <p className="mt-1 text-sm font-bold text-[#6f7573]">{item.size} × {item.quantity}</p>
+                              <span className="mt-2 text-normal font-black text-[#000000]">{formatPrice(item.price * item.quantity)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="rounded-lg bg-[#fff2e9] p-4 text-sm font-bold text-[#6f7573]">
-                      Razorpay checkout is configured from environment variables
-                      {razorpayKeyId() ? "." : ", but the frontend key is missing."}
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="rounded-xl border border-[#ebebeb] p-4">
+                        <h4 className="mb-2 text-xs font-black uppercase tracking-wider text-[#8a908e]">Delivery Details</h4>
+                        <p className="text-sm font-bold text-[#1f2221]">{checkoutData.name}</p>
+                        <p className="mt-1 text-sm text-[#6f7573]">{checkoutData.phone}</p>
+                        <p className="mt-2 text-sm text-[#6f7573]">{[checkoutData.houseNo, checkoutData.street || checkoutData.address, checkoutData.city, checkoutData.landmark].filter(Boolean).join(", ")}</p>
+                        <p className="mt-1 text-sm font-bold text-[#1f2221]">{checkoutData.pincode}</p>
+                      </div>
+                      <div className="rounded-xl border border-[#ebebeb] p-4 flex flex-col justify-center">
+                        <h4 className="mb-2 text-xs font-black uppercase tracking-wider text-[#8a908e]">Delivery Date</h4>
+                        <p className="text-base font-black text-[#1f2221]">{displayDate}</p>
+                      </div>
+                    </div>
+
+                    <div className="rounded-xl bg-[#f7f7f7] p-4">
+                      <div className="space-y-3 text-sm font-bold text-[#6f7573]">
+                        <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
+                        <div className="flex justify-between"><span>Delivery Fee</span><span>{formatPrice(deliveryFee)}</span></div>
+                      </div>
+                      <div className="mt-4 flex justify-between border-t border-[#ebebeb] pt-4 text-xl font-black text-[#1f2221]">
+                        <span>Total to Pay</span>
+                        <span className="text-[#000000]">{formatPrice(total)}</span>
+                      </div>
                     </div>
                   </motion.div>
-                )}
+                )})()}
               </div>
 
               <div className="sticky bottom-0 z-20 flex flex-col gap-3 border-t border-[#ebebeb] bg-white p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
                 <button
                   type="button"
                   onClick={() => (step > 1 ? setStep(step - 1) : navigate("/cart"))}
-                  className="order-2 flex h-12 items-center justify-center rounded-xl px-6 text-sm font-black text-[#6f7573] transition-colors hover:bg-[#f7f7f7] hover:text-[#1f2221] sm:order-1 sm:justify-start"
+                  className="order-2 flex h-10 items-center justify-center rounded-xl px-6 text-sm font-black text-[#6f7573] transition-colors hover:bg-[#f7f7f7] hover:text-[#1f2221] sm:order-1 sm:justify-start"
                 >
                   {step === 1 ? "Return To Cart" : "Go Back"}
                 </button>
@@ -517,45 +462,12 @@ function Checkout() {
                         sm:h-12
                         sm:w-auto
                         ">
-                  {loading ? "Processing..." : step === 3 ? "Place Order" : "Continue"}
+                  {loading ? "Processing..." : step === 2 ? "Proceed to Pay" : "Continue"}
                   {!loading && <ChevronRight size={18} />}
                 </button>
               </div>
             </form>
-          </section>
-
-          <aside>
-            <div className="bk-card overflow-hidden lg:sticky lg:top-[138px]">
-              <div className="border-b border-[#ebebeb] p-4 md:p-5">
-                <h2 className="text-lg font-black text-[#1f2221] md:text-xl">Order Summary</h2>
-              </div>
-              <div className="space-y-2 p-4 md:p-5">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex gap-3">
-                    <img src={item.image} alt={item.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
-                    <div className="min-w-0 flex-1">
-                      <p className="line-clamp-1 text-sm font-black text-[#1f2221]">{item.name}</p>
-                      <p className="mt-1 text-xs font-bold text-[#6f7573]">{item.size} x {item.quantity}</p>
-                    </div>
-                    <span className="text-sm font-black text-[#1f2221]">{formatPrice(item.price * item.quantity)}</span>
-                  </div>
-                ))}
-                <div className="space-y-3 border-t border-[#ebebeb] pt-4 text-sm font-bold text-[#6f7573]">
-                  <div className="flex justify-between"><span>Order Total</span><span>{formatPrice(subtotal)}</span></div>
-                  <div className="flex justify-between"><span>Delivery Fee</span><span>{formatPrice(deliveryFee)}</span></div>
-                  {/* <div className="flex justify-between text-[#0f8b57]"><span>Discount</span><span>- {formatPrice(discount)}</span></div> */}
-                </div>
-                <div className="flex justify-between border-t border-[#ebebeb] pt-4 text-lg font-black text-[#1f2221]">
-                  <span>Total</span>
-                  <span className="text-[#1f2221]">{formatPrice(total)}</span>
-                </div>
-                {/* <div className="flex justify-between gap-3 rounded-lg bg-[#f7fff8] p-4 text-xs font-bold text-[#6f7573]">
-                  <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#e61951]" /> Secure checkout</span>
-                  <span className="flex items-center gap-2"><MapPin size={16} className="text-[#e61951]" /> Delivery address verified</span>
-                </div> */}
-              </div>
-            </div>
-          </aside>
+            </section>
         </div>
       </div>
     </div>

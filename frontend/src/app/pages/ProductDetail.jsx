@@ -3,7 +3,9 @@ import { Link, useNavigate, useParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import {
   CakeSlice,
+  Calendar,
   CheckCircle2,
+  ChevronLeft,
   ChevronRight,
   Clock,
   Heart,
@@ -13,10 +15,11 @@ import {
   ShieldCheck,
   ShoppingCart,
   Star,
-  Truck
+  Truck,
+  X
 } from "lucide-react";
 import { toast } from "sonner";
-import { checkPincode, getProduct, getProductReviews } from "../api/client";
+import { checkPincode, getBlockedDates, getProduct, getProductReviews } from "../api/client";
 import { isUserLoggedIn } from "../utils/session";
 import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice } from "../utils/format";
@@ -29,6 +32,201 @@ function normalizePincode(value) {
 function formatReviewDate(value) {
   const date = new Date(value);
   return Number.isNaN(date.getTime()) ? "" : date.toLocaleDateString();
+}
+
+/* ── date helpers ── */
+function localDate(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d;
+}
+
+function toIso(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function shortDate(date) {
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+/* ── Calendar Modal ── */
+function CalendarModal({ minDate, blockedDates, selectedDate, onSelect, onClose }) {
+  const [viewMonth, setViewMonth] = useState(minDate.getMonth());
+  const [viewYear, setViewYear] = useState(minDate.getFullYear());
+
+  const minIso = toIso(minDate);
+  const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : "")));
+
+  const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+
+  const canGoPrev = viewYear > minDate.getFullYear() || (viewYear === minDate.getFullYear() && viewMonth > minDate.getMonth());
+
+  const cells = [];
+  for (let i = 0; i < firstDayOfMonth; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevMonth = () => {
+    if (!canGoPrev) return;
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(viewYear - 1); }
+    else setViewMonth(viewMonth - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(viewYear + 1); }
+    else setViewMonth(viewMonth + 1);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[360px] rounded-2xl bg-white shadow-2xl"
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-[#ebebeb] px-5 py-4">
+          <h3 className="text-base font-black text-[#1f2221]">Select Delivery Date</h3>
+          <button type="button" onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7]">
+            <X size={18} className="text-[#6f7573]" />
+          </button>
+        </div>
+
+        {/* Month nav */}
+        <div className="flex items-center justify-between px-5 py-3">
+          <button type="button" onClick={prevMonth} disabled={!canGoPrev} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7] disabled:opacity-30">
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-sm font-black text-[#1f2221]">{MONTHS[viewMonth]} {viewYear}</span>
+          <button type="button" onClick={nextMonth} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7]">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+
+        {/* Day headers */}
+        <div className="grid grid-cols-7 px-4 pb-1">
+          {DAYS.map((day) => (
+            <span key={day} className="text-center text-[11px] font-bold text-[#9a9f9d]">{day}</span>
+          ))}
+        </div>
+
+        {/* Day cells */}
+        <div className="grid grid-cols-7 gap-y-1 px-4 pb-5">
+          {cells.map((day, i) => {
+            if (day === null) return <span key={`e-${i}`} />;
+            const dateObj = new Date(viewYear, viewMonth, day);
+            const iso = toIso(dateObj);
+            const isPast = iso < minIso;
+            const isBlocked = blockedSet.has(iso);
+            const isDisabled = isPast || isBlocked;
+            const isSelected = selectedDate === iso;
+
+            return (
+              <button
+                key={iso}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => { onSelect(iso); onClose(); }}
+                className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition ${
+                  isSelected
+                    ? "bg-[#e61951] text-white shadow-md shadow-[#e61951]/30"
+                    : isDisabled
+                      ? "cursor-not-allowed text-[#d5d8d6] opacity-40"
+                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+/* ── Delivery Date Picker Row ── */
+function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates }) {
+  const [showCalendar, setShowCalendar] = useState(false);
+
+  const today = localDate(0);
+  const tomorrow = localDate(1);
+  const todayIso = toIso(today);
+  const tomorrowIso = toIso(tomorrow);
+  const minDate = isSameDay ? today : tomorrow;
+
+  const options = [];
+  if (isSameDay) {
+    options.push({ key: "today", label: "Today", sub: shortDate(today), value: todayIso });
+  }
+  options.push({ key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso });
+  options.push({ key: "later", label: "Later", sub: null, value: null });
+
+  const isLaterSelected = selectedDate && selectedDate !== todayIso && selectedDate !== tomorrowIso;
+
+  return (
+    <>
+      <div className="mt-4 md:mt-5">
+        <h2 className="mb-2 text-sm font-normal text-[#1f2221] md:text-base">Select Delivery Date</h2>
+        <div className="grid grid-cols-3 gap-2 md:gap-3">
+          {options.map((opt) => {
+            const isActive = opt.value ? selectedDate === opt.value : isLaterSelected;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => {
+                  if (opt.value) {
+                    onSelect(opt.value);
+                  } else {
+                    setShowCalendar(true);
+                  }
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2 transition ${
+                  isActive
+                    ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
+                    : "border-[#36363670] bg-transparent hover:border-[#e61951]"
+                }`}
+              >
+                <span className="text-sm font-semibold text-[#1f2221]">{opt.label}</span>
+                {opt.sub ? (
+                  <span className="text-[11px] text-[#6f7573]">{opt.sub}</span>
+                ) : isLaterSelected ? (
+                  <span className="text-[11px] text-[#e61951] font-bold">
+                    {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[11px] text-[#6f7573]">
+                    <Calendar size={10} /> Pick date
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <AnimatePresence>
+        {showCalendar && (
+          <CalendarModal
+            minDate={minDate}
+            blockedDates={blockedDates}
+            selectedDate={selectedDate}
+            onSelect={onSelect}
+            onClose={() => setShowCalendar(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
 
 function ProductDetail() {
@@ -45,6 +243,8 @@ function ProductDetail() {
   const [liked, setLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
+  const [deliveryDate, setDeliveryDate] = useState(toIso(localDate(1)));
+  const [blockedDates, setBlockedDates] = useState([]);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
 
   useEffect(() => {
@@ -58,6 +258,12 @@ function ProductDetail() {
           setProduct(item);
           const weights = item.weightOptions?.length ? item.weightOptions : [{ label: "0.5 Kg", price: item.price }];
           setSelectedWeight(weights.find((weight) => weight.label === item.defaultWeight) || weights[0]);
+          
+          if (item.sameDayDelivery) {
+            setDeliveryDate(toIso(localDate(0)));
+          } else {
+            setDeliveryDate(toIso(localDate(1)));
+          }
 
           getProductReviews(item.id).then((revs) => {
             if (mounted) {
@@ -77,10 +283,21 @@ function ProductDetail() {
           setLoading(false);
         }
       });
+      
+    getBlockedDates().then((dates) => {
+      if (mounted) setBlockedDates(dates || []);
+    }).catch(() => void 0);
+    
     return () => {
       mounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (deliveryDate) {
+      sessionStorage.setItem("chocoriches_delivery_date", deliveryDate);
+    }
+  }, [deliveryDate]);
 
   useEffect(() => {
     if (!product?.id) {
@@ -310,6 +527,13 @@ function ProductDetail() {
                 ))}
               </div>
             </div>
+
+            <DeliveryDatePicker
+              isSameDay={product.sameDayDelivery}
+              selectedDate={deliveryDate}
+              onSelect={setDeliveryDate}
+              blockedDates={blockedDates}
+            />
 
             <div className="mt-4 md:mt-5">
               <label className="mb-2 block text-sm font-normal text-[#1f2221]">Delivery Location</label>

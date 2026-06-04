@@ -142,7 +142,7 @@ function Home() {
               width="2017"
               height="528"
               loading="eager"
-              fetchPriority="high"
+              fetchpriority="high"
               decoding="async"
               className="block h-full w-full object-contain"
             />

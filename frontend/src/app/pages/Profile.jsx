@@ -32,7 +32,7 @@ function Profile() {
     }
 
     let mounted = true;
-    Promise.all([getProfile(), getOrders(), getProducts().catch(() => []), getUserReviews().catch(() => [])])
+    Promise.all([getProfile(), getOrders().catch(() => []), getProducts().catch(() => []), getUserReviews().catch(() => [])])
       .then(([profileData, orderData, products, reviewsData]) => {
         if (mounted) {
           setProfile(profileData);
