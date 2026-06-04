@@ -29,7 +29,7 @@ function Cart() {
   };
 
   return (
-    <div className={`bk-page ${cart.length ? "max-md:pb-20" : ""}`}>
+    <div className={`bk-page-cart ${cart.length ? "max-md:pb-2" : ""}`}>
       <div className="bk-shell py-3 md:py-6">
         <div className="mb-2 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -152,23 +152,23 @@ function Cart() {
               <div className="space-y-4 p-4 md:p-5">
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Order Total</span>
-                  <span className="font-black text-[#1f2221]">
+                  <span className="font-normal text-[#1f2221]">
                     {formatPrice(subtotal)}
                   </span>
                 </div>
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Delivery Fee</span>
-                  <span className="font-black text-[#1f2221]">
+                  <span className="font-normal text-[#1f2221]">
                     {formatPrice(deliveryFee)}
                   </span>
                 </div>
 
                 <div className="border-t border-[#ebebeb] pt-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-base font-black text-[#1f2221]">
+                    <span className="text-[18px] font-black text-[#1f2221]">
                       Total
                     </span>
-                    <span className="text-2xl font-black text-[#1f2221]">
+                    <span className="text-[18px] font-black text-[#1f2221]">
                       {formatPrice(total)}
                     </span>
                   </div>

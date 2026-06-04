@@ -338,6 +338,10 @@
     background: #f7f7f7;
     color: #1f2221;
   }
+  .bk-page-cart {
+    background: #f7f7f7;
+    color: #1f2221;
+  }
 
   @media (max-width: 767px) {
     .bk-shell {
