@@ -38,7 +38,12 @@ export default defineConfig({
     },
   },
   build: {
-    chunkSizeWarningLimit: 1000, // Increase chunk size warning limit to 1000KB to silence warnings
+    chunkSizeWarningLimit: 1000,
+    sourcemap: false,
+    minify: 'esbuild',
+  },
+  esbuild: {
+    drop: ['console', 'debugger'],
   },
   assetsInclude: ["**/*.svg", "**/*.csv"],
 });

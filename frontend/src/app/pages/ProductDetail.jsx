@@ -24,6 +24,7 @@ import { isUserLoggedIn } from "../utils/session";
 import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 function normalizePincode(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 6);
@@ -361,15 +362,20 @@ function ProductDetail() {
     if (isValid) toast.success("Delivery slot available today");
   };
 
-  const handleAddToCart = async () => {
+  const handleAddToCart = async (showLoader = true) => {
     if (!isUserLoggedIn()) {
       toast.error("Please log in to add items to your cart");
       navigate("/auth");
       return false;
     }
 
+    if (showLoader) setIsBuying(true);
+
     const isValid = await ensureValidDelivery();
-    if (!isValid) return false;
+    if (!isValid) {
+      if (showLoader) setIsBuying(false);
+      return false;
+    }
 
     try {
       const nextQuantity = cartItem ? quantity : 1;
@@ -381,9 +387,11 @@ function ProductDetail() {
       toast.success(`${product.name} added to cart`, {
         description: `${selectedWeight.label} | Qty ${nextQuantity}`
       });
+      if (showLoader) setIsBuying(false);
       return true;
     } catch (error) {
       toast.error(error.message || "Could not add item to cart");
+      if (showLoader) setIsBuying(false);
       return false;
     }
   };
@@ -396,7 +404,7 @@ function ProductDetail() {
 
   const handleBuyNow = async () => {
     setIsBuying(true);
-    const added = await handleAddToCart();
+    const added = await handleAddToCart(false);
     if (added) {
       navigate("/cart");
     }
@@ -431,6 +439,7 @@ function ProductDetail() {
 
   return (
     <div className="bk-page min-h-[420px]">
+      <FullScreenLoader visible={isBuying} />
       <div className="bk-shell max-md:px-0 md:py-5">
         
 

@@ -58,13 +58,13 @@ export async function optionalAuth(req, res, next) {
 export async function requireAdmin(req, res, next) {
   const payload = verifySignedToken(bearerToken(req));
   if (!payload || payload.role !== "admin") {
-    res.status(401).json({ message: "Admin access required." });
+    res.status(404).json({ message: "Not Found" });
     return;
   }
 
   const admin = await findUserFromPayload(payload);
   if (!admin || admin.role !== "admin" || admin.isBlocked) {
-    res.status(401).json({ message: "Admin access required." });
+    res.status(404).json({ message: "Not Found" });
     return;
   }
 

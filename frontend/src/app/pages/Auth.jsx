@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import { login, register, googleLogin } from "../api/client";
 import { clearUserSession, isUserLoggedIn, saveUserSession } from "../utils/session";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 function Auth() {
   const [isLogin, setIsLogin] = useState(true);
@@ -107,6 +108,7 @@ function Auth() {
 
   return (
     <div className="bk-page bg-white lg:bg-[#f7f7f7]">
+      <FullScreenLoader visible={loading} />
       <button
         type="button"
         aria-label="Go back"

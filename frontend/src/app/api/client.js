@@ -4,6 +4,8 @@ const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 const API_BASE_URLS = apiBaseUrls(API_BASE_URL);
 const productDetailRequests = new Map();
 let publicSettingsRequest = null;
+let categoriesRequest = null;
+let subcategoriesRequest = null;
 
 function apiBaseUrls(baseUrl) {
   const normalizedBase = baseUrl.replace(/\/$/, "");
@@ -225,7 +227,22 @@ function getPublicSettings() {
   return publicSettingsRequest;
 }
 function getCategories() {
-  return request("/categories");
+  if (!categoriesRequest) {
+    categoriesRequest = request("/categories").catch((err) => {
+      categoriesRequest = null;
+      throw err;
+    });
+  }
+  return categoriesRequest;
+}
+function getSubcategories() {
+  if (!subcategoriesRequest) {
+    subcategoriesRequest = request("/subcategories").catch((err) => {
+      subcategoriesRequest = null;
+      throw err;
+    });
+  }
+  return subcategoriesRequest;
 }
 function checkPincode(pincode) {
   return request(`/pincodes/check/${pincode}`);

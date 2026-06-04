@@ -384,7 +384,7 @@ function RootLayout() {
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
               transition={{ type: "spring", damping: 28, stiffness: 220 }}
-              className="fixed inset-y-0 left-0 z-[70] flex w-[86vw] max-w-sm flex-col bg-white shadow-2xl"
+              className="fixed inset-y-0 left-0 z-[70] flex w-[65vw] max-w-[280px] flex-col bg-white shadow-2xl"
             >
               <div className="flex h-16 items-center justify-between border-b border-[#ebebeb] px-5">
                 <Link to="/" className="flex items-center gap-2 text-xl font-black text-[#e61951]">
@@ -401,22 +401,11 @@ function RootLayout() {
                     <MapPin className="text-[#e61951]" size={19} />
                     <span>
                       <span className="block text-[10px] font-black uppercase text-[#6f7573]">Delivering to</span>
-                      <span className="text-sm font-black">Bangalore</span>
+                      <span className="text-sm font-black">Ahmedabad</span>
                     </span>
                   </span>
-                  <ChevronDown size={16} />
+                  
                 </button>
-                <form onSubmit={handleSearchSubmit} className="relative mt-4">
-                  <Search size={18} className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-[#8e9492]" />
-                  <input
-                    type="search"
-                    aria-label="Search cakes"
-                    placeholder="Search cakes"
-                    value={searchTerm}
-                    onChange={(event) => setSearchTerm(event.target.value)}
-                    className="h-11 w-full rounded-lg border border-[#ebebeb] bg-white pl-11 pr-4 text-sm outline-none focus:border-[#e61951] focus:ring-4 focus:ring-[#e61951]/10"
-                  />
-                </form>
               </div>
               <nav className="flex flex-1 flex-col overflow-y-auto p-3 pb-28">
                 {categoryLinks.map((item) => {
@@ -428,23 +417,25 @@ function RootLayout() {
                       <div className="flex items-center">
                         <Link
                           to={item.to}
-                          className={`flex-1 rounded-lg px-4 py-3 text-base font-bold ${
+                          onClick={(e) => {
+                            if (hasSubs) {
+                              e.preventDefault();
+                              setMobileExpandedCat(isExpanded ? null : item.label);
+                            } else {
+                              setIsMenuOpen(false);
+                            }
+                          }}
+                          className={`flex-1 rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
                             isActiveCategory(item.to)
                               ? "bg-[#fff2e9] text-[#e61951]"
                               : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
                           }`}
                         >
                           {item.label}
+                          {hasSubs && (
+                            <ChevronDown size={16} className={`text-[#6f7573] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+                          )}
                         </Link>
-                        {hasSubs && (
-                          <button
-                            type="button"
-                            onClick={() => setMobileExpandedCat(isExpanded ? null : item.label)}
-                            className="grid h-10 w-10 shrink-0 place-items-center rounded-lg text-[#6f7573] hover:bg-[#f7f7f7]"
-                          >
-                            <ChevronDown size={16} className={`transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                          </button>
-                        )}
                       </div>
                       {hasSubs && isExpanded && (
                         <div className="mb-1 grid gap-1">
@@ -506,8 +497,8 @@ function RootLayout() {
             <div className="grid gap-8 sm:grid-cols-3">
               {footerLinks.map(([heading, ...links]) => (
                 <div key={heading}>
-                  <p className="mb-4 text-sm font-black text-[#1f2221]">{heading}</p>
-                  <ul className="space-y-3 text-sm text-[#6f7573]">
+                  <p className="mb-2 text-sm font-black text-[#1f2221]">{heading}</p>
+                  <ul className="space-y-2 text-sm text-[#6f7573]">
                     {links.map((link) => {
                       let url = "/";
                       if (link === "Track Order") url = "/track";

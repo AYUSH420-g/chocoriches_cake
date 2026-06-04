@@ -155,8 +155,8 @@ function Shop() {
   return (
     <div className="bk-page">
       <div className="border-b border-[#ebebeb] bg-white">
-        <div className="bk-shell py-3 md:py-6">
-          <nav className="flex gap-2 text-xs font-bold text-[#6f7573] md:mb-4">
+        <div className="bk-shell md:pb-6 pt-0">
+          {/* <nav className="flex gap-2 text-xs font-bold text-[#6f7573] md:mb-4">
             <Link to="/" className="hover:text-[#e61951]">Home</Link>
             <span>/</span>
             {activeCategory !== "All" && (
@@ -166,7 +166,7 @@ function Shop() {
               </>
             )}
             <span className="text-[#1f2221]">{activeSubcategory || (activeCategory === "All" ? "All Cakes" : activeCategory)}</span>
-          </nav>
+          </nav> */}
           <div className=" flex-col items-center gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left hidden md:flex sm:flex">
             <div>
               <h1 className="text-[20px] font-bold tracking-tight text-[#1f2221] md:text-4xl">{pageTitle}</h1>
@@ -185,22 +185,22 @@ function Shop() {
             <button
               type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-[#ebebeb] bg-white px-3 text-sm font-bold text-[#1f2221] lg:hidden md:w-auto md:px-4"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#ebebeb] bg-white px-3 text-sm font-bold text-[#1f2221] shadow-sm transition-colors hover:border-[#e61951] hover:text-[#e61951] lg:hidden md:w-auto md:px-4"
             >
               <Filter size={17} />
               Filter
             </button>
           </div>
-          <label className="inline-flex h-10 w-full min-w-0 items-center justify-center gap-1 rounded-lg border border-[#ebebeb] bg-white pl-3 pr-2 text-xs font-bold text-[#6f7573] md:w-auto md:text-sm">
+          <label className="inline-flex h-10 w-full min-w-0 items-center justify-center gap-1 rounded-full border border-[#ebebeb] bg-white pl-4 pr-3 text-xs font-bold text-[#6f7573] shadow-sm transition-colors hover:border-[#e61951] hover:text-[#e61951] md:w-auto md:text-sm">
             <span className="shrink-0 whitespace-nowrap">Sort by:</span>
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="min-w-0 max-w-[88px] appearance-none truncate bg-transparent px-1 font-semibold text-[#1f2221] outline-none md:max-w-none"
+              className="min-w-0 max-w-[88px] appearance-none truncate bg-transparent px-1 font-semibold text-[#1f2221] outline-none md:max-w-none group-hover:text-[#e61951]"
             >
               {sortOptions.map((option) => <option key={option}>{option}</option>)}
             </select>
-            <ChevronDown size={15} className="text-[#1f2221]" />
+            <ChevronDown size={15} className="text-current" />
           </label>
         </div>
       </div>

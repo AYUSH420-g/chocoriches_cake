@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText } from "lucide-react";
+import { ArrowLeft, ChevronRight, CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
 import { wishlistIds } from "../utils/wishlist";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 function normalizePincode(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 6);
@@ -19,7 +20,7 @@ function Profile() {
   const [profile, setProfile] = useState(() => getStoredUser());
   const [catalog, setCatalog] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState("orders");
+  const [activeSection, setActiveSection] = useState("main");
   const [showAddAddress, setShowAddAddress] = useState(false);
   const [userReviews, setUserReviews] = useState([]);
   const [reviewModal, setReviewModal] = useState({ open: false, product: null, rating: 5, comment: "", submitting: false });
@@ -410,6 +411,7 @@ function Profile() {
   if (!profile) {
     return (
       <div className="bk-page">
+        <FullScreenLoader visible={loading} />
         <div className="bk-shell grid min-h-[420px] place-items-center py-6">
           <p className="text-sm font-black text-[#e61951]">{loading ? "Loading your profile..." : "Login to view your profile"}</p>
         </div>
@@ -418,49 +420,55 @@ function Profile() {
   }
 
   return (
-    <div className="bk-page">
-      <div className="bk-shell py-5 md:py-6">
-        <div className="grid gap-4 md:gap-5 lg:grid-cols-[300px_1fr]">
-          <aside className="space-y-4 md:space-y-5">
-            <div className="bk-card px-4 pb-4 pt-4 text-center md:px-5 md:pt-5">
-              <span className="mx-auto grid h-20 w-20 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-3xl font-black uppercase text-white md:h-24 md:w-24 md:text-4xl">
-                {(profile.name || profile.email || "U").slice(0, 1)}
-              </span>
-              <h1 className="mt-3 text-xl font-black text-[#1f2221] md:mt-4 md:text-2xl">{profile.name}</h1>
-              <p className="mt-1 break-words text-sm font-bold text-[#6f7573]">{profile.email}</p>
-            </div>
+    <div className="bk-page bg-[#f7f7f7]">
+      <div className="bk-shell py-4 md:py-8">
+        <div className="mx-auto max-w-2xl">
+          {activeSection === "main" ? (
+            <div className="space-y-4">
+              <div className="bk-card flex items-center gap-5 p-5 md:p-6 shadow-sm">
+                <span className="grid h-16 w-16 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-2xl font-black uppercase text-white md:h-20 md:w-20 md:text-3xl shrink-0">
+                  {(profile.name || profile.email || "U").slice(0, 1)}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h1 className="truncate text-xl font-black text-[#1f2221] md:text-2xl">{profile.name}</h1>
+                  <p className="mt-1 truncate text-sm font-bold text-[#6f7573]">{profile.phone || profile.email}</p>
+                </div>
+              </div>
 
-            <nav className="bk-card p-2">
-              <ProfileNavItem icon={Package} label="My Orders" active={activeSection === "orders"} onClick={() => setActiveSection("orders")} />
-              <ProfileNavItem icon={Star} label="My Reviews" active={activeSection === "reviews"} onClick={() => setActiveSection("reviews")} />
-              <ProfileNavItem icon={Heart} label="My Favourites" active={activeSection === "favourites"} onClick={() => setActiveSection("favourites")} />
-              <ProfileNavItem icon={MapPin} label="Saved Addresses" active={activeSection === "address"} onClick={() => setActiveSection("address")} />
-              <ProfileNavItem icon={Settings} label="Account Settings" active={activeSection === "settings"} onClick={() => setActiveSection("settings")} />
-              <button type="button" onClick={logout} className="mt-2 flex h-11 w-full items-center gap-3 rounded-lg px-4 text-sm font-black text-[#e61951] hover:bg-[#fff2e9]">
+              <div className="bk-card overflow-hidden shadow-sm">
+                <ProfileNavItem icon={Package} label="My Orders" onClick={() => setActiveSection("orders")} />
+                <ProfileNavItem icon={Heart} label="My Favourites" onClick={() => setActiveSection("favourites")} />
+                <ProfileNavItem icon={MapPin} label="Saved Addresses" onClick={() => setActiveSection("address")} />
+                <ProfileNavItem icon={Star} label="My Reviews" onClick={() => setActiveSection("reviews")} />
+                <ProfileNavItem icon={Settings} label="Account Settings" onClick={() => setActiveSection("settings")} />
+              </div>
+
+              <button type="button" onClick={logout} className="bk-card flex h-[60px] w-full items-center justify-center gap-2 text-sm font-black text-[#e61951] shadow-sm hover:bg-[#fff2e9] transition">
                 <LogOut size={18} />
                 Logout
               </button>
-            </nav>
-          </aside>
-
-          <main className="space-y-4 md:space-y-5">
-            <section className="grid gap-3 md:grid-cols-2 md:gap-4">
-              {[
-                ["Total Orders", orders.length],
-                ["Saved Addresses", profile.addresses?.length || 0]
-              ].map(([label, value]) => (
-                <div key={label} className="bk-card p-4 md:p-5">
-                  <p className="text-sm font-bold text-[#6f7573]">{label}</p>
-                  <p className="mt-2 text-2xl font-black text-[#1f2221] md:text-3xl">{value}</p>
-                </div>
-              ))}
-            </section>
-
-            {activeSection === "orders" && <section className="bk-card overflow-hidden">
-              <div className="border-b border-[#ebebeb] bg-white p-4">
-                <h2 className="text-xl font-black text-[#1f2221]">Recent Orders</h2>
-                <p className="mt-1 text-xs text-[#6f7573]">Track current orders and repeat previous favourites.</p>
+            </div>
+          ) : (
+            <div className="space-y-5">
+              <div className="flex items-center gap-4 px-1">
+                <button
+                  type="button"
+                  onClick={() => setActiveSection("main")}
+                  className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white border border-[#ebebeb] text-[#1f2221] shadow-sm hover:bg-[#fafafa] transition-colors"
+                >
+                  <ArrowLeft size={18} />
+                </button>
+                <h1 className="text-xl font-black text-[#1f2221] capitalize">
+                  {activeSection === "address" ? "Saved Addresses" : 
+                   activeSection === "favourites" ? "My Favourites" :
+                   activeSection === "settings" ? "Account Settings" :
+                   `My ${activeSection}`}
+                </h1>
               </div>
+              
+              <main>
+
+            {activeSection === "orders" && <section className="bk-card overflow-hidden shadow-sm">
               <div className="divide-y divide-[#ebebeb]">
                 {orders.length ? (
                   orders.map((order) => (
@@ -527,11 +535,7 @@ function Profile() {
             </section>}
 
             {activeSection === "reviews" && (
-              <section className="bk-card overflow-hidden">
-                <div className="border-b border-[#ebebeb] bg-white p-4">
-                  <h2 className="text-xl font-black text-[#1f2221]">My Reviews</h2>
-                  <p className="mt-1 text-xs text-[#6f7573]">Reviews you've left for products you've ordered.</p>
-                </div>
+              <section className="bk-card overflow-hidden shadow-sm">
                 <div className="divide-y divide-[#ebebeb]">
                   {userReviews.length ? (
                     userReviews.map((review, idx) => {
@@ -569,9 +573,8 @@ function Profile() {
             )}
 
             {activeSection === "favourites" && (
-              <section className="bk-card p-4 md:p-5">
-                <h2 className="text-xl font-black text-[#1f2221] md:text-2xl">My Favourites</h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              <section className="bk-card p-4 md:p-5 shadow-sm">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {favouriteProducts.length ? favouriteProducts.map((product) => (
                     <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e61951]">
                       <img src={product.image} alt={product.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
@@ -586,11 +589,10 @@ function Profile() {
             )}
 
             {activeSection === "address" && (
-              <section className="bk-card p-4">
-                <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-xl font-black text-[#1f2221]">Saved Addresses</h2>
+              <section className="bk-card p-4 shadow-sm">
+                <div className="mb-4 flex items-center justify-end">
                   <button type="button" onClick={() => setShowAddAddress(!showAddAddress)} className="bk-btn h-9 px-4 text-xs">
-                    {showAddAddress ? "Cancel" : "Add New"}
+                    {showAddAddress ? "Cancel" : "+ Add New"}
                   </button>
                 </div>
                 {showAddAddress && (
@@ -653,9 +655,8 @@ function Profile() {
             )}
 
             {activeSection === "settings" && (
-              <section className="bk-card p-4">
-                <h2 className="text-xl font-black text-[#1f2221]">Account Settings</h2>
-                <form onSubmit={handleUpdateProfile} className="mt-4 grid gap-4">
+              <section className="bk-card p-4 shadow-sm">
+                <form onSubmit={handleUpdateProfile} className="grid gap-4">
                   <label className="block">
                     <span className="mb-1.5 block text-xs font-bold text-[#6f7573]">Name</span>
                     <input
@@ -697,6 +698,8 @@ function Profile() {
               </section>
             )}
           </main>
+            </div>
+          )}
         </div>
       </div>
 
@@ -763,17 +766,20 @@ function Profile() {
   );
 }
 
-function ProfileNavItem({ icon: Icon, label, active = false, onClick }) {
+function ProfileNavItem({ icon: Icon, label, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`flex h-11 w-full items-center gap-3 rounded-lg px-4 text-sm font-black transition ${
-        active ? "bg-[#e61951] text-white" : "text-[#5f6663] hover:bg-[#fff2e9] hover:text-[#e61951]"
-      }`}
+      className="flex h-[72px] w-full items-center justify-between border-b border-[#ebebeb] bg-white px-5 text-[#1f2221] transition hover:bg-[#fafafa] last:border-0"
     >
-      <Icon size={18} />
-      {label}
+      <div className="flex items-center gap-4">
+        <div className="grid h-10 w-10 place-items-center rounded-full bg-[#f7f7f7] text-[#6f7573]">
+          <Icon size={18} />
+        </div>
+        <span className="text-base font-black">{label}</span>
+      </div>
+      <ChevronRight size={18} className="text-[#a0a5a3]" />
     </button>
   );
 }

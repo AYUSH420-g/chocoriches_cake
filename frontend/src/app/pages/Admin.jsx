@@ -55,6 +55,8 @@ import {
   deleteAdminSubcategory
 } from "../api/client";
 import { formatPrice } from "../utils/format";
+import { isUserLoggedIn } from "../utils/session";
+import { Link } from "react-router";
 
 const tabs = [
   ["overview", "Overview", ShieldCheck],
@@ -89,6 +91,11 @@ const emptyProduct = {
   isTrending: false,
   customizable: false,
   sameDayDelivery: false,
+  tags: "",
+  flavors: "",
+  ingredients: "",
+  allergens: "",
+  longDescription: "",
 };
 
 const emptyCategory = { name: "", isActive: true };
@@ -426,6 +433,9 @@ function Admin() {
   const editProduct = (product) => {
     setEditingProductId(product.id);
     setProductForm({
+      ...product,
+      tags: (product.tags || []).join(", "),
+      flavors: (product.flavors || []).join(", "),
       name: product.name || "",
       price: product.originalPrice || product.price || "",
       discountPrice: product.discountPrice || product.price || "",
@@ -446,6 +456,7 @@ function Admin() {
       sameDayDelivery: Boolean(product.sameDayDelivery),
     });
     setActiveTab("products");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const saveCategory = async (event) => {
@@ -520,6 +531,18 @@ function Admin() {
   };
 
   if (!token) {
+    if (isUserLoggedIn()) {
+      return (
+        <div className="bk-page grid min-h-[420px] place-items-center py-6 text-center">
+          <div>
+            <h1 className="text-3xl font-black text-[#1f2221]">404</h1>
+            <p className="mt-2 text-sm font-bold text-[#6f7573]">Page not found</p>
+            <Link to="/" className="bk-btn mt-5 h-11 px-5 text-sm">Return Home</Link>
+          </div>
+        </div>
+      );
+    }
+    
     return (
       <div className="grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-6">
         <Toaster position="top-center" richColors />
@@ -674,7 +697,16 @@ function Admin() {
                       onPriceChange={updateProductWeight}
                       onDefaultChange={setDefaultWeight}
                     />
-                    <Textarea label="Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
+                    <Textarea label="Short Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
+                    <Textarea label="Long Description (Optional)" value={productForm.longDescription} onChange={(value) => setProductForm({ ...productForm, longDescription: value })} rows={6} />
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <Field label="Ingredients" value={productForm.ingredients} onChange={(value) => setProductForm({ ...productForm, ingredients: value })} placeholder="e.g. Flour, Sugar, Cocoa" />
+                      <Field label="Allergens" value={productForm.allergens} onChange={(value) => setProductForm({ ...productForm, allergens: value })} placeholder="e.g. Contains Nuts, Dairy" />
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <TagsField label="Tags" value={productForm.tags} onChange={(value) => setProductForm({ ...productForm, tags: value })} placeholder="e.g. Vegan, Eggless" />
+                      <TagsField label="Flavors" value={productForm.flavors} onChange={(value) => setProductForm({ ...productForm, flavors: value })} placeholder="e.g. Chocolate, Vanilla" />
+                    </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
                         ["isActive", "Active"],
@@ -871,7 +903,9 @@ function Admin() {
                             <h4 className="font-black mb-3 text-[#6f7573] uppercase tracking-wider text-xs">Order Details</h4>
                             <div className="grid gap-2">
                               <p><strong className="font-black">Order ID:</strong> {order.orderId || order.id}</p>
-                              <p><strong className="font-black">Items:</strong> {(order.items || []).join(", ") || "N/A"}</p>
+                              <p><strong className="font-black">Placed At:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
+                              <p><strong className="font-black">Req. Delivery Date:</strong> {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "N/A"}</p>
+                              <p><strong className="font-black">Items:</strong> {(order.items || []).join(", ") || "N/A"} <span className="text-xs text-[#e61951]">({order.itemCount || (order.items || []).length} items)</span></p>
                               <p><strong className="font-black">Total Amount:</strong> {formatPrice(order.total || 0)}</p>
                               <p><strong className="font-black">Delivery Area:</strong> {order.deliveryPincode || "N/A"}</p>
                             </div>
@@ -996,6 +1030,11 @@ function normalizeProductForm(form) {
     defaultWeight,
     weight: defaultWeight,
     images: [{ url: form.image, alt: form.name }],
+    tags: typeof form.tags === 'string' ? form.tags.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(form.tags) ? form.tags : []),
+    flavors: typeof form.flavors === 'string' ? form.flavors.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(form.flavors) ? form.flavors : []),
+    ingredients: form.ingredients || "",
+    allergens: form.allergens || "",
+    longDescription: form.longDescription || "",
   };
 }
 
@@ -1226,11 +1265,27 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
   );
 }
 
-function Textarea({ label, value, onChange }) {
+function Textarea({ label, value, onChange, rows = 4 }) {
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
-      <textarea value={value || ""} onChange={(event) => onChange(event.target.value)} rows={4} className="bk-input resize-none px-3 py-3 text-sm" />
+      <textarea value={value || ""} onChange={(event) => onChange(event.target.value)} rows={rows} className="bk-input resize-none px-3 py-3 text-sm" />
+    </label>
+  );
+}
+
+function TagsField({ label, value, onChange, placeholder = "Separate with commas" }) {
+  const displayValue = Array.isArray(value) ? value.join(", ") : value || "";
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
+      <input
+        type="text"
+        value={displayValue}
+        onChange={(event) => onChange(event.target.value)}
+        placeholder={placeholder}
+        className="bk-input h-11 px-3 text-sm"
+      />
     </label>
   );
 }

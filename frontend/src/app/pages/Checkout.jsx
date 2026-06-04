@@ -8,6 +8,7 @@ import { useCart } from "../context/CartContext";
 import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
 import { getStoredUser } from "../utils/session";
+import FullScreenLoader from "../components/FullScreenLoader";
 
 const steps = ["Details", "Review"];
 const valueOfSteps = ["Delivery Address", "Order Summary"];
@@ -239,6 +240,7 @@ function Checkout() {
 
   return (
     <div className="bk-page bg-[#f8f8f8] min-h-screen">
+      <FullScreenLoader visible={loading} />
       <div className="bk-shell pb-4 pt-2 md:py-5">
         <div className="mb-4 text-center md:mb-5">
          <h1 className="text-xl font-bold">
