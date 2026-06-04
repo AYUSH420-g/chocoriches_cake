@@ -70,7 +70,7 @@ function CartProvider({ children }) {
 
   const setQuantity = useCallback(
     async (itemId, quantity) => {
-      const nextQuantity = Math.max(1, Number(quantity) || 1);
+      const nextQuantity = Math.max(1, Math.min(Number(quantity) || 1, 9));
       setCart((items) => items.map((item) => (item.id === itemId ? { ...item, quantity: nextQuantity } : item)));
       await updateCartItem(itemId, nextQuantity);
       await refreshCart();

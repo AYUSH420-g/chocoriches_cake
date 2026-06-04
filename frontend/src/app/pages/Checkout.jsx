@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet } from "lucide-react";
+import { CheckCircle2, ChevronRight, CreditCard, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings } from "../api/client";
@@ -10,6 +10,7 @@ import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
 import { getStoredUser } from "../utils/session";
 
 const steps = ["Details", "Delivery", "Payment"];
+const valueOfSteps = ["Delivery Address", "Delivery", "Payment"];
 const deliverySlots = [
   { value: "today-2-5", label: "Today, 2 PM - 5 PM", copy: "Fastest delivery slot", price: "Free", type: "today" },
   { value: "today-6-9", label: "Today, 6 PM - 9 PM", copy: "Evening celebration slot", price: "Free", type: "today" },
@@ -78,7 +79,7 @@ function Checkout() {
         name: data.name || "",
         email: data.email || "",
         phone: data.phone || "",
-        address: [data.address, data.city, data.landmark].filter(Boolean).join(", "),
+        address: [data.houseNo, data.street || data.address, data.city, data.landmark].filter(Boolean).join(", "),
         customerEmail: data.email || "",
         deliveryPincode: data.pincode || "",
         deliveryDate: data.deliveryDate || new Date().toISOString().slice(0, 10),
@@ -295,7 +296,7 @@ function Checkout() {
 
   return (
     <div className="bk-page bg-[#f8f8f8] min-h-screen">
-      <div className="bk-shell py-5 md:py-6">
+      <div className="bk-shell pb-4 pt-2 md:py-5">
         <div className="mb-4 text-center md:mb-5">
          <h1 className="text-xl font-bold">
             Add delivery address
@@ -319,17 +320,17 @@ function Checkout() {
         <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
           <section className="overflow-hidden rounded-3xl bg-white shadow-sm border border-gray-200">
             <form onSubmit={handleNext}>
-              <div className="sticky top-0 z-10 border-b bg-white px-6 py-5">
-                <h1 className="text-2xl font-extrabold text-black">{steps[step - 1]}</h1>
+              <div className="sticky top-0 z-10 border-b bg-white px-5 py-4">
+                <h1 className="text-[22px] font-bold text-semibold">{valueOfSteps[step - 1]}</h1>
                 {/* <p className="mt-1 text-sm leading-6 text-[#6f7573]">Complete your cake order in a clean, Bakingo-style checkout flow.</p> */}
               </div>
 
               <div className="p-4 md:p-7">
                 {step === 1 && (
-                  <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-4 md:gap-5">
+                  <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-2 md:gap-5">
                     {storedUser?.addresses?.length > 0 && (
-                      <div className="mb-2">
-                        <h3 className="mb-3 text-sm font-black text-[#1f2221]">Select Saved Address</h3>
+                      <div className="mb-4">
+                        <h4 className="mb-3 text-sm font-black text-[#1f2221]">Select Saved Address</h4>
                         <div className="grid gap-3 sm:grid-cols-2">
                           {storedUser.addresses.map((addr) => (
                             <button
@@ -342,39 +343,95 @@ function Checkout() {
                                   name: addr.name,
                                   phone: addr.phone,
                                   address: addr.address,
+                                  houseNo: "",
+                                  street: addr.address,
                                   pincode: addr.pincode,
                                   city: addr.city,
                                   landmark: addr.landmark,
+                                  addressLabel: addr.label || "Home",
                                 });
                               }}
-                              className={`rounded-lg border p-3 text-left transition ${
+                              className={`relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
                                   checkoutData.addressId === addr.id
-                                    ? "border-[#e61951] bg-[#fff2e9]"
+                                    ? "border-[#e61951] bg-[#fff2e9] shadow-sm"
                                     : "border-[#ebebeb] bg-white hover:border-[#e61951]"
                                 }`}
                             >
-                              <div className="mb-1 flex items-center justify-between">
-                                <span className="text-xs font-black uppercase tracking-wider text-[#6f7573]">{addr.label}</span>
+                              <div className="mb-2 flex items-center justify-between">
+                                <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
+                                  checkoutData.addressId === addr.id ? "bg-[#e61951] text-white" : "bg-[#f1f1f1] text-[#6f7573]"
+                                }`}>
+                                  {addr.label === "Home" ? <Home size={12}/> : addr.label === "Office" ? <Briefcase size={12}/> : <MapPin size={12}/>}
+                                  {addr.label}
+                                </span>
+                                {checkoutData.addressId === addr.id && <CheckCircle2 size={18} className="text-[#e61951]" />}
                               </div>
                               <p className="truncate text-sm font-black text-[#1f2221]">{addr.name}</p>
-                              <p className="truncate text-xs text-[#6f7573]">{addr.address}</p>
+                              <p className="truncate mt-1 text-xs text-[#6f7573]">{addr.address}</p>
                             </button>
                           ))}
                         </div>
                       </div>
                     )}
-                    <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-                      <Field label="Full Name" name="name" placeholder="Ayush Sharma" defaultValue={checkoutData.name || storedUser?.name || ""} required />
-                      <Field label="Mobile Number" name="phone" placeholder="98765 43210" defaultValue={checkoutData.phone || storedUser?.phone || ""} required />
+                    <div>
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Contact Details</h4>
+                      <div className="grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" defaultValue={checkoutData.name || storedUser?.name || ""} required />
+                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" defaultValue={checkoutData.phone || storedUser?.phone || ""} required />
+                      </div>
+                      <div className="mt-4">
+                        <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" defaultValue={checkoutData.email || storedUser?.email || ""} required />
+                      </div>
                     </div>
-                    <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" defaultValue={checkoutData.email || storedUser?.email || ""} required />
-                    <div className="grid gap-4 md:grid-cols-[1fr_150px] md:gap-5">
-                      <Field label="Delivery Address" name="address" placeholder="House no, street, locality" defaultValue={checkoutData.address || ""} required />
-                      <Field label="Pincode" name="pincode" placeholder="560001" defaultValue={checkoutData.pincode || ""} required />
+
+                    <div className="mt-2 border-t border-gray-100 pt-6">
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Address Details</h4>
+                      <div className="grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" defaultValue={checkoutData.houseNo || ""} required />
+                        <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" defaultValue={checkoutData.street || checkoutData.address || ""} required />
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="City" name="city" placeholder="Bangalore" defaultValue={checkoutData.city || ""} required />
+                        <Field label="Pincode" name="pincode" placeholder="560001" defaultValue={checkoutData.pincode || ""} required onChange={async (e) => {
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                          if (val.length === 6) {
+                            const result = await checkPincode(val).catch(() => null);
+                            if (result?.pincode?.city && e.target.form?.city) {
+                              e.target.form.city.value = result.pincode.city;
+                            }
+                          }
+                        }} />
+                      </div>
+                      <div className="mt-4">
+                        <Field label="Landmark" name="landmark" placeholder="Near metro station" defaultValue={checkoutData.landmark || ""} required />
+                      </div>
                     </div>
-                    <div className="grid gap-4 md:grid-cols-2 md:gap-5">
-                      <Field label="City" name="city" placeholder="Bangalore" defaultValue={checkoutData.city || ""} required />
-                      <Field label="Landmark" name="landmark" placeholder="Near metro station" defaultValue={checkoutData.landmark || ""} />
+
+                    <div className="mt-2 border-t border-gray-100 pt-3">
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Save Address As</h4>
+                      <div className="flex gap-3">
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Home" defaultChecked={checkoutData.addressLabel !== "Office" && checkoutData.addressLabel !== "Other"} className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <Home size={20} />
+                            <span className="text-xs font-bold">Home</span>
+                          </div>
+                        </label>
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Office" defaultChecked={checkoutData.addressLabel === "Office"} className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <Briefcase size={20} />
+                            <span className="text-xs font-bold">Office</span>
+                          </div>
+                        </label>
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Other" defaultChecked={checkoutData.addressLabel === "Other"} className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <MapPin size={20} />
+                            <span className="text-xs font-bold">Other</span>
+                          </div>
+                        </label>
+                      </div>
                     </div>
                   </motion.div>
                 )}
@@ -428,33 +485,40 @@ function Checkout() {
                 )}
               </div>
 
-              <div className="
-                      sticky
-                      bottom-0
-                      bg-white
-                      border-t
-                      p-4
-                      shadow-[0_-4px_20px_rgba(0,0,0,0.06)]
-                      ">
+              <div className="sticky bottom-0 z-20 flex flex-col gap-3 border-t border-[#ebebeb] bg-white p-4 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] sm:flex-row sm:items-center sm:justify-between sm:px-7 sm:py-5">
                 <button
                   type="button"
                   onClick={() => (step > 1 ? setStep(step - 1) : navigate("/cart"))}
-                  className="h-11 rounded-lg px-4 text-sm font-black text-[#6f7573] hover:bg-[#f7f7f7] hover:text-[#1f2221]"
+                  className="order-2 flex h-12 items-center justify-center rounded-xl px-6 text-sm font-black text-[#6f7573] transition-colors hover:bg-[#f7f7f7] hover:text-[#1f2221] sm:order-1 sm:justify-start"
                 >
                   {step === 1 ? "Return To Cart" : "Go Back"}
                 </button>
                 <button type="submit" disabled={loading} className="
-                        h-14
+                        order-1
+                        flex
+                        h-12
                         w-full
-                        rounded-2xl
-                        bg-[#0c8d25]
+                        items-center
+                        justify-center
+                        gap-2
+                        rounded-xl
+                        bg-[#e61951]
+                        px-8
+                        text-sm
+                        font-black
                         text-white
-                        font-bold
-                        text-base
-                        hover:bg-[#09711d]
+                        shadow-lg
+                        shadow-[#e61951]/25
+                        transition-all
+                        hover:scale-[1.01]
+                        hover:bg-[#d61448]
+                        disabled:scale-100
+                        disabled:opacity-70
+                        sm:h-12
+                        sm:w-auto
                         ">
                   {loading ? "Processing..." : step === 3 ? "Place Order" : "Continue"}
-                  {!loading && <ChevronRight size={17} />}
+                  {!loading && <ChevronRight size={18} />}
                 </button>
               </div>
             </form>
@@ -465,7 +529,7 @@ function Checkout() {
               <div className="border-b border-[#ebebeb] p-4 md:p-5">
                 <h2 className="text-lg font-black text-[#1f2221] md:text-xl">Order Summary</h2>
               </div>
-              <div className="space-y-4 p-4 md:p-5">
+              <div className="space-y-2 p-4 md:p-5">
                 {cart.map((item) => (
                   <div key={item.id} className="flex gap-3">
                     <img src={item.image} alt={item.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
@@ -485,10 +549,10 @@ function Checkout() {
                   <span>Total</span>
                   <span className="text-[#1f2221]">{formatPrice(total)}</span>
                 </div>
-                <div className="grid gap-3 rounded-lg bg-[#f7fff8] p-4 text-xs font-bold text-[#6f7573]">
+                {/* <div className="flex justify-between gap-3 rounded-lg bg-[#f7fff8] p-4 text-xs font-bold text-[#6f7573]">
                   <span className="flex items-center gap-2"><ShieldCheck size={16} className="text-[#e61951]" /> Secure checkout</span>
                   <span className="flex items-center gap-2"><MapPin size={16} className="text-[#e61951]" /> Delivery address verified</span>
-                </div>
+                </div> */}
               </div>
             </div>
           </aside>
@@ -498,7 +562,7 @@ function Checkout() {
   );
 }
 
-function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength }) {
+function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength, onChange }) {
   const isPincode = name === "pincode";
   return (
     <label className="block">
@@ -512,9 +576,10 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
         min={min}
         maxLength={isPincode ? 6 : maxLength}
         inputMode={isPincode ? "numeric" : undefined}
+        onChange={onChange}
         onInput={isPincode ? (event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); } : undefined}
         className="
-            h-14
+            h-11
             w-full
             rounded-2xl
             border
@@ -522,7 +587,7 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
             bg-white
             px-4
             text-sm
-            font-medium
+            font-bold
             outline-none
             transition
             focus:border-[#0c8d25]

@@ -5,10 +5,20 @@ import { motion } from "motion/react";
 import { getPublicSettings } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
-
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "../components/ui/alert-dialog";
 function Cart() {
   const { cart, removeItem, setQuantity } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
+  const [itemToRemove, setItemToRemove] = useState(null);
 
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
@@ -25,7 +35,14 @@ function Cart() {
   };
 
   const handleRemove = (id) => {
-    removeItem(id).catch(() => void 0);
+    setItemToRemove(id);
+  };
+
+  const confirmRemove = () => {
+    if (itemToRemove) {
+      removeItem(itemToRemove).catch(() => void 0);
+      setItemToRemove(null);
+    }
   };
 
   return (
@@ -94,10 +111,11 @@ function Cart() {
                         </span>
                         <button
                           type="button"
+                          disabled={item.quantity >= 9}
                           onClick={() =>
                             handleQuantityChange(item.id, item.quantity + 1)
                           }
-                          className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
+                          className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
                         >
                           <Plus size={10} />
                         </button>
@@ -140,16 +158,16 @@ function Cart() {
 
           <aside>
             <div className="bk-card overflow-hidden lg:sticky lg:top-[138px]">
-              <div className="border-b border-[#ebebeb] bg-white py-2 px-4 md:p-5">
+              <div className="border-b border-[#ebebeb] bg-white py-3 px-4 md:p-5">
                 <h2 className="text-lg font-semibold text-[#1f2221] md:text-xl">
                   Order Summary
                 </h2>
-                <p className="mt-1 text-sm text-[#6f7573]">
+                {/* <p className="mt-1 text-sm text-[#6f7573]">
                   {cart.length} item{cart.length === 1 ? "" : "s"}
-                </p>
+                </p> */}
               </div>
 
-              <div className="space-y-4 p-4 md:p-5">
+              <div className="space-y-2 p-4 md:p-5">
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Order Total</span>
                   <span className="font-normal text-[#1f2221]">
@@ -201,6 +219,22 @@ function Cart() {
           </aside>
         </div>
       </div>
+      
+
+      <AlertDialog open={!!itemToRemove} onOpenChange={(open) => !open && setItemToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove this cake from your cart?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="bg-[#e61951] text-white hover:bg-[#d61448]">Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

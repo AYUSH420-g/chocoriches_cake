@@ -298,6 +298,16 @@ function RootLayout() {
                   >
                     <Link
                       to={item.to}
+                      onClick={(e) => {
+                        if (hasSubs && window.innerWidth < 1024) {
+                          e.preventDefault();
+                          if (isOpen) {
+                            setHoveredCat(null);
+                          } else {
+                            openDesktopMenu(item.label, e.currentTarget.parentElement);
+                          }
+                        }
+                      }}
                       className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-bold transition md:py-2 ${
                         isActiveCategory(item.to) || isOpen
                           ? "bg-[#fff2e9] text-[#e61951]"
@@ -319,12 +329,14 @@ function RootLayout() {
             </Link>
           </div>
           {hoveredCat?.label && subcatsByCategory[hoveredCat.label]?.length > 0 && (
-            <div
-              className="fixed z-[200] hidden pt-1 lg:block"
-              style={{ left: hoveredCat.left, top: hoveredCat.top }}
-              onMouseEnter={keepDesktopMenuOpen}
-              onMouseLeave={scheduleDesktopMenuClose}
-            >
+            <>
+              <div className="fixed inset-0 z-[190] lg:hidden" onClick={() => setHoveredCat(null)} />
+              <div
+                className="fixed z-[200] pt-1"
+                style={{ left: hoveredCat.left, top: hoveredCat.top }}
+                onMouseEnter={keepDesktopMenuOpen}
+                onMouseLeave={scheduleDesktopMenuClose}
+              >
               <div className="min-w-[220px] rounded-xl border border-[#ebebeb] bg-white py-2 shadow-xl shadow-black/10">
                 <Link
                   to={`/shop?cat=${encodeURIComponent(hoveredCat.label)}`}
@@ -349,7 +361,8 @@ function RootLayout() {
                   </Link>
                 ))}
               </div>
-            </div>
+              </div>
+            </>
           )}
         
       </header>
@@ -466,7 +479,7 @@ function RootLayout() {
         </>
       )}
 
-      <main className={isAuthPage ? "flex-1" : "min-h-[100svh] flex-1 pt-[108px] md:pt-[118px]"}>
+      <main className={isAuthPage ? "flex-1" : "min-h-[75svh] flex-1 pt-[108px] md:pt-[118px]"}>
         <Outlet />
       </main>
 
