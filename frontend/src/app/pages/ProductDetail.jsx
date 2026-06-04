@@ -214,14 +214,8 @@ function ProductDetail() {
 
   return (
     <div className="bk-page min-h-[420px]">
-      <div className="bk-shell pt-4 max-md:px-0 md:py-5">
-        <nav className="mb-3 flex flex-wrap items-center gap-1.5 px-4 text-xs font-bold text-[#6f7573] md:mb-5 md:gap-2 md:px-0">
-          <Link to="/" className="hover:text-[#e61951]">Home</Link>
-          <ChevronRight size={13} />
-          <Link to="/shop" className="hover:text-[#e61951]">Cakes</Link>
-          <ChevronRight size={13} />
-          <span className="text-[#1f2221]">{product.name}</span>
-        </nav>
+      <div className="bk-shell max-md:px-0 md:py-5">
+        
 
         <div className="grid  md:gap-5 lg:grid-cols-[0.85fr_1.15fr]">
           <motion.div

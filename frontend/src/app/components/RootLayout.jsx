@@ -191,7 +191,7 @@ function RootLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f7f7f7] text-[#1f2221]">
+    <div className="flex min-h-screen flex-col bg-[#f7f7f7] text-[#1f2221] w-full">
       <TopLoader />
       <Toaster position="top-center" richColors />
 
