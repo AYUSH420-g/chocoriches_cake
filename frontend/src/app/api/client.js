@@ -367,9 +367,7 @@ function deleteAdminSubcategory(id) {
     method: "DELETE"
   });
 }
-function getSubcategories() {
-  return request("/subcategories");
-}
+
 function getAdminPincodes() {
   return adminRequest("/pincodes");
 }
