@@ -282,8 +282,8 @@ function RootLayout() {
             </div>
             
           </div>
-
-          <div className="flex h-11 min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide md:h-[46px] lg:overflow-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        </div>
+          <div className="flex pl-[16px] h-11 min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide md:h-[46px] lg:overflow-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex min-w-0 flex-1 lg:justify-center gap-1">
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
@@ -351,7 +351,7 @@ function RootLayout() {
               </div>
             </div>
           )}
-        </div>
+        
       </header>
 
       <AnimatePresence>

@@ -280,7 +280,7 @@ function ProductDetail() {
               <div className=" flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
                 <>
-                  <span className="bk-rating">
+                  <span className="bk-rating-product">
                     {product.ratings ? product.ratings.toFixed(1) : 0}
                     <Star size={11} fill="currentColor" />
                   </span>
@@ -293,25 +293,25 @@ function ProductDetail() {
             </div>
 
             <div className="md:mt-5">
-              {/* <div className="mb-3 flex items-center justify-between"> */}
-                {/* <h2 className="text-sm font-normal text-[#363636] md:text-base">Select Weight</h2> */}
+              <div className="mt-3 flex items-center justify-between">
+                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Weight</h2>
                 {/* <span className="text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
-              {/* </div> */}
-              <div className="mt-3 grid grid-cols-4 gap-2.5 sm:grid-cols-3 md:gap-3">
+              </div>
+              <div className="mt-1 grid grid-cols-5 gap-2.5 sm:grid-cols-3 md:gap-3">
                 {weightOptions.map((option) => (
                   <button
                     key={option.label}
                     type="button"
                     onClick={() => setSelectedWeight(option)}
-                    className={`rounded-lg border p-3 text-left transition ${
+                    className={`rounded-sm border p-1 text-left transition ${
                       selectedWeight.label === option.label
-                        ? "border-[#e61951]/30 bg-[#fff2e9]/70"
-                        : "border-[#ebebeb] bg-white hover:border-[#e61951]"
+                        ? "border-[#e61951]/50 font-semibold bg-[#ffeadc]"
+                        : "border-[#36363670] font-normal bg-transparent hover:border-[#e61951]"
                     }`}
                   >
-                    <span className="block text-sm font-normal text-[#1f2221]">{option.label}</span>
+                    <span className="block text-[14px]  text-[#1f2221] text-center items-center">{option.label=='Half Kg'?'0.5 Kg':option.label}</span>
                     {/* <span className="mt-1 block text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
-                    <span className="mt-1 block text-sm font-black text-[#e61951]">{formatPrice(option.price)}</span>
+                    {/* <span className="mt-1 block text-sm font-black text-[#e61951]">{formatPrice(option.price)}</span> */}
                   </button>
                 ))}
               </div>
@@ -319,7 +319,7 @@ function ProductDetail() {
 
             <div className="mt-4 md:mt-5">
               <label className="mb-2 block text-sm font-normal text-[#1f2221]">Delivery Location</label>
-              <div className="flex overflow-hidden rounded-lg border border-[#ebebeb] bg-white">
+              <div className="flex overflow-hidden rounded-lg border border-[#36363670] bg-transparent">
                 <span className="grid w-11 place-items-center text-[#e61951]">
                   <MapPin size={18} />
                 </span>
@@ -411,7 +411,7 @@ function ProductDetail() {
 
 
           </motion.div>
-          <div className="mt-0 flex gap-0  bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent justify-around">
+          {/* <div className="mt-0 flex gap-0  bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent justify-around">
               {[
                 [ShieldCheck, "Secure Checkout"],
                 [Clock, "Freshly Prepared"]
@@ -421,7 +421,7 @@ function ProductDetail() {
                   <p className="ml-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
                 </div>
               ))}
-            </div>
+            </div> */}
         </div>
 
         {activeReview && (
