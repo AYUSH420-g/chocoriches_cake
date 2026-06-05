@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { ArrowRight, CakeSlice, Clock, Gift, ShieldCheck, Sparkles, Star, Truck } from "lucide-react";
 import { getProductsPaginated } from "../api/client";
+
+const heroBanners = [
+  { src: "/hero-banner.png", alt: "Theme Cakes Delivery" },
+  { src: "/hreo-banner-2.png", alt: "Special Cake Collection" },
+  { src: "/hero-banner-3.png", alt: "Premium Cake Selection" },
+];
 import ProductCard from "../components/ProductCard";
 
 const wishCategories = [
@@ -45,14 +51,13 @@ const promiseItems = [
   { icon: ShieldCheck, title: "Baked Fresh", copy: "Prepared after order" }
 ];
 
-const heroImageSrcSet = "/hero-banner-640.webp 640w, /hero-banner-960.webp 960w, /hero-banner-1280.webp 1280w, /hero-banner-2017.webp 2017w";
-const heroImageSizes = "(min-width: 1184px) 1152px, calc(100vw - 32px)";
 
 function Home() {
   const [allCakes, setAllCakes] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
+  const [heroIndex, setHeroIndex] = useState(0);
   const pageRef = useRef(1);
   const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
@@ -126,32 +131,52 @@ function Home() {
     return () => observer.disconnect();
   }, [hasMore, loadingMore, isLoading, loadPage]);
 
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setHeroIndex((prev) => (prev + 1) % heroBanners.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <div className="bk-page overflow-hidden">
       <section className="bk-shell pt-4 pb-2 md:pt-8 md:pb-4">
         <Link
           to="/custom"
-          className="mx-auto block max-w-6xl overflow-hidden rounded-[10px] bg-[#fff2e9] shadow-sm transition hover:opacity-95 md:rounded-2xl"
+          className="relative mx-auto block max-w-6xl overflow-hidden rounded-[10px] bg-[#fff2e9] shadow-sm md:rounded-2xl"
           style={{ aspectRatio: "2017 / 528" }}
         >
-          <picture className="block h-full w-full">
-            <source type="image/webp" srcSet={heroImageSrcSet} sizes={heroImageSizes} />
-            <img
-              src="/hero-banner.png"
-              alt="Theme Cakes Delivery"
-              width="2017"
-              height="528"
-              loading="eager"
-              fetchpriority="high"
+          <AnimatePresence mode="popLayout" initial={false}>
+            <motion.img
+              key={heroIndex}
+              src={heroBanners[heroIndex].src}
+              alt={heroBanners[heroIndex].alt}
+              loading={heroIndex === 0 ? "eager" : "lazy"}
+              fetchpriority={heroIndex === 0 ? "high" : undefined}
               decoding="async"
-              className="block h-full w-full object-contain"
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "-100%", opacity: 0 }}
+              transition={{ duration: 0.5, ease: [0.4, 0, 0.2, 1] }}
+              className="absolute inset-0 block h-full w-full object-contain"
             />
-          </picture>
+          </AnimatePresence>
         </Link>
+        <div className="flex justify-center gap-1.5 pt-2 md:gap-2 md:pt-3">
+          {heroBanners.map((_, i) => (
+            <button
+              key={i}
+              type="button"
+              aria-label={`Go to banner ${i + 1}`}
+              onClick={() => setHeroIndex(i)}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === heroIndex ? "w-5 bg-[#e61951]" : "w-1.5 bg-[#1f2221]/25 hover:bg-[#1f2221]/50"} md:h-2 ${i === heroIndex ? "md:w-6" : "md:w-2"}`}
+            />
+          ))}
+        </div>
       </section>
 
 
-      <section className="bk-shell py-6 md:py-8">
+      <section className="bk-shell py-4 md:py-8">
         <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
           <div>
             <p className="text-sm font-black lowercase tracking-[0.08em] text-[#DC184D]">explore</p>
@@ -187,7 +212,7 @@ function Home() {
         <div ref={sentinelRef} className="h-1" />
       </section>
 
-      <section className="bg-white py-8 md:py-10">
+      <section className="bg-white py-4 md:py-10">
         <div className="bk-shell">
           <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
             <div>
