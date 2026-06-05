@@ -425,7 +425,7 @@ function RootLayout() {
                             className={`flex-1 w-full rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
                               isActiveCategory(item.to) || isExpanded
                                 ? "bg-[#fff2e9] text-[#e61951]"
-                                : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                                : "text-[#1f2221] active:bg-[#fff2e9] active:text-[#e61951]"
                             }`}
                           >
                             {item.label}

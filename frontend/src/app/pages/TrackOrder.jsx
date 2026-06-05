@@ -47,8 +47,6 @@ function TrackOrder() {
     }
 
     fetchOrder(true);
-    const intervalId = window.setInterval(() => fetchOrder(true), 5000);
-    return () => window.clearInterval(intervalId);
   }, [orderId, email]);
 
   const handleSubmit = async (event) => {
@@ -59,13 +57,6 @@ function TrackOrder() {
   return (
     <div className="bk-page">
       <div className="bk-shell py-5 md:py-6">
-        <div className="mb-4 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
-          <div>
-            <h1 className="text-[22px] font-black tracking-tight text-[#1f2221] md:text-5xl">Track Order</h1>
-            <p className="mt-1.5 text-sm leading-6 text-[#6f7573] md:mt-2">Live order status from the admin panel, refreshed automatically.</p>
-          </div>
-        </div>
-
         <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[380px_1fr]">
           <motion.section
             initial={{ opacity: 0, x: -20 }}

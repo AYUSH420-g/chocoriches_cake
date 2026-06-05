@@ -437,13 +437,13 @@ function Profile() {
   }
 
   return (
-    <div className="bk-page bg-[#f7f7f7]">
+    <div className="bk-page bg-white">
       <FullScreenLoader visible={loading} />
       <div className="bk-shell py-4 md:py-8">
         <div className="mx-auto max-w-2xl">
           {activeSection === "main" ? (
             <div className="space-y-4">
-              <div className="bk-card flex items-center gap-5 p-5 md:p-6 shadow-sm">
+              <div className="bk-card flex items-center gap-5 p-5 md:p-6 shadow-sm border border-[#ebebeb]">
                 <span className="grid h-16 w-16 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-2xl font-black uppercase text-white md:h-20 md:w-20 md:text-3xl shrink-0">
                   {(profile.name || profile.email || "U").slice(0, 1)}
                 </span>
@@ -453,7 +453,7 @@ function Profile() {
                 </div>
               </div>
 
-              <div className="bk-card overflow-hidden shadow-sm">
+              <div className="bk-card overflow-hidden shadow-sm border border-[#ebebeb]">
                 <ProfileNavItem icon={Package} label="My Orders" onClick={() => setActiveSection("orders")} />
                 <ProfileNavItem icon={Heart} label="My Favourites" onClick={() => setActiveSection("favourites")} />
                 <ProfileNavItem icon={MapPin} label="Saved Addresses" onClick={() => setActiveSection("address")} />
@@ -461,7 +461,7 @@ function Profile() {
                 <ProfileNavItem icon={Settings} label="Account Settings" onClick={() => setActiveSection("settings")} />
               </div>
 
-              <button type="button" onClick={logout} className="bk-card flex h-[60px] w-full items-center justify-center gap-2 text-sm font-black text-[#e61951] shadow-sm hover:bg-[#fff2e9] transition">
+              <button type="button" onClick={logout} className="bk-card flex h-[60px] w-full items-center justify-center gap-2 text-sm font-black text-[#e61951] shadow-sm hover:bg-[#fff2e9] transition border border-[#ebebeb]">
                 <LogOut size={18} />
                 Logout
               </button>
@@ -486,54 +486,106 @@ function Profile() {
               
               <main>
 
-            {activeSection === "orders" && <section className="bk-card overflow-hidden shadow-sm">
+            {activeSection === "orders" && <section className="overflow-hidden">
               {loading ? <SectionLoader label="Loading your orders..." /> : (
-              <div className="divide-y divide-[#ebebeb]">
+              <div className="flex flex-col gap-3">
                 {orders.length ? (
                   orders.map((order) => (
                     <motion.article
                       key={order.id}
                       initial={{ opacity: 0, y: 12 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="grid gap-3 p-4 md:grid-cols-[1fr_auto] md:items-center hover:bg-[#fafafa] transition"
+                      className="flex flex-col rounded-xl border border-[#c1bdbd] bg-white p-4 mb-3 last:mb-0"
                     >
-                      <div>
-                        <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                          <span className="text-xs font-black text-[#6f7573]">Order {order.orderId || order.id}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-black ${order.status === "Delivered" ? "bg-[#e8f8ef] text-[#0f8b57]" : "bg-[#fff2e9] text-[#e61951]"}`}>
+                      {/* Compact Header */}
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-sm font-black text-[#1f2221]">Order #{order.orderId || order.id}</h3>
+                          <span className={`rounded px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wider ${order.status === "Delivered" ? "bg-[#e8f8ef] text-[#0f8b57]" : order.status === "Cancelled" ? "bg-red-50 text-red-600" : "bg-[#f5f5f5] text-[#323635]"}`}>
                             {order.status}
                           </span>
                         </div>
-                        <h3 className="text-base font-black text-[#1f2221]">{order.items?.join(", ") || "Cake order"}</h3>
-                        <p className="mt-0.5 text-xs font-bold text-[#6f7573]">{order.date}</p>
+                        <p className="text-[11px] font-bold text-[#6f7573]">{order.date || new Date().toLocaleDateString()}</p>
                       </div>
-                      <div className="flex flex-wrap items-center justify-between gap-3 md:flex-col md:items-end">
-                        <p className="text-lg font-black text-black">{formatPrice(order.total)}</p>
-                        <div className="flex flex-wrap justify-end gap-2">
-                          <button type="button" onClick={() => handleOrderAgain(order)} className="bk-btn h-9 px-3 text-xs">
-                            <ShoppingCart size={14} />
-                            Order Again
-                          </button>
-                          <Link to={`/track?orderId=${encodeURIComponent(order.orderId || order.id)}`} className="bk-outline-btn h-9 px-3 text-xs">Track Details</Link>
-                          <button type="button" onClick={() => handleDownloadInvoice(order)} className="bk-outline-btn h-9 px-3 text-xs flex items-center gap-1">
-                            <FileText size={13} />
+
+                      {/* Body & Buttons Row */}
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div className="flex items-center gap-3 min-w-0 flex-1">
+                          <div className="flex shrink-0 -space-x-2">
+                            {order.items?.slice(0, 3).map((itemName, idx) => {
+                              const p = catalog.find((c) => String(c.name || "").toLowerCase() === String(itemName || "").toLowerCase());
+                              return (
+                                <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm bg-[#fbfbfb] grid place-items-center">
+                                  {p?.image ? (
+                                    <img src={p.image} alt={itemName} className="h-full w-full object-cover" />
+                                  ) : (
+                                    <Package size={14} className="text-[#a0a5a3]" />
+                                  )}
+                                </div>
+                              );
+                            })}
+                            {(order.items?.length || 0) > 3 && (
+                              <div className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white bg-[#f7f7f7] text-[#6f7573] font-black text-[9px] grid place-items-center shadow-sm">
+                                +{order.items.length - 3}
+                              </div>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1 flex items-center justify-between pr-2">
+                            <div className="min-w-0">
+                              <h4 className="text-xs font-bold text-[#1f2221] truncate">{order.items?.join(", ") || "Cake order"}</h4>
+                              <p className="mt-0.5 text-[10px] font-bold text-[#6f7573]">{(order.items?.length || 1)} Item{(order.items?.length || 1) !== 1 ? 's' : ''}</p>
+                            </div>
+                            <p className="text-sm font-black text-[#1f2221] ml-3 shrink-0">{formatPrice(order.total)}</p>
+                          </div>
+                        </div>
+                        
+                        {/* Compact Buttons */}
+                        <div className="flex shrink-0 flex-wrap gap-2">
+                          <Link 
+                            to={`/track?orderId=${encodeURIComponent(order.orderId || order.id)}`} 
+                            className="flex h-8 items-center justify-center rounded border border-[#ebebeb] bg-white px-3 text-[11px] font-bold text-[#323635] shadow-sm transition-all hover:bg-[#fbfbfb] hover:border-[#d1d1d1]"
+                          >
+                            Track
+                          </Link>
+                          <button 
+                            type="button" 
+                            onClick={() => handleDownloadInvoice(order)} 
+                            className="flex h-8 items-center justify-center gap-1.5 rounded border border-[#ebebeb] bg-white px-3 text-[11px] font-bold text-[#323635] shadow-sm transition-all hover:bg-[#fbfbfb] hover:border-[#d1d1d1]"
+                          >
+                            <FileText size={12} />
                             Invoice
+                          </button>
+                          <button 
+                            type="button" 
+                            onClick={() => handleOrderAgain(order)} 
+                            className="flex h-8 items-center justify-center gap-1.5 rounded border border-[#ebebeb] bg-white px-3 text-[11px] font-bold text-[#323635] shadow-sm transition-all hover:bg-[#fbfbfb] hover:border-[#d1d1d1]"
+                          >
+                            <ShoppingCart size={12} />
+                            Reorder
                           </button>
                         </div>
                       </div>
+
+                      {/* Compact Reviews if delivered */}
                       {order.status === "Delivered" && (
-                        <div className="mt-4 pt-4 border-t border-[#ebebeb] flex gap-2 flex-wrap md:col-span-2 w-full">
+                        <div className="mt-3 flex flex-wrap gap-2 pt-3 border-t border-[#f1f1f1]">
                           {order.items.map((itemName, idx) => {
                             const p = catalog.find((c) => String(c.name || "").toLowerCase() === String(itemName || "").toLowerCase());
-                            if (!p) return <span key={idx} className="text-xs text-[#6f7573]">{itemName}</span>;
+                            if (!p) return null;
                             const isReviewed = userReviews.some((r) => r.productId === p.id);
                             return (
-                              <div key={`${order.id}-${p.id}`} className="flex items-center gap-2 rounded-lg border border-[#ebebeb] p-2 bg-white">
-                                <span className="text-xs font-bold text-[#1f2221] truncate max-w-[140px]">{p.name}</span>
+                              <div key={`${order.id}-${p.id}`} className="flex flex-1 min-w-[180px] items-center justify-between gap-2 rounded border border-[#ebebeb] p-2 bg-[#fbfbfb]">
+                                <span className="text-[11px] font-bold text-[#323635] truncate">{p.name}</span>
                                 {isReviewed ? (
-                                  <span className="text-[10px] font-black text-[#0f8b57] bg-[#e8f8ef] px-2 py-0.5 rounded">Reviewed</span>
+                                  <span className="text-[9px] font-black text-[#0f8b57] bg-[#e8f8ef] px-1.5 py-0.5 rounded border border-[#0f8b57]/20">Reviewed</span>
                                 ) : (
-                                  <button type="button" onClick={() => setReviewModal({ open: true, product: p, rating: 5, comment: "", submitting: false })} className="text-[10px] font-black text-[#e61951] bg-[#fff2e9] px-2 py-0.5 rounded hover:bg-[#e61951] hover:text-white transition">Review</button>
+                                  <button 
+                                    type="button" 
+                                    onClick={() => setReviewModal({ open: true, product: p, rating: 5, comment: "", submitting: false })} 
+                                    className="shrink-0 rounded bg-white border border-[#ebebeb] px-2 py-0.5 text-[9px] font-bold text-[#323635] shadow-sm hover:bg-[#fbfbfb] transition"
+                                  >
+                                    Write Review
+                                  </button>
                                 )}
                               </div>
                             );
