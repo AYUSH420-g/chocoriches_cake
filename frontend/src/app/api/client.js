@@ -25,6 +25,47 @@ function apiUrl(path, base = API_BASE_URLS[0]) {
   return `${base}${endpoint}`;
 }
 
+let activeBaseUrl = null;
+let resolveBaseUrlPromise = null;
+
+function getBaseUrl() {
+  if (activeBaseUrl) return Promise.resolve(activeBaseUrl);
+  if (API_BASE_URLS.length === 1) {
+    activeBaseUrl = API_BASE_URLS[0];
+    return Promise.resolve(activeBaseUrl);
+  }
+
+  if (!resolveBaseUrlPromise) {
+    resolveBaseUrlPromise = (async () => {
+      const checks = API_BASE_URLS.map(async (url) => {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 300);
+        try {
+          const res = await fetch(`${url}/health`, { signal: controller.signal });
+          clearTimeout(id);
+          if (res.ok) return url;
+          throw new Error("Not ok");
+        } catch (err) {
+          clearTimeout(id);
+          throw err;
+        }
+      });
+
+      try {
+        activeBaseUrl = await Promise.any(checks);
+      } catch (err) {
+        activeBaseUrl = API_BASE_URLS[0];
+      }
+      return activeBaseUrl;
+    })();
+  }
+  return resolveBaseUrlPromise;
+}
+
+// Eagerly resolve the working API base URL at module load time
+// so that login, buy-now, and other first-click actions don't wait.
+getBaseUrl();
+
 async function request(path, options = {}) {
   const headers = {
     "Content-Type": "application/json",
@@ -37,41 +78,38 @@ async function request(path, options = {}) {
     headers.Authorization = `Bearer ${token}`;
   }
 
-  let lastError;
+  const baseUrl = await getBaseUrl();
 
-  for (const baseUrl of API_BASE_URLS) {
-    try {
-      const response = await fetch(apiUrl(path, baseUrl), {
-        ...options,
-        headers
-      });
+  try {
+    const response = await fetch(apiUrl(path, baseUrl), {
+      ...options,
+      headers
+    });
 
-      if (!response.ok) {
-        const errorBody = await response.json().catch(() => null);
-        const error = new Error(errorBody?.message || `API request failed: ${response.status}`);
-        error.fromApi = Boolean(errorBody);
-        throw error;
-      }
-
-      if (response.status === 204) {
-        return void 0;
-      }
-
-      const contentType = response.headers.get("content-type") || "";
-      if (!contentType.includes("application/json")) {
-        throw new Error(`API response from ${baseUrl} was not JSON`);
-      }
-
-      return response.json();
-    } catch (error) {
-      if (error.fromApi) {
-        throw error;
-      }
-      lastError = error;
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => null);
+      const error = new Error(errorBody?.message || `API request failed: ${response.status}`);
+      error.fromApi = Boolean(errorBody);
+      throw error;
     }
-  }
 
-  throw lastError || new Error("API request failed");
+    if (response.status === 204) {
+      return void 0;
+    }
+
+    const contentType = response.headers.get("content-type") || "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(`API response from ${baseUrl} was not JSON`);
+    }
+
+    return response.json();
+  } catch (error) {
+    if (!error.fromApi) {
+      activeBaseUrl = null;
+      resolveBaseUrlPromise = null;
+    }
+    throw error;
+  }
 }
 
 function adminToken() {

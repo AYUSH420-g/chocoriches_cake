@@ -95,55 +95,51 @@ function Checkout() {
       }
 
       setLoading(true);
-      setTimeout(() => {
-        setStep(step + 1);
-        setLoading(false);
-        window.scrollTo(0, 0);
-      }, 500);
+      setStep(step + 1);
+      setLoading(false);
+      window.scrollTo(0, 0);
       return;
     }
 
     setLoading(true);
-    setTimeout(async () => {
-      const razorpayOrder = await createRazorpayOrder({
-        amount: amountInPaise,
-        notes: {
-          customerEmail: nextCheckoutData.email || "",
-          source: "checkout",
-        },
-      }).catch(() => null);
+    const razorpayOrder = await createRazorpayOrder({
+      amount: amountInPaise,
+      notes: {
+        customerEmail: nextCheckoutData.email || "",
+        source: "checkout",
+      },
+    }).catch(() => null);
 
-      const opened = await openRazorpayCheckout({
-        amount: amountInPaise,
-        order: razorpayOrder,
-        customer: {
-          name: nextCheckoutData.name || "",
-          email: nextCheckoutData.email || "",
-          phone: nextCheckoutData.phone || "",
-        },
-        onSuccess: async (paymentResponse) => {
-          try {
-            await verifyRazorpayPayment({
-              razorpay_order_id: paymentResponse.razorpay_order_id,
-              razorpay_payment_id: paymentResponse.razorpay_payment_id,
-              razorpay_signature: paymentResponse.razorpay_signature,
-            });
-            await placeOrder(nextCheckoutData, paymentResponse);
-          } catch (err) {
-            setLoading(false);
-            toast.error(err.message || "Payment verification failed. Please contact support.");
-          }
-        },
-        onDismiss: () => {
+    const opened = await openRazorpayCheckout({
+      amount: amountInPaise,
+      order: razorpayOrder,
+      customer: {
+        name: nextCheckoutData.name || "",
+        email: nextCheckoutData.email || "",
+        phone: nextCheckoutData.phone || "",
+      },
+      onSuccess: async (paymentResponse) => {
+        try {
+          await verifyRazorpayPayment({
+            razorpay_order_id: paymentResponse.razorpay_order_id,
+            razorpay_payment_id: paymentResponse.razorpay_payment_id,
+            razorpay_signature: paymentResponse.razorpay_signature,
+          });
+          await placeOrder(nextCheckoutData, paymentResponse);
+        } catch (err) {
           setLoading(false);
-          toast.info("Payment was closed");
-        },
-      });
+          toast.error(err.message || "Payment verification failed. Please contact support.");
+        }
+      },
+      onDismiss: () => {
+        setLoading(false);
+        toast.info("Payment was closed");
+      },
+    });
 
-      if (!opened) {
-        await placeOrder(nextCheckoutData, { mode: "offline-fallback" });
-      }
-    }, 500);
+    if (!opened) {
+      await placeOrder(nextCheckoutData, { mode: "offline-fallback" });
+    }
   };
 
   if (placedOrder) {

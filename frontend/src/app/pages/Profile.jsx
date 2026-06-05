@@ -1,14 +1,25 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
-import { ArrowLeft, ChevronRight, CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText } from "lucide-react";
+import { ArrowLeft, ChevronRight, CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText, Home, Briefcase } from "lucide-react";
 import { toast } from "sonner";
-import { getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview } from "../api/client";
+import { checkPincode, getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
 import { wishlistIds } from "../utils/wishlist";
 import FullScreenLoader from "../components/FullScreenLoader";
+
+function SectionLoader({ label }) {
+  return (
+    <div className="flex flex-col items-center justify-center gap-3 py-16">
+      <div className="relative grid h-12 w-12 place-items-center">
+        <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e61951]" />
+      </div>
+      <p className="text-sm font-bold text-[#6f7573]">{label || "Loading..."}</p>
+    </div>
+  );
+}
 
 function normalizePincode(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 6);
@@ -87,6 +98,12 @@ function Profile() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     const payload = Object.fromEntries(formData.entries());
+    
+    if (payload.houseNo || payload.street) {
+      payload.address = [payload.houseNo, payload.street, payload.city, payload.landmark].filter(Boolean).join(", ");
+      payload.label = payload.addressLabel;
+    }
+    
     payload.pincode = normalizePincode(payload.pincode);
     if (payload.pincode.length !== 6) {
       toast.error("Please enter a valid 6-digit pincode");
@@ -421,6 +438,7 @@ function Profile() {
 
   return (
     <div className="bk-page bg-[#f7f7f7]">
+      <FullScreenLoader visible={loading} />
       <div className="bk-shell py-4 md:py-8">
         <div className="mx-auto max-w-2xl">
           {activeSection === "main" ? (
@@ -469,6 +487,7 @@ function Profile() {
               <main>
 
             {activeSection === "orders" && <section className="bk-card overflow-hidden shadow-sm">
+              {loading ? <SectionLoader label="Loading your orders..." /> : (
               <div className="divide-y divide-[#ebebeb]">
                 {orders.length ? (
                   orders.map((order) => (
@@ -532,10 +551,12 @@ function Profile() {
                   </div>
                 )}
               </div>
+              )}
             </section>}
 
             {activeSection === "reviews" && (
               <section className="bk-card overflow-hidden shadow-sm">
+                {loading ? <SectionLoader label="Loading your reviews..." /> : (
                 <div className="divide-y divide-[#ebebeb]">
                   {userReviews.length ? (
                     userReviews.map((review, idx) => {
@@ -569,6 +590,7 @@ function Profile() {
                     </div>
                   )}
                 </div>
+                )}
               </section>
             )}
 
@@ -596,46 +618,68 @@ function Profile() {
                   </button>
                 </div>
                 {showAddAddress && (
-                  <form onSubmit={handleAddAddress} className="mb-6 rounded-lg border border-[#ebebeb] p-4">
-                    <h3 className="mb-4 text-sm font-black text-[#1f2221]">Add New Address</h3>
-                    <div className="grid gap-4 md:grid-cols-2">
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Label (e.g., Home, Work)</span>
-                        <input name="label" required className="bk-input h-10 px-3 text-sm" />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Name</span>
-                        <input name="name" required className="bk-input h-10 px-3 text-sm" />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Phone</span>
-                        <input name="phone" required className="bk-input h-10 px-3 text-sm" />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Address</span>
-                        <input name="address" required className="bk-input h-10 px-3 text-sm" />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Pincode</span>
-                        <input
-                          name="pincode"
-                          required
-                          inputMode="numeric"
-                          maxLength={6}
-                          onInput={(event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); }}
-                          className="bk-input h-10 px-3 text-sm"
-                        />
-                      </label>
-                      <label className="block">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">City</span>
-                        <input name="city" required className="bk-input h-10 px-3 text-sm" />
-                      </label>
-                      <label className="block md:col-span-2">
-                        <span className="mb-1 block text-xs font-bold text-[#6f7573]">Landmark (Optional)</span>
-                        <input name="landmark" className="bk-input h-10 px-3 text-sm" />
-                      </label>
+                  <form onSubmit={handleAddAddress} className="mb-6 rounded-3xl border border-gray-200 bg-white p-4 md:p-7 shadow-sm">
+                    <h3 className="mb-6 text-xl font-bold text-[#1f2221]">Add New Address</h3>
+                    
+                    <div className="mb-6">
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Contact Details</h4>
+                      <div className="grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" required />
+                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" required />
+                      </div>
                     </div>
-                    <button type="submit" className="bk-btn mt-4 h-10 w-full text-sm">Save Address</button>
+
+                    <div className="border-t border-gray-100 pt-6">
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Address Details</h4>
+                      <div className="grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" required />
+                        <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" required />
+                      </div>
+                      <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
+                        <Field label="City" name="city" placeholder="Bangalore" required />
+                        <Field label="Pincode" name="pincode" placeholder="560001" required onChange={async (e) => {
+                          const val = e.target.value.replace(/\\D/g, "").slice(0, 6);
+                          if (val.length === 6) {
+                            const result = await checkPincode(val).catch(() => null);
+                            if (result?.pincode?.city && e.target.form?.city) {
+                              e.target.form.city.value = result.pincode.city;
+                            }
+                          }
+                        }} />
+                      </div>
+                      <div className="mt-4">
+                        <Field label="Landmark" name="landmark" placeholder="Near metro station" required />
+                      </div>
+                    </div>
+
+                    <div className="mt-2 border-t border-gray-100 pt-3">
+                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Save Address As</h4>
+                      <div className="flex gap-3">
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Home" defaultChecked className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <Home size={20} />
+                            <span className="text-xs font-bold">Home</span>
+                          </div>
+                        </label>
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Office" className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <Briefcase size={20} />
+                            <span className="text-xs font-bold">Office</span>
+                          </div>
+                        </label>
+                        <label className="flex-1 cursor-pointer">
+                          <input type="radio" name="addressLabel" value="Other" className="peer sr-only" />
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                            <MapPin size={20} />
+                            <span className="text-xs font-bold">Other</span>
+                          </div>
+                        </label>
+                      </div>
+                    </div>
+                    
+                    <button type="submit" className="bk-btn mt-6 h-12 w-full text-sm font-black shadow-lg shadow-[#e61951]/25 hover:scale-[1.01] hover:bg-[#d61448]">Save Address</button>
                   </form>
                 )}
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -781,6 +825,43 @@ function ProfileNavItem({ icon: Icon, label, onClick }) {
       </div>
       <ChevronRight size={18} className="text-[#a0a5a3]" />
     </button>
+  );
+}
+
+function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength, onChange }) {
+  const isPincode = name === "pincode";
+  return (
+    <label className="block">
+      <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
+      <input
+        name={name}
+        type={type}
+        placeholder={placeholder}
+        required={required}
+        defaultValue={isPincode ? normalizePincode(defaultValue) : defaultValue}
+        min={min}
+        maxLength={isPincode ? 6 : maxLength}
+        inputMode={isPincode ? "numeric" : undefined}
+        onChange={onChange}
+        onInput={isPincode ? (event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); } : undefined}
+        className="
+            h-11
+            w-full
+            rounded-2xl
+            border
+            border-gray-300
+            bg-white
+            px-4
+            text-sm
+            font-bold
+            outline-none
+            transition
+            focus:border-[#e61951]
+            focus:ring-4
+            focus:ring-[#e61951]/10
+            "
+      />
+    </label>
   );
 }
 

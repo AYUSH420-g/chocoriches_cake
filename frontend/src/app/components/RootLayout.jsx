@@ -395,7 +395,7 @@ function RootLayout() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="border-b border-[#ebebeb] bg-[#fff2e9] p-5">
+              <div className="border-b border-[#ebebeb] bg-[#fdefef] p-3">
                 <button type="button" className="flex w-full items-center justify-between rounded-lg bg-white px-4 py-3 text-left">
                   <span className="flex items-center gap-3">
                     <MapPin className="text-[#e61951]" size={19} />
@@ -415,27 +415,35 @@ function RootLayout() {
                   return (
                     <div key={item.label}>
                       <div className="flex items-center">
-                        <Link
-                          to={item.to}
-                          onClick={(e) => {
-                            if (hasSubs) {
+                        {hasSubs ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
                               e.preventDefault();
                               setMobileExpandedCat(isExpanded ? null : item.label);
-                            } else {
-                              setIsMenuOpen(false);
-                            }
-                          }}
-                          className={`flex-1 rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
-                            isActiveCategory(item.to)
-                              ? "bg-[#fff2e9] text-[#e61951]"
-                              : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
-                          }`}
-                        >
-                          {item.label}
-                          {hasSubs && (
+                            }}
+                            className={`flex-1 w-full rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
+                              isActiveCategory(item.to) || isExpanded
+                                ? "bg-[#fff2e9] text-[#e61951]"
+                                : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            }`}
+                          >
+                            {item.label}
                             <ChevronDown size={16} className={`text-[#6f7573] transition-transform ${isExpanded ? "rotate-180" : ""}`} />
-                          )}
-                        </Link>
+                          </button>
+                        ) : (
+                          <Link
+                            to={item.to}
+                            onClick={() => setIsMenuOpen(false)}
+                            className={`flex-1 rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
+                              isActiveCategory(item.to)
+                                ? "bg-[#fff2e9] text-[#e61951]"
+                                : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        )}
                       </div>
                       {hasSubs && isExpanded && (
                         <div className="mb-1 grid gap-1">
@@ -457,6 +465,16 @@ function RootLayout() {
                     </div>
                   );
                 })}
+                <div className="mt-4 px-2">
+                  <Link 
+                    to="/custom" 
+                    onClick={() => setIsMenuOpen(false)} 
+                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#fff2e9] px-4 py-3.5 text-sm font-black text-[#e61951] transition hover:bg-[#ffe1cc]"
+                  >
+                    <Gift size={18} />
+                    Order Custom Cake
+                  </Link>
+                </div>
               </nav>
               <div className="absolute inset-x-0 bottom-0 border-t border-[#ebebeb] p-5">
                 <Link to={loggedIn ? "/profile" : "/auth"} className="bk-btn h-11 w-full text-sm">
