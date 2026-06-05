@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Toaster } from "sonner";
+import { Toaster } from "./ui/sonner";
 import { getPublicSettings, getCategories, getSubcategories } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
@@ -193,7 +193,7 @@ function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f7f7] text-[#1f2221] w-full">
       <TopLoader />
-      <Toaster position="top-center" richColors />
+      <Toaster position="top-center" />
 
       {!isAuthPage && (
         <>

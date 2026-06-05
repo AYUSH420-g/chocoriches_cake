@@ -167,7 +167,7 @@ function Cart() {
                 </p> */}
               </div>
 
-              <div className="space-y-2 p-4 md:p-5">
+              <div className="space-y-2 p-5 md:p-5">
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Order Total</span>
                   <span className="font-normal text-[#1f2221]">
@@ -229,9 +229,9 @@ function Cart() {
               Are you sure you want to remove this cake from your cart?
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRemove} className="bg-[#e61951] text-white hover:bg-[#d61448]">Remove</AlertDialogAction>
+          <AlertDialogFooter className="flex-row justify-end space-x-0 gap-2 mt-2">
+            <AlertDialogCancel className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="flex-1 sm:flex-initial mt-0 bg-[#e61951] text-white hover:bg-[#d61448]">Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

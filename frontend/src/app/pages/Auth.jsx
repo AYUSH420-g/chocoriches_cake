@@ -122,15 +122,15 @@ function Auth() {
       <div className="min-h-screen bg-white lg:hidden">
         <div className="relative h-[270px] overflow-hidden bg-[#ffd8dc]">
           <img
-            src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&q=80&w=900"
-            alt="Cake celebration"
+            src="/auth-banner.png"
+            alt="Celebration cake with berries and flowers"
             loading="eager"
             className="absolute inset-0 h-full w-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-white/85 via-white/45 to-transparent" />
-          <div className="absolute left-6 top-[104px]">
-            <p className="text-[40px] font-black italic leading-none text-[#e61951]">Send Cakes</p>
-            <p className="mt-2 text-[21px] font-black leading-none text-[#303533]">Anywhere, Everywhere!</p>
+          <div className="absolute left-6 top-[120px]">
+            {/* <p className="text-[28px] font-black italic leading-none text-[#303533]">Life is Short</p>
+            <p className="mt-2 text-[21px] font-black leading-none text-[#303533]">Eat More Cake!</p> */}
           </div>
         </div>
 
@@ -204,8 +204,8 @@ function Auth() {
         <div className="grid w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-[#ebebeb] md:rounded-xl lg:grid-cols-[0.95fr_1.05fr]">
           <div className="relative hidden min-h-[620px] overflow-hidden bg-[#fff2e9] p-10 lg:block">
             <img
-              src="https://images.unsplash.com/photo-1605807646983-377bc5a76493?auto=format&fit=crop&q=80&w=1100"
-              alt="Cake table"
+              src="/auth-banner.png"
+              alt="Celebration cake with berries and flowers"
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover"
             />

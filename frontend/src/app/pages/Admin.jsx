@@ -21,7 +21,8 @@ import {
   Upload,
   Users
 } from "lucide-react";
-import { Toaster, toast } from "sonner";
+import { toast } from "sonner";
+import { Toaster } from "../components/ui/sonner";
 import {
   adminLogin,
   blockAdminUser,
@@ -545,7 +546,7 @@ function Admin() {
     
     return (
       <div className="grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-6">
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-center" />
         <form onSubmit={handleLogin} className="w-full max-w-md rounded-xl border border-[#ebebeb] bg-white p-5 shadow-xl shadow-black/5 sm:p-8">
           <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
             <Lock size={26} />
@@ -564,7 +565,7 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">
-      <Toaster position="top-center" richColors />
+      <Toaster position="top-center" />
       <header className="border-b border-[#ebebeb] bg-white">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">

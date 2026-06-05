@@ -150,36 +150,6 @@ function Home() {
         </Link>
       </section>
 
-      <section className="bk-shell py-5 md:py-7">
-        <div className="mb-4 flex items-end justify-center gap-4 md:mb-5 md:justify-between">
-          <div className="text-center md:text-left">
-            {/* <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">menu</p> */}
-            <h2 className="bk-section-title">What will you wish for?</h2>
-          </div>
-          <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
-            View All
-            <ArrowRight size={16} />
-          </Link>
-        </div>
-        <div className="grid max-w-5xl grid-cols-3 gap-x-[18px] gap-y-5 sm:grid-cols-3 lg:grid-cols-6">
-          {wishCategories.map((category, index) => (
-            <motion.div
-              key={category.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <Link to={category.to} className="group block text-center">
-                <span className="block aspect-square overflow-hidden rounded-[10px] bg-[#f5f0ec] md:rounded-2xl">
-                  <img src={category.image} alt={category.name+"image"} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                </span>
-                <span className="mt-2 block text-sm font-semibold text-[#1f2221] md:mt-2.5">{category.name}</span>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
-      </section>
 
       <section className="bk-shell py-6 md:py-8">
         <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
@@ -242,8 +212,8 @@ function Home() {
       <section className="bk-shell grid gap-4 py-8 md:py-10 lg:grid-cols-2">
         <Link to="/custom" className="group relative min-h-[220px] overflow-hidden rounded-lg bg-[#1f2221] p-5 text-white md:min-h-[260px] md:rounded-xl md:p-8">
           <img
-            src="https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&q=80&w=1200"
-            alt="Celebration cake"
+            src="/pic.jpg"
+            alt="Make your own cake hamper"
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-55 transition duration-700 group-hover:scale-105"
           />

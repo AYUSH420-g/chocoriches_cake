@@ -181,6 +181,11 @@
     font-size: var(--text-base);
     font-weight: var(--font-weight-medium);
     line-height: 1.5;
+    transition: transform 0.15s ease, opacity 0.15s ease, background-color 0.15s ease;
+  }
+
+  button:active {
+    transform: scale(0.96);
   }
 
   input {
@@ -256,7 +261,7 @@
   }
 
   .bk-btn:active {
-    transform: translateY(1px);
+    transform: scale(0.96);
   }
 
   .bk-outline-btn {
@@ -269,11 +274,15 @@
     color: #e61951;
     background: #ffffff;
     font-weight: 600;
-    transition: background 180ms ease, color 180ms ease;
+    transition: background 180ms ease, color 180ms ease, transform 180ms ease;
   }
 
   .bk-outline-btn:hover {
     background: #fff2e9;
+  }
+
+  .bk-outline-btn:active {
+    transform: scale(0.96);
   }
 
   .bk-input {
