@@ -81,6 +81,17 @@ function RootLayout() {
   }, [location.pathname, location.search]);
 
   useEffect(() => {
+    if (isMenuOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isMenuOpen]);
+
+  useEffect(() => {
     const syncSession = () => {
       setUser(getStoredUser());
       setLoggedIn(isUserLoggedIn());
@@ -283,7 +294,7 @@ function RootLayout() {
             
           </div>
         </div>
-          <div className="flex pl-[16px] h-11 min-w-0 items-center gap-3 border-t border-[#f1f1f1] overflow-x-auto scrollbar-hide md:h-[46px] lg:overflow-visible" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex pl-[16px] h-11 min-w-0 items-center gap-3 border-t border-[#dfdfdf] overflow-x-auto scrollbar-hide md:h-[46px] lg:overflow-visible bg-[#f4f4f4]" style={{ WebkitOverflowScrolling: "touch", scrollbarWidth: "none", msOverflowStyle: "none" }}>
             <div className="flex min-w-0 flex-1 lg:justify-center gap-1">
               {categoryLinks.map((item) => {
                 const subs = subcatsByCategory[item.label];
@@ -293,13 +304,13 @@ function RootLayout() {
                   <div
                     key={item.label}
                     className="relative"
-                    onMouseEnter={(event) => hasSubs && openDesktopMenu(item.label, event.currentTarget)}
-                    onMouseLeave={hasSubs ? scheduleDesktopMenuClose : undefined}
+                    onPointerEnter={(event) => event.pointerType === "mouse" && hasSubs && openDesktopMenu(item.label, event.currentTarget)}
+                    onPointerLeave={(event) => event.pointerType === "mouse" && hasSubs ? scheduleDesktopMenuClose() : undefined}
                   >
                     <Link
                       to={item.to}
                       onClick={(e) => {
-                        if (hasSubs && window.innerWidth < 1024) {
+                        if (hasSubs && (window.innerWidth < 1024 || ("ontouchstart" in window))) {
                           e.preventDefault();
                           if (isOpen) {
                             setHoveredCat(null);
@@ -488,8 +499,19 @@ function RootLayout() {
         </>
       )}
 
-      <main className={isAuthPage ? "flex-1" : "min-h-[75svh] flex-1 pt-[108px] md:pt-[118px]"}>
-        <Outlet />
+      <main className={isAuthPage ? "flex-1" : "min-h-[75svh] flex-1 pt-[108px] md:pt-[118px] bg-[#ffffff]"}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={location.pathname}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -8 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
+            className="flex flex-col h-full w-full"
+          >
+            <Outlet />
+          </motion.div>
+        </AnimatePresence>
       </main>
 
       {!isAuthPage && (

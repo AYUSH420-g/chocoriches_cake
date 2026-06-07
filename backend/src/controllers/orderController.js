@@ -18,7 +18,6 @@ function orderItems(items) {
   }
 
   return items
-    .map((item) => (typeof item === "string" ? item : item?.name))
     .filter(Boolean);
 }
 

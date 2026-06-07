@@ -95,27 +95,33 @@ export async function addCartItem(req, res) {
 }
 
 export async function updateCartItem(req, res) {
-  const quantity = Math.max(1, Number(req.body.quantity) || 1);
+  const updates = {};
+  if (req.body.quantity !== undefined) updates.quantity = Math.max(1, Number(req.body.quantity) || 1);
+  if (req.body.messageOnCake !== undefined) updates.messageOnCake = String(req.body.messageOnCake);
+
   const owner = cartOwner(req);
   const cartItems = isDatabaseConnected()
     ? await CartItem.find(owner).lean()
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
   const currentItem = cartItems.find((item) => item.id === req.params.id);
-  const reservedQuantity = cartItems.reduce((count, item) => count + (item.id === req.params.id ? 0 : Number(item.quantity || 0)), 0);
-  const capacity = await cakeCapacityStatus(new Date().toISOString().slice(0, 10), quantity, reservedQuantity);
-  if (currentItem && !capacity.allowed) {
-    res.status(422).json({ message: capacity.message });
-    return;
+  
+  if (updates.quantity) {
+    const reservedQuantity = cartItems.reduce((count, item) => count + (item.id === req.params.id ? 0 : Number(item.quantity || 0)), 0);
+    const capacity = await cakeCapacityStatus(new Date().toISOString().slice(0, 10), updates.quantity, reservedQuantity);
+    if (currentItem && !capacity.allowed) {
+      res.status(422).json({ message: capacity.message });
+      return;
+    }
   }
 
   if (isDatabaseConnected()) {
-    const item = await CartItem.findOneAndUpdate({ ...owner, id: req.params.id }, { quantity }, { new: true }).lean();
-    res.json(item || { id: req.params.id, quantity });
+    const item = await CartItem.findOneAndUpdate({ ...owner, id: req.params.id }, updates, { new: true }).lean();
+    res.json(item || { id: req.params.id, ...updates });
     return;
   }
 
   memory.cartItems = memory.cartItems.map((item) =>
-    ownerMatches(item, owner) && item.id === req.params.id ? { ...item, quantity } : item
+    ownerMatches(item, owner) && item.id === req.params.id ? { ...item, ...updates } : item
   );
   res.json(memory.cartItems.find((item) => ownerMatches(item, owner) && item.id === req.params.id));
 }

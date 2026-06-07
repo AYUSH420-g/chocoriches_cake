@@ -68,7 +68,16 @@ function CartProvider({ children }) {
     async (itemId, quantity) => {
       const nextQuantity = Math.max(1, Math.min(Number(quantity) || 1, 9));
       setCart((items) => items.map((item) => (item.id === itemId ? { ...item, quantity: nextQuantity } : item)));
-      await updateCartItem(itemId, nextQuantity);
+      await updateCartItem(itemId, { quantity: nextQuantity });
+      await refreshCart();
+    },
+    [refreshCart]
+  );
+
+  const setMessageOnCake = useCallback(
+    async (itemId, messageOnCake) => {
+      setCart((items) => items.map((item) => (item.id === itemId ? { ...item, messageOnCake } : item)));
+      await updateCartItem(itemId, { messageOnCake });
       await refreshCart();
     },
     [refreshCart]
@@ -104,8 +113,9 @@ function CartProvider({ children }) {
       refreshCart,
       removeItem,
       setQuantity,
+      setMessageOnCake,
     }),
-    [addProduct, cart, clearCart, itemForProduct, loading, refreshCart, removeItem, setQuantity]
+    [addProduct, cart, clearCart, itemForProduct, loading, refreshCart, removeItem, setQuantity, setMessageOnCake]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

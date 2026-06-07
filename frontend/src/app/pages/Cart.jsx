@@ -16,7 +16,7 @@ import {
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
 function Cart() {
-  const { cart, removeItem, setQuantity } = useCart();
+  const { cart, removeItem, setQuantity, setMessageOnCake } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
 
@@ -46,13 +46,11 @@ function Cart() {
   };
 
   return (
-    <div className={`bk-page-cart ${cart.length ? "max-md:pb-2" : ""}`}>
-      <div className="bk-shell py-3 md:py-6">
+    <div className={`bk-page-cart ${cart.length ? "max-md:pb-0" : ""}`}>
+      <div className="bk-shell py-3 md:py-6 bg-[#ffffff]">
         <div className="mb-2 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
           <div>
-            <h1 className="text-[18px] font-semibold tracking-tight text-[#1f2221] md:text-5xl">
-              My Cart
-            </h1>
+            
             <p className="mt-[2px] text-[12px] leading-6 text-[#6f7573] md:mt-2">
               Review your cakes and delivery slot before checkout.
             </p>
@@ -67,7 +65,7 @@ function Cart() {
                 <motion.article
                   key={item.id}
                   layout
-                  className="bk-card grid grid-cols-[92px_1fr] items-start gap-3 p-3 sm:grid-cols-[132px_1fr_auto] sm:items-center sm:gap-4 sm:p-4"
+                  className="bk-card grid grid-cols-[92px_1fr] items-start gap-3 p-3 sm:grid-cols-[132px_1fr_auto] sm:items-center sm:gap-4 sm:p-4 border-[#f3f3f3]"
                 >
                   <div className="aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
                     <img
@@ -92,9 +90,7 @@ function Cart() {
                         {item.size=='Half Kg'?'0.5 Kg':item.size}
                       </span>
                     </div>
-                    <p className="mt-1 text-[10px] text-[#6f7573]">
-                      Earliest delivery: Today, 3 PM - 6 PM
-                    </p>
+                    
                     <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
                       <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-white">
                         <button
@@ -129,6 +125,16 @@ function Cart() {
                         Remove
                       </button>
                     </div>
+                    <div className="mt-2 w-full max-w-[200px]">
+                      <input
+                        type="text"
+                        placeholder="Message on cake (Optional)"
+                        value={item.messageOnCake || ""}
+                        onChange={(e) => setMessageOnCake(item.id, e.target.value)}
+                        maxLength={30}
+                        className="bk-input h-8 w-full px-2 text-[11px] placeholder:text-[10px] rounded-md border border-[#ebebeb] bg-[#fbfbfb]"
+                      />
+                    </div>
                   </div>
                   {/* <div className="col-span-2 flex items-center justify-between border-t border-[#ebebeb] pt-3 text-left sm:col-auto sm:block sm:border-0 sm:pt-0 sm:text-right">
                     <p className="text-lg font-black text-[#1f2221] sm:text-xl">
@@ -157,7 +163,7 @@ function Cart() {
           </section>
 
           <aside>
-            <div className="bk-card overflow-hidden lg:sticky lg:top-[138px]">
+            <div className="bk-card overflow-hidden lg:sticky lg:top-[138px] border-[#f3f3f3]">
               <div className="border-b border-[#ebebeb] bg-white py-3 px-4 md:p-5">
                 <h2 className="text-lg font-semibold text-[#1f2221] md:text-xl">
                   Order Summary

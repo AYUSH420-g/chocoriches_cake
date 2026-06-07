@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema(
     date: { type: String, required: true },
     total: { type: Number, required: true },
     status: { type: String, required: true },
-    items: [{ type: String, required: true }],
+    items: [{ type: mongoose.Schema.Types.Mixed, required: true }],
     itemCount: { type: Number, default: 0 },
     customerName: { type: String },
     customerEmail: { type: String },

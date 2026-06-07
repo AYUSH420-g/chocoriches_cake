@@ -178,10 +178,10 @@ function addCartItem(payload) {
     body: JSON.stringify(payload)
   });
 }
-function updateCartItem(id, quantity) {
+function updateCartItem(id, payload) {
   return request(`/cart/items/${id}`, {
     method: "PATCH",
-    body: JSON.stringify({ quantity })
+    body: JSON.stringify(typeof payload === "object" ? payload : { quantity: payload })
   });
 }
 function removeCartItem(id) {

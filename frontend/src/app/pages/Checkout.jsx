@@ -54,6 +54,7 @@ function Checkout() {
           name: item.name,
           quantity: item.quantity,
           size: item.size,
+          messageOnCake: item.messageOnCake,
         })),
         payment,
       });
@@ -237,7 +238,7 @@ function Checkout() {
   return (
     <div className="bk-page bg-[#f8f8f8] min-h-screen">
       <FullScreenLoader visible={loading} />
-      <div className="bk-shell pb-4 pt-2 md:py-5">
+      <div className="bk-shell pb-4 pt-2 md:py-5 bg-[#ffffff]">
         <div className="mb-4 text-center md:mb-5">
          <h1 className="text-xl font-bold">
             Add delivery address
@@ -265,7 +266,7 @@ function Checkout() {
                 <h1 className="text-[22px] font-bold text-semibold">{valueOfSteps[step - 1]}</h1>
               </div>
 
-              <div className="p-4 md:p-7">
+              <div className="p-4 md:p-7 border-[#f3f3f3]">
 
                 {step === 1 && (
                   <motion.div key={checkoutData.addressId || "default"} initial={{ opacity: 0, x: 16 }} animate={{ opacity: 1, x: 0 }} className="grid gap-2 md:gap-5">

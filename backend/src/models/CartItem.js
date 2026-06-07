@@ -13,6 +13,7 @@ const cartItemSchema = new mongoose.Schema(
     weight: { type: String },
     sameDayDelivery: { type: Boolean, default: false },
     quantity: { type: Number, required: true, min: 1 },
+    messageOnCake: { type: String },
   },
   { timestamps: true }
 );

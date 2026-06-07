@@ -77,7 +77,7 @@ function Profile() {
     const products = catalog.length ? catalog : await getProducts().catch(() => []);
     const orderedNames = Array.isArray(order.items) ? order.items : [];
     const matchedProducts = orderedNames
-      .map((name) => products.find((product) => String(product.name || "").toLowerCase() === String(name || "").toLowerCase()))
+      .map((item) => products.find((product) => String(product.name || "").toLowerCase() === String(typeof item === "string" ? item : item?.name || "").toLowerCase()))
       .filter(Boolean);
 
     if (!matchedProducts.length) {
@@ -512,7 +512,8 @@ function Profile() {
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0 flex-1">
                           <div className="flex shrink-0 -space-x-2">
-                            {order.items?.slice(0, 3).map((itemName, idx) => {
+                            {order.items?.slice(0, 3).map((item, idx) => {
+                              const itemName = typeof item === 'string' ? item : item?.name;
                               const p = catalog.find((c) => String(c.name || "").toLowerCase() === String(itemName || "").toLowerCase());
                               return (
                                 <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm bg-[#fbfbfb] grid place-items-center">
@@ -532,7 +533,7 @@ function Profile() {
                           </div>
                           <div className="min-w-0 flex-1 flex items-center justify-between pr-2">
                             <div className="min-w-0">
-                              <h4 className="text-xs font-bold text-[#1f2221] truncate">{order.items?.join(", ") || "Cake order"}</h4>
+                              <h4 className="text-xs font-bold text-[#1f2221] truncate">{order.items?.map(i => typeof i === "string" ? i : i.name).join(", ") || "Cake order"}</h4>
                               <p className="mt-0.5 text-[10px] font-bold text-[#6f7573]">{(order.items?.length || 1)} Item{(order.items?.length || 1) !== 1 ? 's' : ''}</p>
                             </div>
                             <p className="text-sm font-black text-[#1f2221] ml-3 shrink-0">{formatPrice(order.total)}</p>
@@ -569,7 +570,8 @@ function Profile() {
                       {/* Compact Reviews if delivered */}
                       {order.status === "Delivered" && (
                         <div className="mt-3 flex flex-wrap gap-2 pt-3 border-t border-[#f1f1f1]">
-                          {order.items.map((itemName, idx) => {
+                          {order.items.map((item, idx) => {
+                            const itemName = typeof item === 'string' ? item : item?.name;
                             const p = catalog.find((c) => String(c.name || "").toLowerCase() === String(itemName || "").toLowerCase());
                             if (!p) return null;
                             const isReviewed = userReviews.some((r) => r.productId === p.id);

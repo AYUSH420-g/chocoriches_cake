@@ -126,16 +126,16 @@
 
   body {
     @apply bg-background text-foreground;
-    font-family: "Inter", "Lato", Arial, sans-serif;
+    font-family: "Outfit", "Plus Jakarta Sans", sans-serif;
     overflow-x: hidden;
   }
 
   h1, h2, h3, h4, .font-serif {
-    font-family: "Inter", "Lato", Arial, sans-serif;
+    font-family: "Outfit", "Plus Jakarta Sans", sans-serif;
   }
 
   .font-italiana {
-    font-family: "Inter", "Lato", Arial, sans-serif;
+    font-family: "Outfit", "Plus Jakarta Sans", sans-serif;
   }
 
   /**

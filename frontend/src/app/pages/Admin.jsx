@@ -906,7 +906,26 @@ function Admin() {
                               <p><strong className="font-black">Order ID:</strong> {order.orderId || order.id}</p>
                               <p><strong className="font-black">Placed At:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
                               <p><strong className="font-black">Req. Delivery Date:</strong> {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "N/A"}</p>
-                              <p><strong className="font-black">Items:</strong> {(order.items || []).join(", ") || "N/A"} <span className="text-xs text-[#e61951]">({order.itemCount || (order.items || []).length} items)</span></p>
+                              <div>
+                                <strong className="font-black">Items:</strong>
+                                <ul className="mt-1 list-inside list-disc space-y-1 text-sm">
+                                  {(order.items || []).map((item, idx) => {
+                                    if (typeof item === 'string') return <li key={idx}>{item}</li>;
+                                    return (
+                                      <li key={idx}>
+                                        <span className="font-bold">{item.name || "Item"}</span>
+                                        <span className="text-[#6f7573]"> (x{item.quantity || 1})</span>
+                                        <span className="text-[#6f7573]"> - Size: {item.size || "Default"}</span>
+                                        {item.messageOnCake && (
+                                          <span className="ml-1 inline-block rounded bg-[#fff2e9] px-1.5 py-0.5 text-[10px] font-black text-[#e61951]">
+                                            Msg: {item.messageOnCake}
+                                          </span>
+                                        )}
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              </div>
                               <p><strong className="font-black">Total Amount:</strong> {formatPrice(order.total || 0)}</p>
                               <p><strong className="font-black">Delivery Area:</strong> {order.deliveryPincode || "N/A"}</p>
                             </div>

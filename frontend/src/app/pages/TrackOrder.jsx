@@ -112,7 +112,7 @@ function TrackOrder() {
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-wider text-[#6f7573]">Order {order.orderId || order.id}</p>
-                      <h2 className="mt-1 text-xl font-black text-[#1f2221] md:text-2xl">{order.items?.join(", ") || "Cake order"}</h2>
+                      <h2 className="mt-1 text-xl font-black text-[#1f2221] md:text-2xl">{order.items?.map(i => typeof i === "string" ? i : i.name).join(", ") || "Cake order"}</h2>
                     </div>
                     <span className="w-fit rounded-full bg-[#fff2e9] px-4 py-2 text-xs font-black uppercase tracking-wider text-[#e61951] ring-1 ring-[#e61951]/20 shadow-sm">{order.status}</span>
                   </div>
