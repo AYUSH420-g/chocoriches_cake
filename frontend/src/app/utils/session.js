@@ -66,6 +66,19 @@ export function isUserLoggedIn() {
   return Boolean(getUserToken());
 }
 
+export function getGuestUser() {
+  const data = readJson("chocoriches_guest_user") || {};
+  if (data.timestamp && Date.now() - data.timestamp > 365 * 24 * 60 * 60 * 1000) {
+    return {};
+  }
+  return data;
+}
+
+export function saveGuestUser(data) {
+  const current = getGuestUser();
+  localStorage.setItem("chocoriches_guest_user", JSON.stringify({ ...current, ...data, timestamp: Date.now() }));
+}
+
 export {
   SESSION_EVENT
 };

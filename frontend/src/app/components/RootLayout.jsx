@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router";
+import { Outlet, Link, useLocation, useNavigate, useNavigationType } from "react-router";
 import {
   CakeSlice,
   ChevronDown,
@@ -19,7 +19,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Toaster } from "./ui/sonner";
 import { getPublicSettings, getCategories, getSubcategories } from "../api/client";
 import { useCart } from "../context/CartContext";
-import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
+import { getStoredUser, isUserLoggedIn, SESSION_EVENT, getGuestUser } from "../utils/session";
 import TopLoader from "./TopLoader";
 
 
@@ -45,6 +45,7 @@ function RootLayout() {
   const { cartCount } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
+  const navigationType = useNavigationType();
   const isAuthPage = location.pathname === "/auth";
 
   const categoryLinks = useMemo(() => {
@@ -74,11 +75,14 @@ function RootLayout() {
 
   useEffect(() => {
     setIsMenuOpen(false);
-    window.scrollTo(0, 0);
+    if (navigationType !== "POP") {
+      // Don't override scroll on back/forward
+      window.scrollTo(0, 0);
+    }
     setUser(getStoredUser());
     setLoggedIn(isUserLoggedIn());
     setSearchTerm(new URLSearchParams(location.search).get("q") || "");
-  }, [location.pathname, location.search]);
+  }, [location.pathname, location.search, navigationType]);
 
   useEffect(() => {
     if (isMenuOpen) {
@@ -412,7 +416,7 @@ function RootLayout() {
                     <MapPin className="text-[#e61951]" size={19} />
                     <span>
                       <span className="block text-[10px] font-black uppercase text-[#6f7573]">Delivering to</span>
-                      <span className="text-sm font-black">Ahmedabad</span>
+                      <span className="text-sm font-black">{getGuestUser()?.city || getGuestUser()?.pincode || "Select Location"}</span>
                     </span>
                   </span>
                   

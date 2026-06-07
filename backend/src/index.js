@@ -19,6 +19,12 @@ app.use(express.json({ limit: "8mb" }));
 app.use(apiPrefixRewrite(config.apiPrefix));
 app.use("/api", globalLimiter, apiRouter);
 app.use("/api", notFound);
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "ok",
+        time: new Date()
+    });
+});
 
 app.use(express.static(config.distDir));
 

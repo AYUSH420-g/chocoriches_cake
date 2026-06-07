@@ -575,9 +575,7 @@ function ProductDetail() {
             <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#ebebeb] bg-white p-3 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:pb-[calc(12px+env(safe-area-inset-bottom))] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.1)] sm:grid-cols-[1fr_1fr_auto] md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
               {cartItem ? (
                 <div className="flex h-12 items-center justify-between rounded-lg border border-[#e61951] bg-white text-[#1f2221]">
-  <span className="pl-3 text-xs font-black uppercase tracking-[0.08em] text-[#6f7573]">
-    Qty
-  </span>
+  
 
   <div className="flex h-full flex-1 items-center justify-center">
     <button

@@ -8,25 +8,39 @@ import ProductCard from "../components/ProductCard";
 const filters = ["Same Day", "Bestseller", "Under Rs. 799"];
 const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low", "Name: A to Z"];
 
+const shopCache = {
+  products: [],
+  hasMore: true,
+  currentPage: 1,
+  searchQuery: null,
+  activeCategory: null,
+  activeSubcategory: null,
+  activeFilters: null,
+  sortBy: "Newest"
+};
+
 function Shop() {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get("cat") || "All";
   const initialSubcategory = searchParams.get("subcat") || "";
+  const filter = searchParams.get("filter");
+  const initialFilters = filter && filters.includes(filter) ? [filter] : [];
+  const initialSearch = searchParams.get("q") || "";
+
+  const isRestoring = shopCache.searchQuery === initialSearch && shopCache.activeCategory === initialCategory && shopCache.activeSubcategory === initialSubcategory;
+
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeSubcategory, setActiveSubcategory] = useState(initialSubcategory);
-  const [activeFilters, setActiveFilters] = useState(() => {
-    const filter = searchParams.get("filter");
-    return filter && filters.includes(filter) ? [filter] : [];
-  });
-  const [sortBy, setSortBy] = useState("Newest");
+  const [activeFilters, setActiveFilters] = useState(() => isRestoring && shopCache.activeFilters ? shopCache.activeFilters : initialFilters);
+  const [sortBy, setSortBy] = useState(() => isRestoring && shopCache.sortBy ? shopCache.sortBy : "Newest");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [products, setProducts] = useState([]);
+  const [products, setProducts] = useState(() => isRestoring ? shopCache.products : []);
   const [categories, setCategories] = useState([]);
   const [subcategories, setSubcategories] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(!isRestoring);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const pageRef = useRef(1);
+  const [hasMore, setHasMore] = useState(() => isRestoring ? shopCache.hasMore : true);
+  const pageRef = useRef(isRestoring ? shopCache.currentPage : 1);
   const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
   const searchQuery = searchParams.get("q") || "";
@@ -70,6 +84,17 @@ function Shop() {
   }, []);
 
   useEffect(() => {
+    shopCache.searchQuery = searchQuery;
+    shopCache.activeCategory = activeCategory;
+    shopCache.activeSubcategory = activeSubcategory;
+    shopCache.activeFilters = activeFilters;
+    shopCache.sortBy = sortBy;
+
+    // Skip the initial fetch if we successfully restored from cache
+    if (isRestoring && products.length > 0 && pageRef.current === shopCache.currentPage) {
+      return;
+    }
+
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     let cancelled = false;
@@ -81,10 +106,22 @@ function Shop() {
     loadPage(1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).then((firstPage) => {
       if (cancelled || requestId !== requestIdRef.current) return;
       setIsLoading(false);
+      
+      shopCache.products = firstPage ? firstPage.products : [];
+      shopCache.currentPage = 1;
+      shopCache.hasMore = firstPage ? firstPage.hasMore : false;
+
       if (!firstPage?.hasMore) return;
 
       setLoadingMore(true);
-      loadPage(firstPage.currentPage + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).finally(() => {
+      loadPage(firstPage.currentPage + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).then((secondPage) => {
+        if (!cancelled && requestId === requestIdRef.current) {
+          setLoadingMore(false);
+          shopCache.products = [...(firstPage?.products || []), ...(secondPage?.products || [])];
+          shopCache.currentPage = 2;
+          shopCache.hasMore = secondPage ? secondPage.hasMore : false;
+        }
+      }).catch(() => {
         if (!cancelled && requestId === requestIdRef.current) {
           setLoadingMore(false);
         }

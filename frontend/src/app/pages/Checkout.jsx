@@ -7,7 +7,7 @@ import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, 
 import { useCart } from "../context/CartContext";
 import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
-import { getStoredUser } from "../utils/session";
+import { getStoredUser, getGuestUser, saveGuestUser } from "../utils/session";
 import FullScreenLoader from "../components/FullScreenLoader";
 
 const steps = ["Details", "Review"];
@@ -20,7 +20,7 @@ function normalizePincode(value) {
 function Checkout() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [checkoutData, setCheckoutData] = useState({});
+  const [checkoutData, setCheckoutData] = useState(() => getGuestUser());
   const [placedOrder, setPlacedOrder] = useState(null);
   const [siteSettings, setSiteSettings] = useState(null);
   const { cart, clearCart } = useCart();
@@ -75,6 +75,7 @@ function Checkout() {
       nextCheckoutData.pincode = normalizePincode(nextCheckoutData.pincode);
     }
     setCheckoutData(nextCheckoutData);
+    saveGuestUser(nextCheckoutData);
 
     if (!cart.length) {
       toast.error("Your cart is empty");
@@ -90,7 +91,7 @@ function Checkout() {
         }
         const pincodeResult = await checkPincode(nextCheckoutData.pincode).catch(() => null);
         if (!pincodeResult?.serviceable) {
-          toast.error("Delivery is not available for this pincode");
+          toast.error("currently we are not serving at your location coming soon");
           return;
         }
       }
@@ -240,9 +241,7 @@ function Checkout() {
       <FullScreenLoader visible={loading} />
       <div className="bk-shell pb-4 pt-2 md:py-5 bg-[#ffffff]">
         <div className="mb-4 text-center md:mb-5">
-         <h1 className="text-xl font-bold">
-            Add delivery address
-          </h1>
+         
           <div className="mt-4 flex items-center justify-center gap-1.5 overflow-x-auto text-xs font-black md:mt-5 md:gap-2">
             {steps.map((label, index) => {
               const current = index + 1;
@@ -318,34 +317,35 @@ function Checkout() {
                     <div>
                       <h4 className="mb-3 text-sm font-black text-[#1f2221]">Contact Details</h4>
                       <div className="grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" defaultValue={checkoutData.name || storedUser?.name || ""} required />
-                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" defaultValue={checkoutData.phone || storedUser?.phone || ""} required />
+                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" value={checkoutData.name || storedUser?.name || ""} onChange={(e) => setCheckoutData({...checkoutData, name: e.target.value})} required />
+                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" value={checkoutData.phone || storedUser?.phone || ""} onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})} required />
                       </div>
                       <div className="mt-4">
-                        <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" defaultValue={checkoutData.email || storedUser?.email || ""} required />
+                        <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" value={checkoutData.email || storedUser?.email || ""} onChange={(e) => setCheckoutData({...checkoutData, email: e.target.value})} required />
                       </div>
                     </div>
 
                     <div className="mt-2 border-t border-gray-100 pt-6">
                       <h4 className="mb-3 text-sm font-black text-[#1f2221]">Address Details</h4>
                       <div className="grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" defaultValue={checkoutData.houseNo || ""} required />
-                        <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" defaultValue={checkoutData.street || checkoutData.address || ""} required />
+                        <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" value={checkoutData.houseNo || ""} onChange={(e) => setCheckoutData({...checkoutData, houseNo: e.target.value})} required />
+                        <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" value={checkoutData.street || checkoutData.address || ""} onChange={(e) => setCheckoutData({...checkoutData, street: e.target.value})} required />
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="City" name="city" placeholder="Bangalore" defaultValue={checkoutData.city || ""} required />
-                        <Field label="Pincode" name="pincode" placeholder="560001" defaultValue={checkoutData.pincode || ""} required onChange={async (e) => {
+                        <Field label="City" name="city" placeholder="Bangalore" value={checkoutData.city || ""} onChange={(e) => setCheckoutData({...checkoutData, city: e.target.value})} required />
+                        <Field label="Pincode" name="pincode" placeholder="560001" value={checkoutData.pincode || ""} required onChange={async (e) => {
                           const val = e.target.value.replace(/\D/g, "").slice(0, 6);
+                          setCheckoutData({...checkoutData, pincode: val});
                           if (val.length === 6) {
                             const result = await checkPincode(val).catch(() => null);
-                            if (result?.pincode?.city && e.target.form?.city) {
-                              e.target.form.city.value = result.pincode.city;
+                            if (result?.pincode?.city) {
+                              setCheckoutData(prev => ({...prev, pincode: val, city: result.pincode.city}));
                             }
                           }
                         }} />
                       </div>
                       <div className="mt-4">
-                        <Field label="Landmark" name="landmark" placeholder="Near metro station" defaultValue={checkoutData.landmark || ""} required />
+                        <Field label="Landmark" name="landmark" placeholder="Near metro station" value={checkoutData.landmark || ""} onChange={(e) => setCheckoutData({...checkoutData, landmark: e.target.value})} required />
                       </div>
                     </div>
 
@@ -473,7 +473,7 @@ function Checkout() {
   );
 }
 
-function Field({ label, name, type = "text", placeholder, required = false, defaultValue = "", min, maxLength, onChange }) {
+function Field({ label, name, type = "text", placeholder, required = false, value, min, maxLength, onChange }) {
   const isPincode = name === "pincode";
   return (
     <label className="block">
@@ -483,12 +483,11 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
         type={type}
         placeholder={placeholder}
         required={required}
-        defaultValue={isPincode ? normalizePincode(defaultValue) : defaultValue}
+        value={value}
         min={min}
         maxLength={isPincode ? 6 : maxLength}
         inputMode={isPincode ? "numeric" : undefined}
         onChange={onChange}
-        onInput={isPincode ? (event) => { event.currentTarget.value = normalizePincode(event.currentTarget.value); } : undefined}
         className="
             h-11
             w-full
