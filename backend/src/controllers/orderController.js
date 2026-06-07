@@ -1,8 +1,17 @@
 import { isDatabaseConnected } from "../db.js";
 import { Order } from "../models/Order.js";
+import { Product } from "../models/Product.js";
+import { CartItem } from "../models/CartItem.js";
 import { cakeCapacityStatus, isDeliveryDateBlocked, isPincodeServiceable } from "../services/availabilityService.js";
-import { adminOrderView, publicOrderView, todayIso } from "../utils/formatters.js";
+import { getSiteSetting } from "../services/availabilityService.js";
+import { adminOrderView, publicOrderView, todayIso, productPriceForWeight, productId as getProductId } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
+import { sendEmail } from "../utils/email.js";
+import { findProductForCart } from "../controllers/productController.js";
+
+function formatPrice(amount) {
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amount);
+}
 
 function orderLookupFilter(id) {
   const value = String(id || "").trim();
@@ -18,7 +27,11 @@ function orderItems(items) {
   }
 
   return items
-    .filter(Boolean);
+    .filter(Boolean)
+    .map(item => {
+      const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
+      return { ...item, quantity: qty };
+    });
 }
 
 function orderItemCount(items) {
@@ -41,8 +54,64 @@ export async function createOrder(req, res) {
   const customerEmail = String(req.user?.email || req.body.customerEmail || req.body.email || "").trim().toLowerCase();
   const customerPhone = String(req.body.phone || req.body.customerPhone || req.user?.phone || "").trim();
   const deliveryAddress = String(req.body.address || req.body.deliveryAddress || "").trim();
-  const items = orderItems(req.body.items);
-  const itemCount = orderItemCount(req.body.items) || items.length;
+  const rawItems = orderItems(req.body.items);
+  const itemCount = orderItemCount(req.body.items) || rawItems.length;
+
+  // ── SERVER-SIDE PRICE CALCULATION ──
+  // Never trust req.body.total. Recalculate from actual DB prices.
+  const owner = customerEmail
+    ? { userEmail: customerEmail }
+    : { sessionId: String(req.get("x-cart-session") || "guest") };
+
+  // Fetch the user's actual cart from the database
+  const cartItems = isDatabaseConnected()
+    ? await CartItem.find(owner).lean()
+    : memory.cartItems.filter((ci) => Object.entries(owner).every(([k, v]) => String(ci[k] || "") === String(v)));
+
+  // For each cart item, verify price against the Product DB
+  let serverTotal = 0;
+  const items = [];
+  for (const ci of cartItems) {
+    const dbProduct = await findProductForCart(ci.productId);
+    const verifiedPrice = dbProduct
+      ? productPriceForWeight(dbProduct, ci.size || ci.weight || "")
+      : Number(ci.price || 0);
+    const qty = Math.max(1, parseInt(ci.quantity, 10) || 1);
+    serverTotal += verifiedPrice * qty;
+    items.push({
+      name: ci.name || (dbProduct ? dbProduct.name : "Cake"),
+      quantity: qty,
+      size: ci.size || ci.weight || "",
+      price: verifiedPrice,
+      productId: ci.productId,
+      messageOnCake: ci.messageOnCake || "",
+    });
+  }
+
+  // If cart was empty in DB, fall back to raw items but still verify each
+  if (items.length === 0 && rawItems.length > 0) {
+    for (const ri of rawItems) {
+      const dbProduct = ri.productId ? await findProductForCart(ri.productId) : null;
+      const verifiedPrice = dbProduct
+        ? productPriceForWeight(dbProduct, ri.size || "")
+        : 0;
+      const qty = Math.max(1, parseInt(ri.quantity, 10) || 1);
+      serverTotal += verifiedPrice * qty;
+      items.push({
+        name: ri.name || (dbProduct ? dbProduct.name : "Cake"),
+        quantity: qty,
+        size: ri.size || "",
+        price: verifiedPrice,
+        productId: ri.productId || "",
+        messageOnCake: ri.messageOnCake || "",
+      });
+    }
+  }
+
+  // Add delivery fee from admin settings
+  const siteSetting = await getSiteSetting();
+  const deliveryFee = Number(siteSetting.deliveryFee || 0);
+  serverTotal += deliveryFee;
 
   if (!customerEmail) {
     res.status(400).json({ message: "Customer email is required." });
@@ -77,7 +146,7 @@ export async function createOrder(req, res) {
       day: "numeric",
       year: "numeric",
     }).format(new Date()),
-    total: Number(req.body.total) || 0,
+    total: serverTotal,
     status: "Processing",
     items,
     itemCount,
@@ -92,11 +161,73 @@ export async function createOrder(req, res) {
 
   if (isDatabaseConnected()) {
     const created = await Order.create(order);
+    
+    const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
+    const adminEmailContent = `
+New Order Received!
+-------------------
+Order ID: ${order.id}
+Customer Name: ${customerName}
+Customer Email: ${customerEmail}
+Customer Phone: ${customerPhone}
+
+Items: ${itemDetails}
+Total Price: ${formatPrice(order.total)}
+Delivery Date: ${deliveryDate}
+Delivery Address: ${deliveryAddress}
+Pincode: ${deliveryPincode}
+`.trim();
+
+    // Send to admin
+    sendEmail({
+      to: "99ayushsoni@gmail.com",
+      subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
+      text: adminEmailContent
+    }).catch(console.error);
+
+    // Send to customer
+    sendEmail({
+      to: customerEmail,
+      subject: `Order Confirmed: ${order.id}`,
+      text: `Hi ${customerName},\n\nYour order ${order.id} has been placed successfully for ${formatPrice(order.total)}.\n\nItems: ${itemDetails}`
+    }).catch(console.error);
+    
     res.status(201).json(publicOrderView(created.toObject()));
     return;
   }
 
   memory.orders.push(order);
+  
+  const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
+  const adminEmailContent = `
+New Order Received!
+-------------------
+Order ID: ${order.id}
+Customer Name: ${customerName}
+Customer Email: ${customerEmail}
+Customer Phone: ${customerPhone}
+
+Items: ${itemDetails}
+Total Price: ${formatPrice(order.total)}
+Delivery Date: ${deliveryDate}
+Delivery Address: ${deliveryAddress}
+Pincode: ${deliveryPincode}
+`.trim();
+
+  // Send to admin
+  sendEmail({
+    to: "99ayushsoni@gmail.com",
+    subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
+    text: adminEmailContent
+  }).catch(console.error);
+
+  // Send to customer
+  sendEmail({
+    to: customerEmail,
+    subject: `Order Confirmed: ${order.id}`,
+    text: `Hi ${customerName},\n\nYour order ${order.id} has been placed successfully for ${formatPrice(order.total)}.\n\nItems: ${itemDetails}`
+  }).catch(console.error);
+
   res.status(201).json(publicOrderView(order));
 }
 

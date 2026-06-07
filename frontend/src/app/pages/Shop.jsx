@@ -110,22 +110,9 @@ function Shop() {
       shopCache.products = firstPage ? firstPage.products : [];
       shopCache.currentPage = 1;
       shopCache.hasMore = firstPage ? firstPage.hasMore : false;
-
-      if (!firstPage?.hasMore) return;
-
-      setLoadingMore(true);
-      loadPage(firstPage.currentPage + 1, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy, requestId).then((secondPage) => {
-        if (!cancelled && requestId === requestIdRef.current) {
-          setLoadingMore(false);
-          shopCache.products = [...(firstPage?.products || []), ...(secondPage?.products || [])];
-          shopCache.currentPage = 2;
-          shopCache.hasMore = secondPage ? secondPage.hasMore : false;
-        }
-      }).catch(() => {
-        if (!cancelled && requestId === requestIdRef.current) {
-          setLoadingMore(false);
-        }
-      });
+      
+      // Removed the immediate double-fetch here.
+      // IntersectionObserver will naturally load page 2 when the user scrolls near the bottom.
     });
     return () => {
       cancelled = true;

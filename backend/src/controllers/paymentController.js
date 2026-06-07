@@ -67,3 +67,35 @@ export async function verifyRazorpayPayment(req, res) {
     res.status(400).json({ message: "Invalid signature sent", verified: false });
   }
 }
+
+export async function razorpayWebhook(req, res) {
+  const secret = process.env.RAZORPAY_WEBHOOK_SECRET || "default_webhook_secret";
+  const signature = req.headers["x-razorpay-signature"];
+  
+  if (!signature) {
+    res.status(400).json({ message: "Missing signature" });
+    return;
+  }
+  
+  try {
+    const bodyString = JSON.stringify(req.body);
+    const expectedSignature = crypto
+      .createHmac("sha256", secret)
+      .update(bodyString)
+      .digest("hex");
+      
+    if (signature !== expectedSignature) {
+      res.status(400).json({ message: "Invalid signature" });
+      return;
+    }
+    
+    // Process webhook event safely (e.g. update order status)
+    const event = req.body.event;
+    console.log(`[Webhook] Received Razorpay Event: ${event}`);
+    
+    res.status(200).json({ status: "ok" });
+  } catch (error) {
+    console.error("Webhook processing error:", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+}

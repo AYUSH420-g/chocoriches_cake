@@ -96,14 +96,8 @@ function Home() {
     loadPage(1, requestId).then((firstPage) => {
       if (cancelled || requestId !== requestIdRef.current) return;
       setIsLoading(false);
-      if (!firstPage?.hasMore) return;
-
-      setLoadingMore(true);
-      loadPage(firstPage.currentPage + 1, requestId).finally(() => {
-        if (!cancelled && requestId === requestIdRef.current) {
-          setLoadingMore(false);
-        }
-      });
+      // The IntersectionObserver will naturally load page 2 when the user scrolls near the bottom.
+      // We removed the immediate double-fetch here.
     });
     return () => {
       cancelled = true;

@@ -9,6 +9,8 @@ import { warmProductListCache } from "./controllers/productController.js";
 import { apiRouter } from "./routes/apiRoutes.js";
 import { seedDatabase } from "./services/seedService.js";
 import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+import xss from "xss-clean";
 import { globalLimiter } from "./middleware/rateLimiter.js";
 
 const app = express();
@@ -16,6 +18,12 @@ const app = express();
 app.use(corsMiddleware());
 app.use(helmet());
 app.use(express.json({ limit: "8mb" }));
+
+// Data sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// Data sanitization against XSS
+app.use(xss());
 app.use(apiPrefixRewrite(config.apiPrefix));
 app.use("/api", globalLimiter, apiRouter);
 app.use("/api", notFound);
