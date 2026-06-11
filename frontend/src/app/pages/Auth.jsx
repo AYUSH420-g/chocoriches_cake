@@ -64,7 +64,13 @@ function Auth() {
 
       saveUserSession(data);
       toast.success(isLogin ? "Welcome back" : "Account created");
-      navigate("/");
+      const redirectUrl = sessionStorage.getItem("post_login_redirect");
+      if (redirectUrl) {
+        sessionStorage.removeItem("post_login_redirect");
+        navigate(redirectUrl);
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       toast.error(error.message || "Authentication failed");
     } finally {
@@ -88,7 +94,13 @@ function Auth() {
 
         saveUserSession(data);
         toast.success("Logged in with Google");
-        navigate("/");
+        const redirectUrl = sessionStorage.getItem("post_login_redirect");
+        if (redirectUrl) {
+          sessionStorage.removeItem("post_login_redirect");
+          navigate(redirectUrl);
+        } else {
+          navigate("/");
+        }
       } catch (error) {
         toast.error(error.message || "Google Authentication failed");
       } finally {

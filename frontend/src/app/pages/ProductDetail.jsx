@@ -295,6 +295,40 @@ function ProductDetail() {
   }, [id]);
 
   useEffect(() => {
+    if (product && isUserLoggedIn()) {
+      const intentStr = sessionStorage.getItem("pending_cart_intent");
+      if (intentStr) {
+        try {
+          const intent = JSON.parse(intentStr);
+          if (intent.productId === product.id) {
+            sessionStorage.removeItem("pending_cart_intent");
+            
+            const doAction = async () => {
+              try {
+                const existing = itemForProduct(product.id, intent.weightLabel);
+                if (existing) {
+                  await setCartQuantity(existing.id, intent.quantity);
+                } else {
+                  await addProduct(product, intent.quantity, intent.weightLabel);
+                }
+                toast.success(`${product.name} added to cart`);
+                if (intent.isBuyNow) {
+                  navigate("/cart");
+                }
+              } catch (error) {
+                toast.error("Could not resume cart action");
+              }
+            };
+            
+            // Adding a small delay to ensure context is ready
+            setTimeout(doAction, 100);
+          }
+        } catch (e) {}
+      }
+    }
+  }, [product]);
+
+  useEffect(() => {
     if (deliveryDate) {
       sessionStorage.setItem("chocoriches_delivery_date", deliveryDate);
     }
@@ -362,9 +396,16 @@ function ProductDetail() {
     if (isValid) toast.success("Delivery slot available today");
   };
 
-  const handleAddToCart = async (showLoader = true) => {
+  const handleAddToCart = async (showLoader = true, isBuyNow = false) => {
     if (!isUserLoggedIn()) {
       toast.error("Please log in to add items to your cart");
+      sessionStorage.setItem("post_login_redirect", window.location.pathname);
+      sessionStorage.setItem("pending_cart_intent", JSON.stringify({
+        productId: product.id,
+        quantity: cartItem ? quantity : 1,
+        weightLabel: selectedWeight.label,
+        isBuyNow
+      }));
       navigate("/auth");
       return false;
     }
@@ -404,7 +445,7 @@ function ProductDetail() {
 
   const handleBuyNow = async () => {
     setIsBuying(true);
-    const added = await handleAddToCart(false);
+    const added = await handleAddToCart(false, true);
     if (added) {
       navigate("/cart");
     }
