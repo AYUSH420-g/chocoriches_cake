@@ -53,6 +53,19 @@ async function run() {
         }
       }
 
+      if (product.images && product.images.length > 0) {
+        for (let i = 0; i < product.images.length; i++) {
+          if (product.images[i].url && product.images[i].url.startsWith("data:image")) {
+            console.log(`Uploading base64 images[${i}] for product ${product.id}...`);
+            const newUrl = await uploadToCloudinary(product.images[i].url, `db_prod_${product.id}_img_${i}`);
+            if (newUrl) {
+              product.images[i].url = newUrl;
+              changed = true;
+            }
+          }
+        }
+      }
+
       if (changed) {
         await product.save();
         updatedCount++;
