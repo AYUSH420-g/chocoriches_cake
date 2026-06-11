@@ -53,7 +53,8 @@ import {
   getAdminSubcategories,
   createAdminSubcategory,
   updateAdminSubcategory,
-  deleteAdminSubcategory
+  deleteAdminSubcategory,
+  uploadImage
 } from "../api/client";
 import { formatPrice } from "../utils/format";
 import { isUserLoggedIn } from "../utils/session";
@@ -236,7 +237,7 @@ function Admin() {
     setProductForm((current) => ({ ...current, defaultWeight: label }));
   };
 
-  const handleImageFile = (file) => {
+  const handleImageFile = async (file) => {
     if (!file) return;
     
     if (!file.type.startsWith("image/")) {
@@ -244,38 +245,18 @@ function Admin() {
       return;
     }
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      const img = new Image();
-      img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_WIDTH = 800;
-        const MAX_HEIGHT = 800;
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_WIDTH) {
-            height *= MAX_WIDTH / width;
-            width = MAX_WIDTH;
-          }
-        } else {
-          if (height > MAX_HEIGHT) {
-            width *= MAX_HEIGHT / height;
-            height = MAX_HEIGHT;
-          }
-        }
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, width, height);
-        
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.75);
-        setProductForm((current) => ({ ...current, image: compressedBase64 }));
-      };
-      img.src = event.target.result;
-    };
-    reader.readAsDataURL(file);
+    const loadingToast = toast.loading("Uploading image...");
+    try {
+      const response = await uploadImage(file);
+      if (response.success && response.url) {
+        setProductForm((current) => ({ ...current, image: response.url }));
+        toast.success("Image uploaded successfully", { id: loadingToast });
+      } else {
+        toast.error(response.message || "Upload failed", { id: loadingToast });
+      }
+    } catch (error) {
+      toast.error(error.message || "Error uploading image", { id: loadingToast });
+    }
   };
 
   const loadAdmin = async () => {

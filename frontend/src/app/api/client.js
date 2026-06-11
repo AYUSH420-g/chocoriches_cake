@@ -68,10 +68,13 @@ getBaseUrl();
 
 async function request(path, options = {}) {
   const headers = {
-    "Content-Type": "application/json",
     "X-Cart-Session": getCartSessionId(),
     ...options.headers
   };
+
+  if (!headers["Content-Type"] && !(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   const token = getUserToken();
   if (token && !headers.Authorization) {
@@ -467,6 +470,14 @@ function updateAdminSettings(payload) {
     body: JSON.stringify(payload)
   });
 }
+function uploadImage(file) {
+  const formData = new FormData();
+  formData.append("image", file);
+  return adminRequest("/upload", {
+    method: "POST",
+    body: formData,
+  });
+}
 export {
   addCartItem,
   adminLogin,
@@ -529,5 +540,6 @@ export {
   forgotPassword,
   resetPassword,
   getProductsPaginated,
-  verifyRazorpayPayment
+  verifyRazorpayPayment,
+  uploadImage
 };

@@ -11,6 +11,7 @@ import { orderRouter } from "./orderRoutes.js";
 import { paymentRouter } from "./paymentRoutes.js";
 import { productRouter } from "./productRoutes.js";
 import { reviewRouter } from "./reviewRoutes.js";
+import { uploadRouter } from "./uploadRoutes.js";
 
 export const apiRouter = express.Router();
 
@@ -30,3 +31,4 @@ apiRouter.use("/payments", paymentRouter);
 apiRouter.use("/inquiries", inquiryRouter);
 apiRouter.use("/admin", adminRouter);
 apiRouter.use("/reviews", reviewRouter);
+apiRouter.use("/upload", uploadRouter);
