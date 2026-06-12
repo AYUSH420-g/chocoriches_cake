@@ -58,6 +58,7 @@ function Home() {
   const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [heroIndex, setHeroIndex] = useState(0);
+  const [trendingCakes, setTrendingCakes] = useState([]);
   const pageRef = useRef(1);
   const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
@@ -99,6 +100,13 @@ function Home() {
       // The IntersectionObserver will naturally load page 2 when the user scrolls near the bottom.
       // We removed the immediate double-fetch here.
     });
+    
+    getProductsPaginated({ category: "Trending 🔥" }, 1, 4).then((data) => {
+      if (!cancelled && data && data.products) {
+        setTrendingCakes(data.products);
+      }
+    }).catch(() => {});
+
     return () => {
       cancelled = true;
     };
@@ -169,6 +177,35 @@ function Home() {
         </div>
       </section>
 
+
+      <section className="bk-shell py-4 md:py-8">
+        <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
+          <div>
+            <p className="text-sm font-black lowercase tracking-[0.08em] text-[#DC184D]">popular</p>
+            <h2 className="bk-section-title">Trending 🔥</h2>
+          </div>
+          <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
+            View All
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
+          {isLoading
+            ? Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
+                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
+                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
+                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
+                </div>
+              ))
+            : trendingCakes.map((cake) => <ProductCard key={cake.id} product={cake} mobileShopCard={true} />)}
+        </div>
+        {!isLoading && trendingCakes.length === 0 && (
+          <div className="bk-card py-6 text-center text-sm text-[#6f7573]">
+            No trending cakes right now.
+          </div>
+        )}
+      </section>
 
       <section className="bk-shell py-4 md:py-8">
         <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">

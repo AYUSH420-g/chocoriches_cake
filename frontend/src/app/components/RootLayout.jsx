@@ -527,14 +527,23 @@ function RootLayout() {
                 ChocoRiches
               </Link>
               <p className="max-w-sm text-sm leading-6 text-[#6f7573]">
-                Fresh cakes, bento treats, designer celebrations, and custom orders delivered with the same crisp marketplace experience.
+                From custom celebration cakes to delightful bento treats, every creation is made fresh with premium ingredients and designed to make your moments unforgettable.
               </p>
               <div className="mt-5 flex gap-3">
-                {[Instagram, Facebook, Headphones].map((Icon) => (
-                  <span key={Icon.displayName || Icon.name} className="grid h-10 w-10 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
-                    <Icon size={18} />
-                  </span>
-                ))}
+                {[
+                  { Icon: Instagram, href: "https://www.instagram.com/choco_riches_cake?igsh=MTdrbDMxNjU5cWZyOQ%3D%3D&utm_source=qr" },
+                  
+                ].map(({ Icon, href }) =>
+                  href ? (
+                    <a key={Icon.displayName || Icon.name} href={href} target="_blank" rel="noopener noreferrer" className="grid h-10 w-10 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] transition-colors hover:bg-[#e61951] hover:text-white">
+                      <Icon size={18} />
+                    </a>
+                  ) : (
+                    <span key={Icon.displayName || Icon.name} className="grid h-10 w-10 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
+                      <Icon size={18} />
+                    </span>
+                  )
+                )}
               </div>
             </div>
 
