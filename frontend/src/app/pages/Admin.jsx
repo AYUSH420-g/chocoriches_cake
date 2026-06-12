@@ -72,7 +72,7 @@ const tabs = [
   ["settings", "Settings", AlertTriangle]
 ];
 
-const weightChoices = ["250 gm", "300 gm", "Half Kg", "1 Kg", "1.5 Kg", "2 Kg", "3 Kg", "4 Kg", "5 Kg"];
+const weightChoices = ["200 ml", "250 gm", "300 gm", "Half Kg", "1 Kg", "1.5 Kg", "2 Kg", "3 Kg", "4 Kg", "5 Kg"];
 
 const emptyProduct = {
   name: "",
