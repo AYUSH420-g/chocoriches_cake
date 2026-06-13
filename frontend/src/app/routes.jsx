@@ -3,6 +3,9 @@ import { createBrowserRouter } from "react-router";
 import RootLayout from "./components/RootLayout";
 import PageLoader from "./components/PageLoader";
 import Home from "./pages/Home";
+import ErrorPage from "./pages/ErrorPage";
+
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 const Shop = lazy(() => import("./pages/Shop"));
 const ProductDetail = lazy(() => import("./pages/ProductDetail"));
@@ -30,10 +33,11 @@ function LazyPage({ Component }) {
 }
 
 const router = createBrowserRouter([
-  { path: "/admin", element: <LazyPage Component={Admin} /> },
+  { path: "/admin", element: <LazyPage Component={Admin} />, errorElement: <ErrorPage /> },
   {
     path: "/",
     Component: RootLayout,
+    errorElement: <ErrorPage />,
     children: [
       { index: true, element: <Home /> },
       { path: "shop", element: <LazyPage Component={Shop} /> },
@@ -50,7 +54,8 @@ const router = createBrowserRouter([
       { path: "return-policy", element: <LazyPage Component={ReturnPolicy} /> },
       { path: "faq", element: <LazyPage Component={Faq} /> },
       { path: "forgot-password", element: <LazyPage Component={ForgotPassword} /> },
-      { path: "reset-password", element: <LazyPage Component={ResetPassword} /> }
+      { path: "reset-password", element: <LazyPage Component={ResetPassword} /> },
+      { path: "*", element: <LazyPage Component={NotFound} /> }
     ]
   }
 ]);

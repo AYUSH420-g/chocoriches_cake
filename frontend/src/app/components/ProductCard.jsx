@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { Clock, Heart, Minus, Plus, ShoppingCart, Star } from "lucide-react";
+import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
@@ -31,17 +31,6 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
     }
   };
 
-  const handleQuantity = async (event, quantity) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!cartItem) {
-      return;
-    }
-    await setQuantity(cartItem.id, quantity).catch((error) => {
-      toast.error(error.message || "Could not update quantity");
-    });
-  };
-
   const handleWishlist = (event) => {
     event.preventDefault();
     event.stopPropagation();
@@ -49,6 +38,10 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
     setLiked(nextLiked);
     toast.success(nextLiked ? "Added to wishlist" : "Removed from wishlist");
   };
+
+  const currentHour = new Date().getHours();
+  const canDeliverToday = product.sameDayDelivery && currentHour >= 6 && currentHour < 18;
+  const earliestDelivery = canDeliverToday ? "Today" : "Tomorrow";
 
   return (
     <Link to={`/product/${product.id}`} className="group block h-full">
@@ -60,11 +53,6 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
             loading="lazy"
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
           />
-          {mobileShopCard && product.sameDayDelivery && (
-            <span className="absolute left-0 top-0 z-10 rounded-br-lg bg-[#c91549] px-3 py-2 text-[11px] font-black leading-none text-white md:hidden">
-              Same Day
-            </span>
-          )}
           <button
             type="button"
             title="Wishlist"
@@ -77,12 +65,6 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
           >
             <Heart size={17} fill={liked ? "currentColor" : "none"} />
           </button>
-          {product.numOfReviews > 0 && !inlineRating && (
-            <span className={`bk-rating absolute bottom-2.5 left-2.5 md:bottom-3 md:left-3 ${mobileShopCard ? "hidden md:inline-flex" : ""}`}>
-              {product.ratings ? product.ratings.toFixed(1) : 0}
-              <Star size={11} fill="currentColor" />
-            </span>
-          )}
         </div>
 
         <div className="flex flex-1 flex-col p-2.5 md:p-3">
@@ -93,30 +75,18 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
           </div>
 
           <div className="mt-auto">
-            <div className="mb-1.5 flex flex-wrap items-end gap-x-2 gap-y-0.5">
-              <span className="text-base font-black text-[#1f2221]">{formatPrice(product.price)}</span>
+            <div className="mb-1.5 flex flex-wrap items-center gap-x-2 gap-y-0.5">
               {Number(product.discountPercent || 0) > 0 && (
-                <span className="pb-0.5 text-xs font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(product.price, product.discountPercent)}</span>
+                <span className="text-sm font-medium text-[#6f7573] line-through">{formatOriginalPrice(product.price, product.discountPercent)}</span>
+              )}
+              <span className="text-lg font-black text-[#1f2221]">{formatPrice(product.price)}</span>
+              {Number(product.discountPercent || 0) > 0 && (
+                <span className="rounded bg-[#d5ecd4] px-1.5 py-0.5 text-[11px] font-bold text-[#0f8b57]">{product.discountPercent}% OFF</span>
               )}
             </div>
-            {(mobileShopCard || inlineRating) && product.numOfReviews > 0 && (
-              <div className={`mb-1.5 flex items-center justify-between gap-2 ${mobileShopCard && !inlineRating ? "md:hidden" : ""}`}>
-                <span className="bk-rating">
-                  {product.ratings ? product.ratings.toFixed(1) : 0}
-                  <Star size={11} fill="currentColor" />
-                </span>
-                <p className="truncate text-[11px] font-bold text-[#1b7284]">({product.numOfReviews} Reviews)</p>
-              </div>
-            )}
-            <div className={`${mobileShopCard ? "hidden md:flex" : "flex"} flex-wrap items-center justify-between gap-x-2 gap-y-1`}>
-              {product.numOfReviews > 0 && !inlineRating && (
-                <p className="text-[11px] font-bold text-[#6f7573]">({product.numOfReviews} Reviews)</p>
-              )}
-              {/* {product.sameDayDelivery && (
-                <p className="text-[11px] font-bold text-[#6f7573]">
-                  Delivery: <span className="text-[#0f8b57]">Today</span>
-                </p>
-              )} */}
+            
+            <div className="mt-1.5 text-[12px] font-normal text-[#437ff6]">
+              Earliest Delivery : {earliestDelivery}
             </div>
           </div>
         </div>
