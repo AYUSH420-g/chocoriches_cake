@@ -6,7 +6,7 @@ import { getProductsPaginated, getCategories, getSubcategories } from "../api/cl
 import ProductCard from "../components/ProductCard";
 
 const filters = ["Same Day", "Bestseller", "Under Rs. 799"];
-const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low", "Name: A to Z"];
+const sortOptions = ["Recommended", "Newest", "Price: Low to High", "Price: High to Low", "Name: A to Z"];
 
 const shopCache = {
   products: [],
@@ -16,7 +16,7 @@ const shopCache = {
   activeCategory: null,
   activeSubcategory: null,
   activeFilters: null,
-  sortBy: "Newest"
+  sortBy: "Recommended"
 };
 
 function Shop() {
@@ -32,7 +32,7 @@ function Shop() {
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeSubcategory, setActiveSubcategory] = useState(initialSubcategory);
   const [activeFilters, setActiveFilters] = useState(() => isRestoring && shopCache.activeFilters ? shopCache.activeFilters : initialFilters);
-  const [sortBy, setSortBy] = useState(() => isRestoring && shopCache.sortBy ? shopCache.sortBy : "Newest");
+  const [sortBy, setSortBy] = useState(() => isRestoring && shopCache.sortBy ? shopCache.sortBy : "Recommended");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [products, setProducts] = useState(() => isRestoring ? shopCache.products : []);
   const [categories, setCategories] = useState([]);
@@ -60,7 +60,7 @@ function Shop() {
       if (filterArr.includes("Same Day")) options.sameDay = true;
       if (filterArr.includes("Bestseller")) options.bestseller = true;
       if (filterArr.includes("Under Rs. 799")) options.maxPrice = 799;
-      if (sort) options.sortBy = sort;
+      if (sort && sort !== "Recommended") options.sortBy = sort;
 
       const data = await getProductsPaginated(options, page, 8);
       if (requestId !== requestIdRef.current) {
