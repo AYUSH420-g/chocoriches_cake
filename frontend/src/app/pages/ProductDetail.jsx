@@ -260,7 +260,9 @@ function ProductDetail() {
           const weights = item.weightOptions?.length ? item.weightOptions : [{ label: "0.5 Kg", price: item.price }];
           setSelectedWeight(weights.find((weight) => weight.label === item.defaultWeight) || weights[0]);
           
-          if (item.sameDayDelivery) {
+          const currentHour = new Date().getHours();
+          const canDeliverToday = item.sameDayDelivery && currentHour >= 6 && currentHour < 18;
+          if (canDeliverToday) {
             setDeliveryDate(toIso(localDate(0)));
           } else {
             setDeliveryDate(toIso(localDate(1)));
@@ -579,7 +581,7 @@ function ProductDetail() {
             </div>
 
             <DeliveryDatePicker
-              isSameDay={product.sameDayDelivery}
+              isSameDay={product.sameDayDelivery && new Date().getHours() >= 6 && new Date().getHours() < 18}
               selectedDate={deliveryDate}
               onSelect={setDeliveryDate}
               blockedDates={blockedDates}

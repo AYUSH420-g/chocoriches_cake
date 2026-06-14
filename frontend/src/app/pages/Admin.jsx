@@ -447,12 +447,35 @@ function Admin() {
       await updateAdminCategory(editingCategoryId, categoryForm);
       toast.success("Category updated");
     } else {
-      await createAdminCategory(categoryForm);
+      await createAdminCategory({ ...categoryForm, sortOrder: categories.length });
       toast.success("Category added");
     }
     setCategoryForm(emptyCategory);
     setEditingCategoryId("");
     await loadAdmin();
+  };
+
+  const moveCategoryOrder = async (index, direction) => {
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= categories.length) return;
+    const current = categories[index];
+    const neighbor = categories[swapIndex];
+    const currentOrder = current.sortOrder ?? index;
+    const neighborOrder = neighbor.sortOrder ?? swapIndex;
+    try {
+      await Promise.all([
+        updateAdminCategory(current.id, { ...current, sortOrder: neighborOrder }),
+        updateAdminCategory(neighbor.id, { ...neighbor, sortOrder: currentOrder }),
+      ]);
+      const nextCategories = [...categories];
+      nextCategories[index] = { ...current, sortOrder: neighborOrder };
+      nextCategories[swapIndex] = { ...neighbor, sortOrder: currentOrder };
+      nextCategories.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      setCategories(nextCategories);
+      toast.success("Category order updated");
+    } catch {
+      toast.error("Failed to update order");
+    }
   };
 
   const saveSubcategory = async (event) => {
@@ -756,19 +779,54 @@ function Admin() {
           )}
 
           {activeTab === "categories" && (
-            <CrudPanel
-              title={editingCategoryId ? "Edit Category" : "Add Category"}
-              onSubmit={saveCategory}
-              form={categoryForm}
-              setForm={setCategoryForm}
-              fields={["name"]}
-              checkboxLabel="Active"
-              rows={categories}
-              rowMain="name"
-              rowSub="slug"
-              onEdit={(item) => { setEditingCategoryId(item.id); setCategoryForm(item); }}
-              onDelete={async (item) => { await deleteAdminCategory(item.id); await loadAdmin(); }}
-            />
+            <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
+              <Panel title={editingCategoryId ? "Edit Category" : "Add Category"} className="xl:sticky xl:top-4 self-start">
+                <form onSubmit={saveCategory} className="grid gap-4">
+                  <Field label="Name" value={categoryForm.name} onChange={(value) => setCategoryForm({ ...categoryForm, name: value })} required />
+                  <Check label="Active" checked={categoryForm.isActive} onChange={(checked) => setCategoryForm({ ...categoryForm, isActive: checked })} />
+                  <button className="bk-btn h-11 text-sm"><Plus size={16} /> Save</button>
+                </form>
+              </Panel>
+              <Panel title="Categories">
+                <p className="mb-3 text-xs font-bold text-[#6f7573]">Use the arrows to reorder categories. The order here is reflected across the entire website.</p>
+                <div className="grid gap-3">
+                  {categories.map((item, index) => (
+                    <div key={item.id || item.name} className="flex flex-col justify-between gap-3 rounded-lg border border-[#ebebeb] p-4 md:flex-row md:items-center">
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            title="Move up"
+                            disabled={index === 0}
+                            onClick={() => moveCategoryOrder(index, -1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Move down"
+                            disabled={index === categories.length - 1}
+                            onClick={() => moveCategoryOrder(index, 1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+                        </div>
+                        <div>
+                          <h3 className="font-black">{item.name}</h3>
+                          <p className="text-sm font-bold text-[#6f7573]">{item.slug || "No slug"} | Order: {item.sortOrder ?? index} | {item.isActive ? "Active" : "Inactive"}</p>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <IconButton label="Edit" icon={Edit3} onClick={() => { setEditingCategoryId(item.id); setCategoryForm(item); }} />
+                        <IconButton label="Delete" icon={Trash2} danger onClick={async () => { await deleteAdminCategory(item.id); await loadAdmin(); }} />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Panel>
+            </div>
           )}
 
           {activeTab === "subcategories" && (
