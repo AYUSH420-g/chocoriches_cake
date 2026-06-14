@@ -11,9 +11,9 @@ const process = [
 
 function CustomCake() {
   return (
-    <div className="bk-page overflow-hidden bg-gradient-to-b from-[#fdfbf9] to-white pb-12 pt-5 md:pb-16 md:pt-8">
+    <div className="bk-page overflow-hidden bg-gradient-to-b from-[#fdfbf9] to-white pb-6 pt-3 md:pb-16 md:pt-3">
       <section className="bk-shell grid items-start gap-4 md:gap-8 lg:grid-cols-[400px_1fr]">
-        <aside className="space-y-6 lg:sticky lg:top-24">
+        {/* <aside className="space-y-6 lg:sticky lg:top-24">
           <motion.div 
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
@@ -44,7 +44,7 @@ function CustomCake() {
               ))}
             </div>
           </motion.div>
-        </aside>
+        </aside> */}
 
         <motion.main 
           initial={{ opacity: 0, y: 30 }}
@@ -54,7 +54,7 @@ function CustomCake() {
         >
           <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-b from-[#fff2e9] to-white" />
           
-          <div className="relative z-10 flex flex-col items-center p-5 text-center md:p-12">
+          <div className="relative z-10 flex flex-col items-center p-4 text-center md:p-12">
             <span className="mb-5 grid h-16 w-16 rotate-[-5deg] place-items-center rounded-xl bg-[#e61951] text-white shadow-xl shadow-[#e61951]/30 transition-transform duration-300 hover:rotate-0 md:mb-6 md:h-20 md:w-20 md:rounded-2xl">
               <Heart size={36} fill="currentColor" />
             </span>
@@ -96,6 +96,39 @@ function CustomCake() {
             <p className="mt-4 text-sm font-bold text-[#9a9f9d] tracking-wide">+91 94293 04484</p>
           </div>
         </motion.main>
+
+        <aside className="space-y-6 lg:sticky lg:top-24">
+          <motion.div 
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.2 }}
+            className="rounded-lg border border-[#ebebeb] bg-white p-4 shadow-xl shadow-black/5 md:rounded-3xl md:p-8"
+          >
+            <h2 className="mb-5 flex items-center gap-3 text-xl font-black text-[#1f2221] md:mb-8 md:text-2xl">
+              <Sparkles className="text-[#e61951]" size={24} />
+              How It Works
+            </h2>
+            <div className="relative space-y-5 before:absolute before:bottom-2 before:left-[22px] before:top-2 before:w-[2px] before:bg-gradient-to-b before:from-[#e61951] before:to-transparent md:space-y-8">
+              {process.map(([Icon, title, copy], index) => (
+                <motion.div 
+                  key={title} 
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + index * 0.1 }}
+                  className="group relative flex gap-4 md:gap-6"
+                >
+                  <span className="relative z-10 grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white border-2 border-[#e61951] text-[#e61951] shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:bg-[#e61951] group-hover:text-white">
+                    <Icon size={18} />
+                  </span>
+                  <div className="pt-1">
+                    <p className="text-sm font-black text-[#1f2221] transition-colors group-hover:text-[#e61951] md:text-base">{title}</p>
+                    <p className="mt-2 text-sm leading-6 text-[#6f7573]">{copy}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        </aside>
       </section>
     </div>
   );

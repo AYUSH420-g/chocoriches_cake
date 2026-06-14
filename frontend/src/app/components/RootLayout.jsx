@@ -49,7 +49,7 @@ function RootLayout() {
   const isAuthPage = location.pathname === "/auth";
 
   const categoryLinks = useMemo(() => {
-    const links = [{ label: "Cakes", to: "/shop" }];
+    const links = [{ label: "Design My Cake", to: "/custom", isSpecial: true }];
     dbCategories.forEach((cat) => {
       links.push({ label: cat.name, to: `/shop?cat=${encodeURIComponent(cat.name)}` });
     });
@@ -323,10 +323,12 @@ function RootLayout() {
                           }
                         }
                       }}
-                      className={`whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-bold transition md:py-2 ${
-                        isActiveCategory(item.to) || isOpen
-                          ? "bg-[#fff2e9] text-[#e61951]"
-                          : "text-[#323635] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                      className={`whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-bold transition md:py-2 ${
+                        item.isSpecial
+                          ? "bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-black drop-shadow-sm hover:opacity-80"
+                          : isActiveCategory(item.to) || isOpen
+                          ? "text-[#e61951] underline decoration-2 underline-offset-4"
+                          : "text-[#323635] hover:text-[#e61951]"
                       }`}
                     >
                       {item.label}
@@ -365,9 +367,9 @@ function RootLayout() {
                   <Link
                     key={sub.id}
                     to={`/shop?cat=${encodeURIComponent(hoveredCat.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                    className={`block px-4 py-2 text-sm font-normal transition hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                    className={`block px-4 py-2 text-sm font-normal transition hover:text-[#e61951] ${
                       isActiveSubcategory(hoveredCat.label, sub.name)
-                        ? "bg-[#fff2e9] text-[#e61951] font-semibold"
+                        ? "text-[#e61951] font-bold underline decoration-2 underline-offset-4"
                         : "text-[#323635]"
                     }`}
                     onClick={() => setHoveredCat(null)}
@@ -437,10 +439,10 @@ function RootLayout() {
                               e.preventDefault();
                               setMobileExpandedCat(isExpanded ? null : item.label);
                             }}
-                            className={`flex-1 w-full rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
+                            className={`flex-1 w-full rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between transition ${
                               isActiveCategory(item.to) || isExpanded
-                                ? "bg-[#fff2e9] text-[#e61951]"
-                                : "text-[#1f2221] active:bg-[#fff2e9] active:text-[#e61951]"
+                                ? "text-[#e61951] underline decoration-2 underline-offset-4"
+                                : "text-[#1f2221] hover:text-[#e61951]"
                             }`}
                           >
                             {item.label}
@@ -450,10 +452,12 @@ function RootLayout() {
                           <Link
                             to={item.to}
                             onClick={() => setIsMenuOpen(false)}
-                            className={`flex-1 rounded-lg px-4 py-3 text-base font-bold flex items-center justify-between ${
-                              isActiveCategory(item.to)
-                                ? "bg-[#fff2e9] text-[#e61951]"
-                                : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                            className={`flex-1 rounded-lg px-4 py-3 text-base flex items-center justify-between transition ${
+                              item.isSpecial
+                                ? "bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-black"
+                                : isActiveCategory(item.to)
+                                ? "text-[#e61951] font-bold underline decoration-2 underline-offset-4"
+                                : "text-[#1f2221] hover:text-[#e61951] font-bold"
                             }`}
                           >
                             {item.label}
@@ -466,9 +470,9 @@ function RootLayout() {
                             <Link
                               key={sub.id}
                               to={`/shop?cat=${encodeURIComponent(item.label)}&subcat=${encodeURIComponent(sub.name)}`}
-                              className={`block rounded-lg px-8 py-2.5 text-sm font-medium hover:bg-[#fff2e9] hover:text-[#e61951] ${
+                              className={`block rounded-lg px-8 py-2.5 text-sm font-medium transition hover:text-[#e61951] ${
                                 isActiveSubcategory(item.label, sub.name)
-                                  ? "bg-[#fff2e9] text-[#e61951]"
+                                  ? "text-[#e61951] font-bold underline decoration-2 underline-offset-4"
                                   : "text-[#6f7573]"
                               }`}
                             >

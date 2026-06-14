@@ -484,12 +484,35 @@ function Admin() {
       await updateAdminSubcategory(editingSubcategoryId, subcategoryForm);
       toast.success("Subcategory updated");
     } else {
-      await createAdminSubcategory(subcategoryForm);
+      await createAdminSubcategory({ ...subcategoryForm, sortOrder: subcategories.length });
       toast.success("Subcategory added");
     }
     setSubcategoryForm(emptySubcategory);
     setEditingSubcategoryId("");
     await loadAdmin();
+  };
+
+  const moveSubcategoryOrder = async (index, direction) => {
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= subcategories.length) return;
+    const current = subcategories[index];
+    const neighbor = subcategories[swapIndex];
+    const currentOrder = current.sortOrder ?? index;
+    const neighborOrder = neighbor.sortOrder ?? swapIndex;
+    try {
+      await Promise.all([
+        updateAdminSubcategory(current.id, { ...current, sortOrder: neighborOrder }),
+        updateAdminSubcategory(neighbor.id, { ...neighbor, sortOrder: currentOrder }),
+      ]);
+      const next = [...subcategories];
+      next[index] = { ...current, sortOrder: neighborOrder };
+      next[swapIndex] = { ...neighbor, sortOrder: currentOrder };
+      next.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      setSubcategories(next);
+      toast.success("Subcategory order updated");
+    } catch {
+      toast.error("Failed to update order");
+    }
   };
 
   const savePincode = async (event) => {
@@ -835,18 +858,40 @@ function Admin() {
                 <form onSubmit={saveSubcategory} className="grid gap-4">
                   <Field label="Name" value={subcategoryForm.name} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, name: value })} required />
                   <SingleSelectCheckboxField label="Category" value={subcategoryForm.category} options={categories.filter(c => c.isActive !== false).map(c => c.name)} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, category: value })} required />
-                  <Field label="Sort Order" type="number" value={subcategoryForm.sortOrder} onChange={(value) => setSubcategoryForm({ ...subcategoryForm, sortOrder: Number(value || 0) })} />
                   <Check label="Active" checked={subcategoryForm.isActive} onChange={(checked) => setSubcategoryForm({ ...subcategoryForm, isActive: checked })} />
                   <button className="bk-btn h-11 text-sm"><Plus size={16} /> Save</button>
                 </form>
               </Panel>
               <Panel title="Subcategories">
+                <p className="mb-3 text-xs font-bold text-[#6f7573]">Use the arrows to reorder subcategories. The order here is reflected across the entire website.</p>
                 <div className="grid gap-3">
-                  {subcategories.map((sub) => (
+                  {subcategories.map((sub, index) => (
                     <div key={sub.id} className="flex flex-col justify-between gap-3 rounded-lg border border-[#ebebeb] p-4 md:flex-row md:items-center">
-                      <div>
-                        <h3 className="font-black">{sub.name}</h3>
-                        <p className="text-sm font-bold text-[#6f7573]">Category: {sub.category} | Sort: {sub.sortOrder || 0} | {sub.isActive ? "Active" : "Inactive"}</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex flex-col gap-1">
+                          <button
+                            type="button"
+                            title="Move up"
+                            disabled={index === 0}
+                            onClick={() => moveSubcategoryOrder(index, -1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Move down"
+                            disabled={index === subcategories.length - 1}
+                            onClick={() => moveSubcategoryOrder(index, 1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+                        </div>
+                        <div>
+                          <h3 className="font-black">{sub.name}</h3>
+                          <p className="text-sm font-bold text-[#6f7573]">Category: {sub.category} | Order: {sub.sortOrder ?? index} | {sub.isActive ? "Active" : "Inactive"}</p>
+                        </div>
                       </div>
                       <div className="flex gap-2">
                         <IconButton label="Edit" icon={Edit3} onClick={() => { setEditingSubcategoryId(sub.id); setSubcategoryForm(sub); }} />
