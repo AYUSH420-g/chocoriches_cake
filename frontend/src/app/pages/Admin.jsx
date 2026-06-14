@@ -1189,11 +1189,13 @@ function ImageField({ value, onUrlChange, onFileChange }) {
 }
 
 function WeightEditor({ weights, defaultWeight, onToggle, onPriceChange, onDefaultChange }) {
+  const allLabels = Array.from(new Set([...weightChoices, ...weights.map(w => w.label)]));
+  
   return (
     <div>
       <span className="mb-2 block text-sm font-black text-[#1f2221]">Weights and Prices</span>
       <div className="grid gap-3">
-        {weightChoices.map((label) => {
+        {allLabels.map((label) => {
           const weight = weights.find((item) => item.label === label);
           const selected = Boolean(weight);
           return (
