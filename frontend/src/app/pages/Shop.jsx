@@ -84,16 +84,24 @@ function Shop() {
   }, []);
 
   useEffect(() => {
+    // Skip the initial fetch if we successfully restored from cache
+    if (isRestoring && products.length > 0 && pageRef.current === shopCache.currentPage) {
+      shopCache.searchQuery = searchQuery;
+      shopCache.activeCategory = activeCategory;
+      shopCache.activeSubcategory = activeSubcategory;
+      shopCache.activeFilters = activeFilters;
+      shopCache.sortBy = sortBy;
+      return;
+    }
+
+    // We are about to fetch new data. Sync cache keys and CLEAR cached products 
+    // to prevent corrupted cache state if the user navigates away before fetch completes.
     shopCache.searchQuery = searchQuery;
     shopCache.activeCategory = activeCategory;
     shopCache.activeSubcategory = activeSubcategory;
     shopCache.activeFilters = activeFilters;
     shopCache.sortBy = sortBy;
-
-    // Skip the initial fetch if we successfully restored from cache
-    if (isRestoring && products.length > 0 && pageRef.current === shopCache.currentPage) {
-      return;
-    }
+    shopCache.products = [];
 
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;

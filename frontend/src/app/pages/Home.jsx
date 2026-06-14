@@ -51,17 +51,33 @@ const promiseItems = [
   { icon: ShieldCheck, title: "Baked Fresh", copy: "Prepared after order" }
 ];
 
+const homeCache = {
+  allCakes: [],
+  trendingCakes: [],
+  hasMore: true,
+  currentPage: 1,
+  isRestoring: false,
+};
+
 
 function Home() {
-  const [allCakes, setAllCakes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [allCakes, setAllCakes] = useState(() => homeCache.isRestoring ? homeCache.allCakes : []);
+  const [isLoading, setIsLoading] = useState(() => !homeCache.isRestoring);
   const [loadingMore, setLoadingMore] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(() => homeCache.isRestoring ? homeCache.hasMore : true);
   const [heroIndex, setHeroIndex] = useState(0);
-  const [trendingCakes, setTrendingCakes] = useState([]);
-  const pageRef = useRef(1);
+  const [trendingCakes, setTrendingCakes] = useState(() => homeCache.isRestoring ? homeCache.trendingCakes : []);
+  const pageRef = useRef(homeCache.isRestoring ? homeCache.currentPage : 1);
   const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
+
+  useEffect(() => {
+    homeCache.allCakes = allCakes;
+    homeCache.trendingCakes = trendingCakes;
+    homeCache.hasMore = hasMore;
+    homeCache.currentPage = pageRef.current;
+    homeCache.isRestoring = true;
+  }, [allCakes, trendingCakes, hasMore]);
 
   const loadPage = useCallback(async (page, requestId = requestIdRef.current) => {
     try {
@@ -87,6 +103,10 @@ function Home() {
   }, []);
 
   useEffect(() => {
+    if (homeCache.isRestoring && allCakes.length > 0) {
+      return;
+    }
+
     const requestId = requestIdRef.current + 1;
     requestIdRef.current = requestId;
     let cancelled = false;

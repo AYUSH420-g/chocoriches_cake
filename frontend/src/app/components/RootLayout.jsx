@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation, useNavigate, useNavigationType } from "react-router";
+import { Outlet, Link, useLocation, useNavigate, useNavigationType, ScrollRestoration } from "react-router";
 import {
   CakeSlice,
   ChevronDown,
@@ -601,6 +601,7 @@ function RootLayout() {
         </div>
       </footer>
       )}
+      <ScrollRestoration />
     </div>
   );
 }
