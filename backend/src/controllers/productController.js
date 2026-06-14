@@ -93,7 +93,7 @@ export async function warmProductListCache() {
   const baseQuery = { isActive: { $ne: false } };
   const pageNum = 1;
   const limitNum = 8;
-  const defaultSort = { sortOrder: 1, createdAt: 1 };
+  const defaultSort = { sortOrder: 1, createdAt: -1 };
   const newestSort = { createdAt: -1 };
 
   const [defaultPayload, newestPayload] = await Promise.all([
@@ -134,7 +134,7 @@ export function productCartSnapshot(product, weightLabel = "") {
 }
 
 export async function listProducts(req, res) {
-  const { category, subcategory, featured, sameDay, bestseller, maxPrice, sortBy, q, page, limit: rawLimit } = req.query;
+  const { category, subcategory, featured, sameDay, bestseller, maxPrice, sortBy: sort, q, page, limit: rawLimit } = req.query;
   const query = {};
 
   if (category && category !== "All") {
@@ -187,11 +187,11 @@ export async function listProducts(req, res) {
     ];
   }
 
-  let sortCriteria = { sortOrder: 1, createdAt: 1 };
-  if (sortBy === "Price: Low to High") sortCriteria = { price: 1 };
-  else if (sortBy === "Price: High to Low") sortCriteria = { price: -1 };
-  else if (sortBy === "Name: A to Z") sortCriteria = { name: 1 };
-  else if (sortBy === "Newest") sortCriteria = { createdAt: -1 };
+  let sortCriteria = { sortOrder: 1, createdAt: -1 };
+  if (sort === "Price: Low to High") sortCriteria = { price: 1 };
+  else if (sort === "Price: High to Low") sortCriteria = { price: -1 };
+  else if (sort === "Name: A to Z") sortCriteria = { name: 1 };
+  else if (sort === "Newest") sortCriteria = { createdAt: -1 };
 
   // If page param is provided, return paginated response
   if (page) {
@@ -206,7 +206,7 @@ export async function listProducts(req, res) {
         sameDay,
         bestseller,
         maxPrice,
-        sortBy,
+        sortBy: sort,
         q,
         pageNum,
         limitNum,
@@ -247,12 +247,15 @@ export async function listProducts(req, res) {
         const searchText = `${product.name} ${product.description} ${product.category} ${(product.categories || []).join(" ")} ${product.subcategory || ""} ${(product.subcategories || []).join(" ")}`.toLowerCase();
         return searchText.includes(String(q).trim().toLowerCase());
       })
-      .sort((left, right) => {
-        if (sortBy === "Price: Low to High") return Number(left.price) - Number(right.price);
-        if (sortBy === "Price: High to Low") return Number(right.price) - Number(left.price);
-        if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
-        if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
-        return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
+      .sort((a, b) => {
+        if (sort === "Price: Low to High") return a.price - b.price;
+        if (sort === "Price: High to Low") return b.price - a.price;
+        if (sort === "Name: A to Z") return String(a.name || "").localeCompare(String(b.name || ""));
+        if (sort === "Newest") return new Date(b.createdAt) - new Date(a.createdAt);
+        const orderA = a.sortOrder ?? 0;
+        const orderB = b.sortOrder ?? 0;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
     const start = (pageNum - 1) * limitNum;

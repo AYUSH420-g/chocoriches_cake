@@ -94,10 +94,6 @@ const emptyProduct = {
   customizable: false,
   sameDayDelivery: false,
   tags: "",
-  flavors: "",
-  ingredients: "",
-  allergens: "",
-  longDescription: "",
 };
 
 const emptyCategory = { name: "", isActive: true };
@@ -427,7 +423,6 @@ function Admin() {
     setProductForm({
       ...product,
       tags: (product.tags || []).join(", "),
-      flavors: (product.flavors || []).join(", "),
       name: product.name || "",
       price: product.originalPrice || product.price || "",
       discountPrice: product.discountPrice || product.price || "",
@@ -522,6 +517,29 @@ function Admin() {
       toast.success("Subcategory order updated");
     } catch {
       toast.error("Failed to update order");
+    }
+  };
+
+  const moveProductOrder = async (index, direction) => {
+    const swapIndex = index + direction;
+    if (swapIndex < 0 || swapIndex >= products.length) return;
+    const current = products[index];
+    const neighbor = products[swapIndex];
+    const currentOrder = current.sortOrder ?? index;
+    const neighborOrder = neighbor.sortOrder ?? swapIndex;
+    try {
+      await Promise.all([
+        updateAdminProduct(current.id, { ...current, sortOrder: neighborOrder }),
+        updateAdminProduct(neighbor.id, { ...neighbor, sortOrder: currentOrder }),
+      ]);
+      const next = [...products];
+      next[index] = { ...current, sortOrder: neighborOrder };
+      next[swapIndex] = { ...neighbor, sortOrder: currentOrder };
+      next.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      setProducts(next);
+      toast.success("Product order updated");
+    } catch {
+      toast.error("Failed to update product order");
     }
   };
 
@@ -736,14 +754,8 @@ function Admin() {
                       onDefaultChange={setDefaultWeight}
                     />
                     <Textarea label="Short Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
-                    <Textarea label="Long Description (Optional)" value={productForm.longDescription} onChange={(value) => setProductForm({ ...productForm, longDescription: value })} rows={6} />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <Field label="Ingredients" value={productForm.ingredients} onChange={(value) => setProductForm({ ...productForm, ingredients: value })} placeholder="e.g. Flour, Sugar, Cocoa" />
-                      <Field label="Allergens" value={productForm.allergens} onChange={(value) => setProductForm({ ...productForm, allergens: value })} placeholder="e.g. Contains Nuts, Dairy" />
-                    </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <TagsField label="Tags" value={productForm.tags} onChange={(value) => setProductForm({ ...productForm, tags: value })} placeholder="e.g. Vegan, Eggless" />
-                      <TagsField label="Flavors" value={productForm.flavors} onChange={(value) => setProductForm({ ...productForm, flavors: value })} placeholder="e.g. Chocolate, Vanilla" />
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
@@ -783,8 +795,28 @@ function Admin() {
                 </div>
                 <div className="p-5 pt-4">
                   <div className="grid gap-3">
-                    {products.map((product) => (
-                      <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[72px_1fr_auto] sm:items-center">
+                    {products.map((product, index) => (
+                      <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[auto_72px_1fr_auto] sm:items-center">
+                        <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1]">
+                          <button
+                            type="button"
+                            title="Move up"
+                            disabled={index === 0}
+                            onClick={() => moveProductOrder(index, -1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronUp size={14} />
+                          </button>
+                          <button
+                            type="button"
+                            title="Move down"
+                            disabled={index === products.length - 1}
+                            onClick={() => moveProductOrder(index, 1)}
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                          >
+                            <ChevronDown size={14} />
+                          </button>
+                        </div>
                         <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                         <div>
                           <h3 className="font-black">{product.name}</h3>
@@ -1154,11 +1186,8 @@ function normalizeProductForm(form) {
     defaultWeight,
     weight: defaultWeight,
     images: [{ url: form.image, alt: form.name }],
-    tags: typeof form.tags === 'string' ? form.tags.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(form.tags) ? form.tags : []),
-    flavors: typeof form.flavors === 'string' ? form.flavors.split(',').map(s => s.trim()).filter(Boolean) : (Array.isArray(form.flavors) ? form.flavors : []),
-    ingredients: form.ingredients || "",
-    allergens: form.allergens || "",
-    longDescription: form.longDescription || "",
+    discountPrice: safeWeights.find((w) => w.label === defaultWeight)?.price || safeWeights[0]?.price || Number(form.discountPrice || form.price || 0),
+    tags: typeof form.tags === "string" ? form.tags.split(",").map((t) => t.trim()).filter(Boolean) : (Array.isArray(form.tags) ? form.tags : []),
   };
 }
 

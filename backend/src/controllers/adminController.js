@@ -178,8 +178,8 @@ export async function products(req, res) {
   // If no pagination params, return all (backward compatible)
   if (!page || !limit) {
     const source = isDatabaseConnected()
-      ? await Product.find(query).sort({ createdAt: -1 }).lean()
-      : memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category));
+      ? await Product.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean()
+      : memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category)).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
     res.json(source.map(adminProductView));
     return;
   }
@@ -188,7 +188,7 @@ export async function products(req, res) {
 
   if (isDatabaseConnected()) {
     const [source, total] = await Promise.all([
-      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Product.find(query).sort({ sortOrder: 1, createdAt: -1 }).skip(skip).limit(limit).lean(),
       Product.countDocuments(query),
     ]);
     res.json({
