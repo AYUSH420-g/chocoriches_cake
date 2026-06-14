@@ -348,8 +348,10 @@ function blockAdminUser(id, payload) {
 function getAdminProducts() {
   return adminRequest("/products");
 }
-function getAdminProductsPaginated(page = 1, limit = 8) {
-  return adminRequest(`/products?page=${page}&limit=${limit}`);
+function getAdminProductsPaginated(page = 1, limit = 8, category = "") {
+  let url = `/products?page=${page}&limit=${limit}`;
+  if (category && category !== "All Categories") url += `&category=${encodeURIComponent(category)}`;
+  return adminRequest(url);
 }
 function createAdminProduct(payload) {
   return adminRequest("/products", {

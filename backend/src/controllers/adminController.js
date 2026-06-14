@@ -171,12 +171,15 @@ export async function blockUser(req, res) {
 export async function products(req, res) {
   const page = parseInt(req.query.page, 10) || 0;
   const limit = parseInt(req.query.limit, 10) || 0;
+  const category = req.query.category || "";
+
+  const query = category && category !== "All Categories" ? { $or: [{ category }, { categories: category }] } : {};
 
   // If no pagination params, return all (backward compatible)
   if (!page || !limit) {
     const source = isDatabaseConnected()
-      ? await Product.find({}).sort({ createdAt: -1 }).lean()
-      : memory.products;
+      ? await Product.find(query).sort({ createdAt: -1 }).lean()
+      : memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category));
     res.json(source.map(adminProductView));
     return;
   }
@@ -185,8 +188,8 @@ export async function products(req, res) {
 
   if (isDatabaseConnected()) {
     const [source, total] = await Promise.all([
-      Product.find({}).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
-      Product.countDocuments(),
+      Product.find(query).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Product.countDocuments(query),
     ]);
     res.json({
       products: source.map(adminProductView),
@@ -196,8 +199,9 @@ export async function products(req, res) {
       hasMore: skip + source.length < total,
     });
   } else {
-    const total = memory.products.length;
-    const sliced = memory.products.slice(skip, skip + limit);
+    const filteredMemory = memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category));
+    const total = filteredMemory.length;
+    const sliced = filteredMemory.slice(skip, skip + limit);
     res.json({
       products: sliced.map(adminProductView),
       currentPage: page,

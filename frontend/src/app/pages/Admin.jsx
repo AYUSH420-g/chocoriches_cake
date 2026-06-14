@@ -161,6 +161,8 @@ function Admin() {
 
   const activeTabMeta = useMemo(() => tabs.find(([key]) => key === activeTab), [activeTab]);
   const selectedCategories = productForm.categories?.length ? productForm.categories : [productForm.category].filter(Boolean);
+  const [productCategoryFilter, setProductCategoryFilter] = useState("All Categories");
+
   const categoryOptions = useMemo(() => {
     const names = categories
       .filter((category) => category.isActive !== false)
@@ -283,17 +285,18 @@ function Admin() {
     }
   };
 
-  const loadMoreProducts = useCallback(async (page) => {
+  const loadMoreProducts = useCallback(async (page, overrideCategory) => {
     try {
-      const res = await getAdminProductsPaginated(page, 8);
-      setProducts((prev) => [...prev, ...res.products]);
+      const cat = overrideCategory !== undefined ? overrideCategory : productCategoryFilter;
+      const res = await getAdminProductsPaginated(page, 8, cat);
+      setProducts((prev) => page === 1 ? res.products : [...prev, ...res.products]);
       setProductsPage(res.currentPage);
       setHasMoreProducts(res.hasMore);
       setTotalProducts(res.totalProducts);
     } catch {
       // Ignore
     }
-  }, []);
+  }, [productCategoryFilter]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
@@ -318,6 +321,13 @@ function Admin() {
   }, [token]);
 
   useEffect(() => {
+    if (activeTab === "products" && !isFetchingTab) {
+      setIsLoadingMoreProducts(true);
+      loadMoreProducts(1, productCategoryFilter).finally(() => setIsLoadingMoreProducts(false));
+    }
+  }, [productCategoryFilter]);
+
+  useEffect(() => {
     if (!token) return;
     let mounted = true;
     
@@ -326,7 +336,7 @@ function Admin() {
       try {
         if (activeTab === "products") {
           const [nextProductsRes, nextCats, nextSubcats] = await Promise.all([
-            getAdminProductsPaginated(1, 8), getAdminCategories(), getAdminSubcategories()
+            getAdminProductsPaginated(1, 8, productCategoryFilter), getAdminCategories(), getAdminSubcategories()
           ]);
           if (mounted) { 
             setProducts(nextProductsRes.products || []); 
@@ -759,7 +769,17 @@ function Admin() {
               <div className="max-h-[calc(100vh-140px)] overflow-y-auto rounded-xl border border-[#ebebeb] bg-white shadow-sm shadow-black/5 scrollbar-hide">
                 <div className="sticky top-0 z-10 bg-white px-5 pt-5 pb-3 border-b border-[#f1f1f1] flex items-center justify-between">
                   <h2 className="text-xl font-black text-[#1f2221]">Product Catalog</h2>
-                  <span className="text-sm font-bold text-[#6f7573]">{totalProducts} products</span>
+                  <div className="flex items-center gap-3">
+                    <select
+                      value={productCategoryFilter}
+                      onChange={(e) => setProductCategoryFilter(e.target.value)}
+                      className="bk-input h-8 px-2 py-0 text-xs w-[140px]"
+                    >
+                      <option value="All Categories">All Categories</option>
+                      {categoryOptions.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                    </select>
+                    <span className="text-sm font-bold text-[#6f7573]">{totalProducts} products</span>
+                  </div>
                 </div>
                 <div className="p-5 pt-4">
                   <div className="grid gap-3">
