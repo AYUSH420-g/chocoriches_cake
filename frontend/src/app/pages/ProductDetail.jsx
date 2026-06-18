@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { AnimatePresence, motion } from "motion/react";
 import {
@@ -16,7 +16,8 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  X
+  X,
+  Info
 } from "lucide-react";
 import { toast } from "sonner";
 import { checkPincode, getBlockedDates, getProduct, getProductReviews } from "../api/client";
@@ -247,7 +248,16 @@ function ProductDetail() {
   const [deliveryDate, setDeliveryDate] = useState(toIso(localDate(1)));
   const [blockedDates, setBlockedDates] = useState([]);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
+  const [isDescOverflowing, setIsDescOverflowing] = useState(false);
+  const [isInfoExpanded, setIsInfoExpanded] = useState(false);
+  const descRef = useRef(null);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
+
+  useEffect(() => {
+    if (descRef.current) {
+      setIsDescOverflowing(descRef.current.scrollHeight > descRef.current.clientHeight);
+    }
+  }, [product?.description, isDescExpanded]);
 
   useEffect(() => {
     let mounted = true;
@@ -507,10 +517,24 @@ function ProductDetail() {
               >
                 <Heart size={21} fill={liked ? "currentColor" : "none"} />
               </button>
-              <span className="bk-chip absolute bottom-3 left-3 px-3 py-2 text-xs md:bottom-4 md:left-4">
-                <CakeSlice size={14} />
-                Freshly Baked
-              </span>
+              <div 
+                className="absolute bottom-3 left-3 flex items-center overflow-hidden rounded-full bg-white/90 shadow-sm backdrop-blur-sm transition-all duration-300 ease-in-out md:bottom-4 md:left-4"
+                style={{ maxWidth: isInfoExpanded ? '300px' : '36px', height: '36px' }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsInfoExpanded(!isInfoExpanded)}
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-[#6f7573] transition-colors hover:text-[#1f2221]"
+                  aria-label="Important information"
+                >
+                  <Info size={16} />
+                </button>
+                <span 
+                  className={`whitespace-nowrap pr-4 text-[11px] font-bold text-[#1f2221] transition-opacity duration-300 ${isInfoExpanded ? "opacity-100" : "opacity-0"}`}
+                >
+                  Image and actual cake may differ
+                </span>
+              </div>
             </div>
             
             {/* <div className="mt-0 flex gap-0 border-y border-[#ebebeb] bg-white md:mt-3 md:gap-3 md:border-0 md:bg-transparent justify-around">
@@ -544,20 +568,35 @@ function ProductDetail() {
 
             {product.description && (
               <div className="mb-4">
-                <div 
-                  className={`text-sm md:text-base font-normal text-[#1f2221] ${!isDescExpanded ? "overflow-hidden" : ""}`}
-                  style={isDescExpanded ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', lineHeight: '1.5em', maxHeight: '3.75em' }}
-                >
-                  {product.description}
-                </div>
-                {product.description.length > 100 && (
-                  <button 
-                    type="button"
-                    onClick={() => setIsDescExpanded(!isDescExpanded)}
-                    className="mt-1 text-sm md:text-base font-normal text-[#e61951]"
-                  >
-                    {isDescExpanded ? "Read Less" : "Read More"}
-                  </button>
+                {isDescExpanded ? (
+                  <div className="text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em]">
+                    {product.description}
+                    <button 
+                      type="button"
+                      onClick={() => setIsDescExpanded(false)}
+                      className="ml-1 font-normal text-[#e61951]"
+                    >
+                      Read Less
+                    </button>
+                  </div>
+                ) : (
+                  <div className="relative text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em] overflow-hidden" style={{ maxHeight: '3em' }}>
+                    <div ref={descRef}>
+                      {product.description}
+                    </div>
+                    {isDescOverflowing && (
+                      <div className="absolute bottom-0 right-0 flex items-center max-md:bg-[#f7f7f7] md:bg-white pl-4">
+                        <span className="text-[#1f2221]">...</span>
+                        <button 
+                          type="button"
+                          onClick={() => setIsDescExpanded(true)}
+                          className="ml-1 font-normal text-[#e61951]"
+                        >
+                          Read More
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
