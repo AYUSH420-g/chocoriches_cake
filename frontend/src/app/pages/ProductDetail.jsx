@@ -532,7 +532,7 @@ function ProductDetail() {
                 <span 
                   className={`whitespace-nowrap pr-4 text-[11px] font-bold text-[#1f2221] transition-opacity duration-300 ${isInfoExpanded ? "opacity-100" : "opacity-0"}`}
                 >
-                  Image and actual cake may differ
+                  Image and actual Product may differ
                 </span>
               </div>
             </div>
@@ -580,8 +580,12 @@ function ProductDetail() {
                     </button>
                   </div>
                 ) : (
-                  <div className="relative text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em] overflow-hidden" style={{ maxHeight: '3em' }}>
-                    <div ref={descRef}>
+                  <div 
+                    ref={descRef}
+                    className="relative text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em] overflow-hidden" 
+                    style={{ maxHeight: '3em' }}
+                  >
+                    <div>
                       {product.description}
                     </div>
                     {isDescOverflowing && (
