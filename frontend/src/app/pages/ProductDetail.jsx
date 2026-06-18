@@ -246,6 +246,7 @@ function ProductDetail() {
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [deliveryDate, setDeliveryDate] = useState(toIso(localDate(1)));
   const [blockedDates, setBlockedDates] = useState([]);
+  const [isDescExpanded, setIsDescExpanded] = useState(false);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
 
   useEffect(() => {
@@ -540,7 +541,28 @@ function ProductDetail() {
                 </>
               )}
             </div>
-              <div className=" flex flex-wrap items-center gap-2">
+
+            {product.description && (
+              <div className="mb-4">
+                <div 
+                  className={`text-sm md:text-base font-normal text-[#1f2221] ${!isDescExpanded ? "overflow-hidden" : ""}`}
+                  style={isDescExpanded ? {} : { display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', lineHeight: '1.5em', maxHeight: '3.75em' }}
+                >
+                  {product.description}
+                </div>
+                {product.description.length > 100 && (
+                  <button 
+                    type="button"
+                    onClick={() => setIsDescExpanded(!isDescExpanded)}
+                    className="mt-1 text-sm md:text-base font-normal text-[#e61951]"
+                  >
+                    {isDescExpanded ? "Read Less" : "Read More"}
+                  </button>
+                )}
+              </div>
+            )}
+
+            <div className=" flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
                 <>
                   <span className="bk-rating-product">
