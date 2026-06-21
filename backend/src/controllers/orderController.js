@@ -154,6 +154,7 @@ export async function createOrder(req, res) {
     deliveryAddress,
     deliveryPincode,
     deliveryDate,
+    deliveryTimeSlot: String(req.body.deliveryTimeSlot || "").trim(),
     payment: req.body.payment || {},
   };
 

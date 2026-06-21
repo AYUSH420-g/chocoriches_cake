@@ -1042,6 +1042,7 @@ function Admin() {
                               <p><strong className="font-black">Order ID:</strong> {order.orderId || order.id}</p>
                               <p><strong className="font-black">Placed At:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
                               <p><strong className="font-black">Req. Delivery Date:</strong> {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "N/A"}</p>
+                              {order.deliveryTimeSlot && <p><strong className="font-black">Time Slot:</strong> {order.deliveryTimeSlot}</p>}
                               <div>
                                 <strong className="font-black">Items:</strong>
                                 <ul className="mt-1 list-inside list-disc space-y-1 text-sm">

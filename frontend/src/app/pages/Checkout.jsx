@@ -66,6 +66,7 @@ function Checkout() {
         customerEmail: data.email || "",
         deliveryPincode: data.pincode || "",
         deliveryDate: data.deliveryDate || sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10),
+        deliveryTimeSlot: sessionStorage.getItem("chocoriches_time_slot") || "",
         items: cart.map((item) => ({
           name: item.name,
           quantity: item.quantity,

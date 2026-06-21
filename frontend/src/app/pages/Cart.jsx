@@ -15,6 +15,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
+import DeliveryTimeSlotSelector from "../components/DeliveryTimeSlotSelector";
+
 function Cart() {
   const { cart, removeItem, setQuantity, setMessageOnCake } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
@@ -61,7 +63,7 @@ function Cart() {
         <div className="grid gap-2 md:gap-5 lg:grid-cols-[1fr_380px]">
           <section className="space-y-2">
             {cart.length > 0 ? (
-              cart.map((item) => (
+              cart.map((item, index) => (
                 <motion.article
                   key={item.id}
                   layout
@@ -132,10 +134,15 @@ function Cart() {
                         value={item.messageOnCake || ""}
                         onChange={(e) => setMessageOnCake(item.id, e.target.value)}
                         maxLength={30}
-                        className="bk-input h-8 w-full px-2 text-[11px] placeholder:text-[10px] rounded-md border border-[#ebebeb] bg-[#fbfbfb]"
+                        className="bk-input h-9 w-full px-3 text-[12px] placeholder:text-[#8e9492] placeholder:font-medium rounded-lg border border-[#ebebeb] bg-[#fdfdfd] focus:border-[#e61951] focus:ring-1 focus:ring-[#e61951] transition-all"
                       />
                     </div>
                   </div>
+                  {index === cart.length - 1 && (
+                    <div className="col-span-2 sm:col-span-3 mt-1 w-full">
+                      <DeliveryTimeSlotSelector />
+                    </div>
+                  )}
                   {/* <div className="col-span-2 flex items-center justify-between border-t border-[#ebebeb] pt-3 text-left sm:col-auto sm:block sm:border-0 sm:pt-0 sm:text-right">
                     <p className="text-lg font-black text-[#1f2221] sm:text-xl">
                       {formatPrice(item.price * item.quantity)}

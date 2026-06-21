@@ -14,6 +14,7 @@ const orderSchema = new mongoose.Schema(
     deliveryAddress: { type: String },
     deliveryPincode: { type: String },
     deliveryDate: { type: String },
+    deliveryTimeSlot: { type: String },
     payment: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true }
