@@ -174,7 +174,7 @@ function Auth() {
               <MobileField icon={Lock} label="Password" name="password" type="password" placeholder="Enter password" required />
               {isLogin && (
                 <div className="flex justify-end text-sm">
-                  <Link to="/forgot-password" className=" font-normal text-[#e61951]">Forgot Password?</Link>
+
                 </div>
               )}
               <button type="submit" disabled={loading} className="bk-btn h-[48px] w-full text-base disabled:opacity-60">
@@ -279,7 +279,7 @@ function Auth() {
                       <input type="checkbox" className="h-4 w-4 accent-[#e61951]" />
                       Remember me
                     </label>
-                    <Link to="/forgot-password" className="font-black text-[#e61951]">Forgot Password?</Link>
+
                   </div>
                 )}
 
