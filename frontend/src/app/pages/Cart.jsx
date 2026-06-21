@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { toast } from "sonner";
 import { ArrowRight, BadgePercent, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck } from "lucide-react";
 import { motion } from "motion/react";
 import { getPublicSettings } from "../api/client";
@@ -21,6 +22,20 @@ function Cart() {
   const { cart, removeItem, setQuantity, setMessageOnCake } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
+  const navigate = useNavigate();
+
+  const handleProceed = (e) => {
+    e.preventDefault();
+    if (!sessionStorage.getItem("chocoriches_delivery_date")) {
+      toast.error("Please select a delivery date first.");
+      return;
+    }
+    if (!sessionStorage.getItem("chocoriches_time_slot")) {
+      toast.error("Please select a delivery time slot.");
+      return;
+    }
+    navigate("/checkout");
+  };
 
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
@@ -214,9 +229,10 @@ function Cart() {
                   </div>
                 </div>
 
-                <Link
-                  to="/checkout"
-                  className={`bk-btn h-12 w-full text-sm ${
+                <button
+                  type="button"
+                  onClick={handleProceed}
+                  className={`bk-btn h-12 w-full flex justify-center items-center gap-2 text-sm ${
                     cart.length
                       ? "max-md:fixed max-md:inset-x-4 max-md:bottom-[calc(12px+env(safe-area-inset-bottom))] max-md:z-40 max-md:w-[calc(100%-2rem)] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.12)]"
                       : "pointer-events-none opacity-50"
@@ -224,7 +240,7 @@ function Cart() {
                 >
                   Proceed To Checkout
                   <ArrowRight size={17} />
-                </Link>
+                </button>
 
                 <div className="flex justify-between gap-3 border-t border-[#ebebeb] pt-4">
                   <div className="flex items-center gap-3 text-xs font-bold text-[#6f7573]">

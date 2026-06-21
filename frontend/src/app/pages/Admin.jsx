@@ -1034,6 +1034,7 @@ function Admin() {
                               <p><strong className="font-black">Email:</strong> {order.customerEmail || "N/A"}</p>
                               <p><strong className="font-black">Phone:</strong> {order.customerPhone || "N/A"}</p>
                               <p><strong className="font-black">Address:</strong> {order.deliveryAddress || "N/A"}</p>
+                              <p><strong className="font-black">Delivery Area (Pincode):</strong> {order.deliveryPincode || "N/A"}</p>
                             </div>
                           </div>
                           <div>
@@ -1072,7 +1073,6 @@ function Admin() {
                                 </ul>
                               </div>
                               <p><strong className="font-black">Total Amount:</strong> {formatPrice(order.total || 0)}</p>
-                              <p><strong className="font-black">Delivery Area:</strong> {order.deliveryPincode || "N/A"}</p>
                             </div>
                           </div>
                         </div>
