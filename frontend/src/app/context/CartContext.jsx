@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { addCartItem, clearCart as clearCartItems, getCart, removeCartItem, updateCartItem } from "../api/client";
 import { SESSION_EVENT } from "../utils/session";
+import { toast } from "sonner";
 
 const CartContext = createContext(null);
 
@@ -58,7 +59,8 @@ function CartProvider({ children }) {
 
   const addProduct = useCallback(
     async (product, quantity = 1, size = "Half Kg", baseFlavour = "", creamFlavour = "") => {
-      const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour });
+      const deliveryDate = sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10);
+      const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour, deliveryDate });
       await refreshCart();
       return item;
     },
@@ -68,9 +70,19 @@ function CartProvider({ children }) {
   const setQuantity = useCallback(
     async (itemId, quantity) => {
       const nextQuantity = Math.max(1, Math.min(Number(quantity) || 1, 9));
+      const deliveryDate = sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10);
+      
+      // Optimistically update
       setCart((items) => items.map((item) => (item.id === itemId ? { ...item, quantity: nextQuantity } : item)));
-      await updateCartItem(itemId, { quantity: nextQuantity });
-      await refreshCart();
+      
+      try {
+        await updateCartItem(itemId, { quantity: nextQuantity, deliveryDate });
+        await refreshCart();
+      } catch (error) {
+        toast.error(error.message || "Could not update quantity.");
+        await refreshCart(); // Revert on failure
+        throw error;
+      }
     },
     [refreshCart]
   );

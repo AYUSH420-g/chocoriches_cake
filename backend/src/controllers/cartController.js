@@ -48,7 +48,8 @@ export async function addCartItem(req, res) {
   const requestedSize = String(size || "Half Kg");
   const nextQuantity = Math.max(1, Number(quantity) || 1);
   const owner = cartOwner(req);
-  const capacity = await cakeCapacityStatus(new Date().toISOString().slice(0, 10), nextQuantity, await ownerCartQuantity(owner));
+  const requestedDate = String(deliveryDate || new Date().toISOString().slice(0, 10));
+  const capacity = await cakeCapacityStatus(requestedDate, nextQuantity, await ownerCartQuantity(owner));
   if (!capacity.allowed) {
     res.status(422).json({ message: capacity.message });
     return;
@@ -109,7 +110,8 @@ export async function updateCartItem(req, res) {
   
   if (updates.quantity) {
     const reservedQuantity = cartItems.reduce((count, item) => count + (item.id === req.params.id ? 0 : Number(item.quantity || 0)), 0);
-    const capacity = await cakeCapacityStatus(new Date().toISOString().slice(0, 10), updates.quantity, reservedQuantity);
+    const requestedDate = String(req.body.deliveryDate || new Date().toISOString().slice(0, 10));
+    const capacity = await cakeCapacityStatus(requestedDate, updates.quantity, reservedQuantity);
     if (currentItem && !capacity.allowed) {
       res.status(422).json({ message: capacity.message });
       return;

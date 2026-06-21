@@ -189,6 +189,6 @@ export async function cakeCapacityStatus(date, requestedQuantity = 1, reservedQu
     deliveryDate,
     message: requested <= remaining
       ? `${remaining} cake${remaining === 1 ? "" : "s"} available for this date.`
-      : `Daily cake limit reached for ${deliveryDate}. Please choose another date.`,
+      : `We reach our max capacity for ${deliveryDate} plz dont add more.`,
   };
 }
