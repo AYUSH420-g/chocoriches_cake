@@ -37,7 +37,7 @@ export async function getCart(req, res) {
 }
 
 export async function addCartItem(req, res) {
-  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1, baseFlavour, creamFlavour } = req.body;
+  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1, baseFlavour, creamFlavour, deliveryDate } = req.body;
   const product = await findProductForCart(productIdValue);
   if (!product) {
     res.status(404).json({ message: "Product not found." });
