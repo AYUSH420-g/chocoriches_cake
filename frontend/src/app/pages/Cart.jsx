@@ -25,7 +25,7 @@ function Cart() {
   }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const deliveryFee = cart.length ? (siteSettings?.deliveryFee ?? 0) : 0;
+  const deliveryFee = 0; // Calculated at checkout
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
 
@@ -183,7 +183,7 @@ function Cart() {
                 <div className="flex justify-between text-sm font-bold text-[#5f6663]">
                   <span>Delivery Fee</span>
                   <span className="font-normal text-[#1f2221]">
-                    {formatPrice(deliveryFee)}
+                    Calculated at checkout
                   </span>
                 </div>
 

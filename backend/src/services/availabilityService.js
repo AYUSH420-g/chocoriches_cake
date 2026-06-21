@@ -61,6 +61,41 @@ export async function activeBlockedDates() {
   return dates.map(blockedDateView);
 }
 
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
+  const a = 
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * 
+    Math.sin(dLon / 2) * Math.sin(dLon / 2); 
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)); 
+  return R * c; // Distance in km
+}
+
+const STORE_COORDS = { lat: 23.0223833, lon: 72.5279559 }; // 380015 (Ambawadi center)
+const pincodeCoordsCache = new Map();
+
+async function getPincodeCoordinates(pincode) {
+  if (pincodeCoordsCache.has(pincode)) {
+    return pincodeCoordsCache.get(pincode);
+  }
+  try {
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincode}&country=India&format=json`, {
+      headers: { "User-Agent": "NChocoDeliveryApp/1.0" }
+    });
+    const data = await response.json();
+    if (data && data.length > 0) {
+      const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      pincodeCoordsCache.set(pincode, coords);
+      return coords;
+    }
+  } catch (error) {
+    console.error(`Failed to fetch coordinates for pincode ${pincode}:`, error);
+  }
+  return null;
+}
+
 export async function pincodeStatus(pincode) {
   const requestedPincode = String(pincode || "").trim();
   const activePincodeCount = isDatabaseConnected()
@@ -71,8 +106,23 @@ export async function pincodeStatus(pincode) {
     : memory.pincodes.find((item) => item.pincode === requestedPincode && item.isActive);
 
   const serviceable = activePincodeCount > 0 && Boolean(pincodeRecord);
+  
+  let deliveryCharge = 0;
+  if (serviceable) {
+    const coords = await getPincodeCoordinates(requestedPincode);
+    if (coords) {
+      const distance = calculateDistance(STORE_COORDS.lat, STORE_COORDS.lon, coords.lat, coords.lon);
+      // Delivery charge formula: distance * 2 (two-way) * 5 rs per km
+      deliveryCharge = Math.ceil(distance * 2 * 5);
+    } else {
+      // Fallback charge if coordinates are not found
+      deliveryCharge = 50; 
+    }
+  }
+
   return {
     serviceable,
+    deliveryCharge,
     pincode: pincodeRecord ? pincodeView(pincodeRecord) : null,
     message: serviceable
       ? "Delivery is available for this pincode."

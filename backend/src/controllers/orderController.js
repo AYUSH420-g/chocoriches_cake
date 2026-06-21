@@ -2,7 +2,7 @@ import { isDatabaseConnected } from "../db.js";
 import { Order } from "../models/Order.js";
 import { Product } from "../models/Product.js";
 import { CartItem } from "../models/CartItem.js";
-import { cakeCapacityStatus, isDeliveryDateBlocked, isPincodeServiceable } from "../services/availabilityService.js";
+import { cakeCapacityStatus, isDeliveryDateBlocked, pincodeStatus } from "../services/availabilityService.js";
 import { getSiteSetting } from "../services/availabilityService.js";
 import { adminOrderView, publicOrderView, todayIso, productPriceForWeight, productId as getProductId } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
@@ -108,9 +108,12 @@ export async function createOrder(req, res) {
     }
   }
 
-  // Add delivery fee from admin settings
-  const siteSetting = await getSiteSetting();
-  const deliveryFee = Number(siteSetting.deliveryFee || 0);
+  const pStatus = await pincodeStatus(deliveryPincode);
+  if (!pStatus.serviceable) {
+    res.status(422).json({ message: "Delivery is not available for this pincode." });
+    return;
+  }
+  const deliveryFee = pStatus.deliveryCharge || 0;
   serverTotal += deliveryFee;
 
   if (!customerEmail) {
@@ -120,11 +123,6 @@ export async function createOrder(req, res) {
 
   if (!items.length) {
     res.status(400).json({ message: "Order must contain at least one product." });
-    return;
-  }
-
-  if (!(await isPincodeServiceable(deliveryPincode))) {
-    res.status(422).json({ message: "Delivery is not available for this pincode." });
     return;
   }
 

@@ -20,21 +20,37 @@ function normalizePincode(value) {
 function Checkout() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [checkoutData, setCheckoutData] = useState(() => getGuestUser());
+  const [checkoutData, setCheckoutData] = useState(() => {
+    const data = getGuestUser() || {};
+    const sessionPincode = sessionStorage.getItem("chocoriches_pincode");
+    if (sessionPincode) {
+      data.pincode = sessionPincode;
+    }
+    return data;
+  });
+  const isPincodeLocked = !!sessionStorage.getItem("chocoriches_pincode");
   const [placedOrder, setPlacedOrder] = useState(null);
   const [siteSettings, setSiteSettings] = useState(null);
+  const [dynamicDeliveryFee, setDynamicDeliveryFee] = useState(null);
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const storedUser = getStoredUser();
 
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
+    if (checkoutData.pincode && checkoutData.pincode.length === 6) {
+      checkPincode(checkoutData.pincode).then(res => {
+        if (res?.serviceable) {
+          setDynamicDeliveryFee(res.deliveryCharge || 0);
+        }
+      }).catch(() => null);
+    }
   }, []);
 
 
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const deliveryFee = cart.length ? (siteSettings?.deliveryFee ?? 0) : 0;
+  const deliveryFee = cart.length ? (dynamicDeliveryFee !== null ? dynamicDeliveryFee : (siteSettings?.deliveryFee ?? 0)) : 0;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
   const amountInPaise = priceToRupees(total) * 100;
@@ -94,6 +110,7 @@ function Checkout() {
           toast.error("currently we are not serving at your location coming soon");
           return;
         }
+        setDynamicDeliveryFee(pincodeResult.deliveryCharge || 0);
       }
 
       setLoading(true);
@@ -278,6 +295,10 @@ function Checkout() {
                               key={addr.id}
                               type="button"
                               onClick={() => {
+                                if (isPincodeLocked && addr.pincode !== sessionStorage.getItem("chocoriches_pincode")) {
+                                  toast.error(`Please select an address for pincode ${sessionStorage.getItem("chocoriches_pincode")}`);
+                                  return;
+                                }
                                 setCheckoutData({
                                   ...checkoutData,
                                   addressId: addr.id,
@@ -291,6 +312,15 @@ function Checkout() {
                                   landmark: addr.landmark,
                                   addressLabel: addr.label || "Home",
                                 });
+                                if (addr.pincode && addr.pincode.length === 6) {
+                                  checkPincode(addr.pincode).then(res => {
+                                    if (res?.serviceable) {
+                                      setDynamicDeliveryFee(res.deliveryCharge || 0);
+                                    } else {
+                                      setDynamicDeliveryFee(null);
+                                    }
+                                  }).catch(() => null);
+                                }
                               }}
                               className={`relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
                                   checkoutData.addressId === addr.id
@@ -333,7 +363,8 @@ function Checkout() {
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
                         <Field label="City" name="city" placeholder="Bangalore" value={checkoutData.city || ""} onChange={(e) => setCheckoutData({...checkoutData, city: e.target.value})} required />
-                        <Field label="Pincode" name="pincode" placeholder="560001" value={checkoutData.pincode || ""} required onChange={async (e) => {
+                        <Field label="Pincode" name="pincode" placeholder="560001" value={checkoutData.pincode || ""} required readOnly={isPincodeLocked} onChange={async (e) => {
+                          if (isPincodeLocked) return;
                           const val = e.target.value.replace(/\D/g, "").slice(0, 6);
                           setCheckoutData({...checkoutData, pincode: val});
                           if (val.length === 6) {
@@ -341,6 +372,13 @@ function Checkout() {
                             if (result?.pincode?.city) {
                               setCheckoutData(prev => ({...prev, pincode: val, city: result.pincode.city}));
                             }
+                            if (result?.serviceable) {
+                              setDynamicDeliveryFee(result.deliveryCharge || 0);
+                            } else {
+                              setDynamicDeliveryFee(null);
+                            }
+                          } else {
+                            setDynamicDeliveryFee(null);
                           }
                         }} />
                       </div>

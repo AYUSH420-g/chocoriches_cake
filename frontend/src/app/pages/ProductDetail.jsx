@@ -237,7 +237,7 @@ function ProductDetail() {
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
-  const [pincode, setPincode] = useState("");
+  const [pincode, setPincode] = useState(() => sessionStorage.getItem("chocoriches_pincode") || "");
   const [pincodeStatus, setPincodeStatus] = useState({ checked: false, valid: false, message: "" });
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -383,7 +383,10 @@ function ProductDetail() {
   }, [reviews.length]);
 
   const ensureValidDelivery = async (showToast = true) => {
-    if (pincodeStatus.valid && pincodeStatus.checked) return true;
+    if (pincodeStatus.valid && pincodeStatus.checked) {
+      sessionStorage.setItem("chocoriches_pincode", normalizePincode(pincode));
+      return true;
+    }
 
     const deliveryPincode = normalizePincode(pincode);
 
@@ -396,6 +399,7 @@ function ProductDetail() {
     const result = await checkPincode(deliveryPincode).catch(() => null);
     if (result?.serviceable) {
       setPincodeStatus({ checked: true, valid: true, message: result.message || "Delivery is available for this pincode." });
+      sessionStorage.setItem("chocoriches_pincode", deliveryPincode);
       return true;
     }
     
@@ -589,7 +593,7 @@ function ProductDetail() {
                       {product.description}
                     </div>
                     {isDescOverflowing && (
-                      <div className="absolute bottom-0 right-0 flex items-center max-md:bg-[#f7f7f7] md:bg-white pl-4">
+                      <div className="absolute bottom-0 right-0 flex items-center max-md:bg-[#f7f7f7] md:bg-white pl-1">
                         <span className="text-[#1f2221]">...</span>
                         <button 
                           type="button"

@@ -225,6 +225,14 @@ function Home() {
             No trending cakes right now.
           </div>
         )}
+        {!isLoading && trendingCakes.length > 0 && (
+          <div className="mt-4 flex justify-end md:hidden">
+            <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="flex items-center gap-2 text-sm font-black text-[#e61951]">
+              View All
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+        )}
       </section>
 
       <section className="bk-shell py-4 md:py-8">
