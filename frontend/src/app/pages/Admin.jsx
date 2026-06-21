@@ -18,6 +18,7 @@ import {
   ShoppingBag,
   Tags,
   Trash2,
+  Truck,
   Upload,
   Users
 } from "lucide-react";
@@ -1044,6 +1045,18 @@ function Admin() {
                               <p><strong className="font-black">Placed At:</strong> {order.createdAt ? new Date(order.createdAt).toLocaleString() : "N/A"}</p>
                               <p><strong className="font-black">Req. Delivery Date:</strong> {order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "N/A"}</p>
                               {order.deliveryTimeSlot && <p><strong className="font-black">Time Slot:</strong> {order.deliveryTimeSlot}</p>}
+                              <p>
+                                <strong className="font-black">Delivery Option:</strong>{" "}
+                                {order.deliveryOption === "delivery" ? (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-[11px] font-black text-[#e61951]">
+                                    <Truck size={12} /> Chocoriches Will Deliver
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#eefbf3] px-2.5 py-1 text-[11px] font-black text-[#0f8b57]">
+                                    <Package size={12} /> Customer Will Pickup
+                                  </span>
+                                )}
+                              </p>
                               <div>
                                 <strong className="font-black">Items:</strong>
                                 <ul className="mt-1 list-inside list-disc space-y-1 text-sm">

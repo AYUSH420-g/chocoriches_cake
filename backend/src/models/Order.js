@@ -15,6 +15,7 @@ const orderSchema = new mongoose.Schema(
     deliveryPincode: { type: String },
     deliveryDate: { type: String },
     deliveryTimeSlot: { type: String },
+    deliveryOption: { type: String, default: "pickup" },
     payment: { type: mongoose.Schema.Types.Mixed },
   },
   { timestamps: true }

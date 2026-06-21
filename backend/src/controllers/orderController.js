@@ -54,6 +54,7 @@ export async function createOrder(req, res) {
   const customerEmail = String(req.user?.email || req.body.customerEmail || req.body.email || "").trim().toLowerCase();
   const customerPhone = String(req.body.phone || req.body.customerPhone || req.user?.phone || "").trim();
   const deliveryAddress = String(req.body.address || req.body.deliveryAddress || "").trim();
+  const deliveryOption = String(req.body.deliveryOption || "pickup").trim().toLowerCase();
   const rawItems = orderItems(req.body.items);
   const itemCount = orderItemCount(req.body.items) || rawItems.length;
 
@@ -117,7 +118,7 @@ export async function createOrder(req, res) {
     res.status(422).json({ message: "Delivery is not available for this pincode." });
     return;
   }
-  const deliveryFee = pStatus.deliveryCharge || 0;
+  const deliveryFee = deliveryOption === "pickup" ? 0 : (pStatus.deliveryCharge || 0);
   serverTotal += deliveryFee;
 
   if (!customerEmail) {
@@ -159,6 +160,7 @@ export async function createOrder(req, res) {
     deliveryPincode,
     deliveryDate,
     deliveryTimeSlot: String(req.body.deliveryTimeSlot || "").trim(),
+    deliveryOption,
     payment: req.body.payment || {},
   };
 
@@ -176,6 +178,7 @@ Customer Phone: ${customerPhone}
 
 Items: ${itemDetails}
 Total Price: ${formatPrice(order.total)}
+Delivery Option: ${deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
 Delivery Date: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
 Pincode: ${deliveryPincode}
@@ -212,6 +215,7 @@ Customer Phone: ${customerPhone}
 
 Items: ${itemDetails}
 Total Price: ${formatPrice(order.total)}
+Delivery Option: ${deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
 Delivery Date: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
 Pincode: ${deliveryPincode}

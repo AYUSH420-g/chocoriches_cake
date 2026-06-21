@@ -272,6 +272,8 @@ export function publicOrderView(order = {}) {
     deliveryAddress: order.deliveryAddress || "",
     deliveryPincode: order.deliveryPincode || "",
     deliveryDate: order.deliveryDate || "",
+    deliveryTimeSlot: order.deliveryTimeSlot || "",
+    deliveryOption: order.deliveryOption || "pickup",
     payment: order.payment || {},
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,

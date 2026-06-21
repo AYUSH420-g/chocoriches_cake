@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
-import { CheckCircle2, ChevronRight, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase } from "lucide-react";
+import { CheckCircle2, ChevronRight, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase, Package } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
 import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings } from "../api/client";
@@ -32,6 +32,7 @@ function Checkout() {
   const [placedOrder, setPlacedOrder] = useState(null);
   const [siteSettings, setSiteSettings] = useState(null);
   const [dynamicDeliveryFee, setDynamicDeliveryFee] = useState(null);
+  const [deliveryOption, setDeliveryOption] = useState("pickup");
   const { cart, clearCart } = useCart();
   const navigate = useNavigate();
   const storedUser = getStoredUser();
@@ -50,7 +51,8 @@ function Checkout() {
 
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const deliveryFee = cart.length ? (dynamicDeliveryFee !== null ? dynamicDeliveryFee : (siteSettings?.deliveryFee ?? 0)) : 0;
+  const rawDeliveryFee = cart.length ? (dynamicDeliveryFee !== null ? dynamicDeliveryFee : (siteSettings?.deliveryFee ?? 0)) : 0;
+  const deliveryFee = deliveryOption === "pickup" ? 0 : rawDeliveryFee;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
   const amountInPaise = priceToRupees(total) * 100;
@@ -67,6 +69,7 @@ function Checkout() {
         deliveryPincode: data.pincode || "",
         deliveryDate: data.deliveryDate || sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10),
         deliveryTimeSlot: sessionStorage.getItem("chocoriches_time_slot") || "",
+        deliveryOption,
         items: cart.map((item) => ({
           name: item.name,
           quantity: item.quantity,
@@ -466,7 +469,62 @@ function Checkout() {
                     <div className="rounded-xl bg-[#f7f7f7] p-4">
                       <div className="space-y-3 text-sm font-bold text-[#6f7573]">
                         <div className="flex justify-between"><span>Subtotal</span><span>{formatPrice(subtotal)}</span></div>
-                        <div className="flex justify-between"><span>Delivery Fee</span><span>{formatPrice(deliveryFee)}</span></div>
+                        
+                        {/* Delivery Option Radio Buttons */}
+                        <div className="border-t border-[#ebebeb] pt-3">
+                          <label
+                            className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all ${
+                              deliveryOption === "delivery"
+                                ? "border-[#e61951] bg-[#fff2e9]"
+                                : "border-[#ebebeb] bg-white hover:border-[#e61951]/40"
+                            }`}
+                            onClick={() => setDeliveryOption("delivery")}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="deliveryOption"
+                                value="delivery"
+                                checked={deliveryOption === "delivery"}
+                                onChange={() => setDeliveryOption("delivery")}
+                                className="h-4 w-4 accent-[#e61951]"
+                              />
+                              <div className="flex items-center gap-2">
+                                <Truck size={16} className={deliveryOption === "delivery" ? "text-[#e61951]" : "text-[#6f7573]"} />
+                                <span className={`text-sm font-bold ${deliveryOption === "delivery" ? "text-[#1f2221]" : "text-[#6f7573]"}`}>Delivery Fee</span>
+                              </div>
+                            </div>
+                            <span className={`text-sm font-black ${deliveryOption === "delivery" ? "text-[#1f2221]" : ""}`}>{formatPrice(rawDeliveryFee)}</span>
+                          </label>
+                          
+                          <label
+                            className={`mt-2 flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all ${
+                              deliveryOption === "pickup"
+                                ? "border-[#0f8b57] bg-[#eefbf3]"
+                                : "border-[#ebebeb] bg-white hover:border-[#0f8b57]/40"
+                            }`}
+                            onClick={() => setDeliveryOption("pickup")}
+                          >
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="deliveryOption"
+                                value="pickup"
+                                checked={deliveryOption === "pickup"}
+                                onChange={() => setDeliveryOption("pickup")}
+                                className="h-4 w-4 accent-[#0f8b57]"
+                              />
+                              <div>
+                                <div className="flex items-center gap-2">
+                                  <Package size={16} className={deliveryOption === "pickup" ? "text-[#0f8b57]" : "text-[#6f7573]"} />
+                                  <span className={`text-sm font-bold ${deliveryOption === "pickup" ? "text-[#1f2221]" : "text-[#6f7573]"}`}>I will pickup my order</span>
+                                </div>
+                                <p className={`mt-0.5 ml-6 text-[11px] ${deliveryOption === "pickup" ? "text-[#0f8b57]" : "text-[#8e9492]"}`}>Near BIKANERWALA, NEHRUNAGAR</p>
+                              </div>
+                            </div>
+                            <span className="text-sm font-black text-[#0f8b57]">Free</span>
+                          </label>
+                        </div>
                       </div>
                       <div className="mt-4 flex justify-between border-t border-[#ebebeb] pt-4 text-xl font-black text-[#1f2221]">
                         <span>Total to Pay</span>
