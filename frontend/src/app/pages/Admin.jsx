@@ -1176,7 +1176,7 @@ function normalizeProductForm(form) {
   return {
     ...form,
     price: Number(defaultPrice || 0),
-    discountPrice: Number(defaultPrice || 0),
+
     discountPercent: Math.max(0, Math.min(95, Number(form.discountPercent || 0))),
     category: categories[0] || "Cakes",
     categories,
