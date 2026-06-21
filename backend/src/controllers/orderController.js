@@ -85,6 +85,8 @@ export async function createOrder(req, res) {
       price: verifiedPrice,
       productId: ci.productId,
       messageOnCake: ci.messageOnCake || "",
+      baseFlavour: ci.baseFlavour || "",
+      creamFlavour: ci.creamFlavour || "",
     });
   }
 
@@ -104,6 +106,8 @@ export async function createOrder(req, res) {
         price: verifiedPrice,
         productId: ri.productId || "",
         messageOnCake: ri.messageOnCake || "",
+        baseFlavour: ri.baseFlavour || "",
+        creamFlavour: ri.creamFlavour || "",
       });
     }
   }

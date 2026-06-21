@@ -57,8 +57,9 @@ function TrackOrder() {
   return (
     <div className="bk-page">
       <div className="bk-shell py-5 md:py-6">
-        <div className="grid items-start gap-5 md:gap-6 lg:grid-cols-[380px_1fr]">
-          <motion.section
+        <div className={`grid items-start gap-5 md:gap-6 ${order ? "lg:grid-cols-1 max-w-4xl mx-auto" : "lg:grid-cols-[380px_1fr]"}`}>
+          {!order && (
+            <motion.section
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             className="bk-card p-5 md:p-7 shadow-sm border border-gray-100"
@@ -94,6 +95,7 @@ function TrackOrder() {
               </button>
             </form>
           </motion.section>
+          )}
 
           <motion.section 
             initial={{ opacity: 0, x: 20 }}
@@ -119,10 +121,18 @@ function TrackOrder() {
                 </div>
 
                 <div className="grid gap-5 p-5 md:gap-6 md:p-6">
-                  <div className="grid gap-4 sm:grid-cols-3">
-                    <Info icon={ClipboardList} label="Placed On" value={order.date} />
-                    <Info icon={MapPin} label="Pincode" value={order.deliveryPincode || "Not added"} />
-                    <Info icon={CakeSlice} label="Total" value={formatPrice(order.total)} />
+                  <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-4">
+                    <Info icon={ClipboardList} label="Ordered Date" value={order.date} />
+                    <Info icon={Truck} label="Delivery Date" value={order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "Not specified"} />
+                    <Info icon={MapPin} label="Selected Address" value={order.deliveryAddress || order.deliveryPincode || "Not added"} />
+                    <Info icon={CakeSlice} label="Selected Flavour" value={
+                      order.items?.map(i => {
+                        if (typeof i === "string") return "Default";
+                        const base = i.baseFlavour || "Default base";
+                        const cream = i.creamFlavour || "Default cream";
+                        return `${base} & ${cream}`;
+                      }).join(", ") || "Default"
+                    } />
                   </div>
 
                   <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
