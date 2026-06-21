@@ -110,7 +110,7 @@ function TrackOrder() {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
               >
-                <div className="border-b border-[#ebebeb] bg-gradient-to-r from-[#fafafa] to-white p-5 md:p-6">
+                <div className="border-b border-[#ebebeb] bg-gradient-to-r from-[#fafafa] to-white p-3 md:p-6">
                   <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                       <p className="text-xs font-black uppercase tracking-wider text-[#6f7573]">Order {order.orderId || order.id}</p>
@@ -135,7 +135,7 @@ function TrackOrder() {
                     } />
                   </div>
 
-                  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
+                  <div className="rounded-2xl border border-gray-200 bg-white p-4 shadow-sm">
                     <div className="grid gap-5 md:grid-cols-4">
                       {statuses.map((status, index) => {
                         const active = index <= activeIndex && order.status !== "Cancelled";
@@ -201,7 +201,7 @@ function TrackOrder() {
 
 function Info({ icon: Icon, label, value }) {
   return (
-    <div className="rounded-xl border border-gray-100 bg-[#fbfbfb] p-5 shadow-sm transition-colors hover:bg-white hover:shadow-md">
+    <div className="rounded-xl border border-gray-100 bg-[#fbfbfb] p-2.5 shadow-sm transition-colors hover:bg-white hover:shadow-md">
       <div className="flex items-center gap-3 mb-3">
         <div className="grid h-8 w-8 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
           <Icon size={16} />
