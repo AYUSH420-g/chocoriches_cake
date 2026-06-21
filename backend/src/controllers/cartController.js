@@ -37,7 +37,7 @@ export async function getCart(req, res) {
 }
 
 export async function addCartItem(req, res) {
-  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1 } = req.body;
+  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1, baseFlavour, creamFlavour } = req.body;
   const product = await findProductForCart(productIdValue);
   if (!product) {
     res.status(404).json({ message: "Product not found." });
@@ -55,9 +55,9 @@ export async function addCartItem(req, res) {
   }
 
   if (isDatabaseConnected()) {
-    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize });
+    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour, creamFlavour });
     if (existingItem) {
-      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize });
+      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
       existingItem.quantity += nextQuantity;
       await existingItem.save();
       res.status(200).json(existingItem.toObject());
@@ -65,10 +65,10 @@ export async function addCartItem(req, res) {
     }
   } else {
     const existingItem = memory.cartItems.find(
-      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize
+      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize && item.baseFlavour === baseFlavour && item.creamFlavour === creamFlavour
     );
     if (existingItem) {
-      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize });
+      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
       existingItem.quantity += nextQuantity;
       res.status(200).json(existingItem);
       return;
@@ -83,6 +83,8 @@ export async function addCartItem(req, res) {
     size: requestedSize,
     weight: requestedSize,
     quantity: nextQuantity,
+    baseFlavour,
+    creamFlavour,
   };
 
   if (isDatabaseConnected()) {

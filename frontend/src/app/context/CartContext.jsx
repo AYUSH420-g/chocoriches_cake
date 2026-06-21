@@ -4,12 +4,13 @@ import { SESSION_EVENT } from "../utils/session";
 
 const CartContext = createContext(null);
 
-function sameProduct(item, productId, size = "") {
+function sameProduct(item, productId, size = "", baseFlavour = "", creamFlavour = "") {
   const productMatches = String(item.productId || item.id || "") === String(productId || "");
-  if (!size) {
-    return productMatches;
-  }
-  return productMatches && String(item.size || item.weight || "").toLowerCase() === String(size).toLowerCase();
+  const sizeMatches = !size || String(item.size || item.weight || "").toLowerCase() === String(size).toLowerCase();
+  const baseFlavourMatches = !baseFlavour || item.baseFlavour === baseFlavour;
+  const creamFlavourMatches = !creamFlavour || item.creamFlavour === creamFlavour;
+  
+  return productMatches && sizeMatches && baseFlavourMatches && creamFlavourMatches;
 }
 
 function CartProvider({ children }) {
@@ -56,8 +57,8 @@ function CartProvider({ children }) {
   }, [refreshCart]);
 
   const addProduct = useCallback(
-    async (product, quantity = 1, size = "Half Kg") => {
-      const item = await addCartItem({ productId: product.id, size, quantity });
+    async (product, quantity = 1, size = "Half Kg", baseFlavour = "", creamFlavour = "") => {
+      const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour });
       await refreshCart();
       return item;
     },
@@ -98,7 +99,7 @@ function CartProvider({ children }) {
   }, []);
 
   const itemForProduct = useCallback(
-    (productId, size = "") => cart.find((item) => sameProduct(item, productId, size)),
+    (productId, size = "", baseFlavour = "", creamFlavour = "") => cart.find((item) => sameProduct(item, productId, size, baseFlavour, creamFlavour)),
     [cart]
   );
 

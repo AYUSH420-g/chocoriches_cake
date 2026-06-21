@@ -1053,6 +1053,14 @@ function Admin() {
                                         <span className="font-bold">{item.name || "Item"}</span>
                                         <span className="text-[#6f7573]"> (x{item.quantity || 1})</span>
                                         <span className="text-[#6f7573]"> - Size: {item.size || "Default"}</span>
+                                        {(item.baseFlavour || item.creamFlavour) && (
+                                          <span className="text-[#6f7573]">
+                                            {" - "}
+                                            {item.baseFlavour && <span>{item.baseFlavour}</span>}
+                                            {item.baseFlavour && item.creamFlavour && <span> • </span>}
+                                            {item.creamFlavour && <span>{item.creamFlavour}</span>}
+                                          </span>
+                                        )}
                                         {item.messageOnCake && (
                                           <span className="ml-1 inline-block rounded bg-[#fff2e9] px-1.5 py-0.5 text-[10px] font-black text-[#e61951]">
                                             Msg: {item.messageOnCake}

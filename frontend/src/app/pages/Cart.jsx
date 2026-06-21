@@ -87,10 +87,19 @@ function Cart() {
                       </p>
                       {/* <p className="mt-1 text-xs font-bold text-[#6f7573]">{formatPrice(item.price)} each</p> */}
                     </div>
-                    <div className="mb-2 pt-1 flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-bold text-[#1f2221]">
-                        {item.size=='Half Kg'?'0.5 Kg':item.size}
-                      </span>
+                    <div className="mb-2 pt-1 flex flex-col gap-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-bold text-[#1f2221]">
+                          {item.size=='Half Kg'?'0.5 Kg':item.size}
+                        </span>
+                      </div>
+                      {(item.baseFlavour || item.creamFlavour) && (
+                        <div className="text-[11px] font-medium text-[#6f7573]">
+                          {item.baseFlavour && <span>{item.baseFlavour}</span>}
+                          {item.baseFlavour && item.creamFlavour && <span> • </span>}
+                          {item.creamFlavour && <span>{item.creamFlavour}</span>}
+                        </div>
+                      )}
                     </div>
                     
                     <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">

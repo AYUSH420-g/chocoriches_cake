@@ -14,6 +14,8 @@ const cartItemSchema = new mongoose.Schema(
     sameDayDelivery: { type: Boolean, default: false },
     quantity: { type: Number, required: true, min: 1 },
     messageOnCake: { type: String },
+    baseFlavour: { type: String },
+    creamFlavour: { type: String },
   },
   { timestamps: true }
 );

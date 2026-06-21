@@ -247,17 +247,14 @@ function ProductDetail() {
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
   const [deliveryDate, setDeliveryDate] = useState(toIso(localDate(1)));
   const [blockedDates, setBlockedDates] = useState([]);
-  const [isDescExpanded, setIsDescExpanded] = useState(false);
-  const [isDescOverflowing, setIsDescOverflowing] = useState(false);
+  const [baseFlavour, setBaseFlavour] = useState("Chocolate base");
+  const [creamFlavour, setCreamFlavour] = useState("Vanilla cream");
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const descRef = useRef(null);
   const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
 
-  useEffect(() => {
-    if (descRef.current) {
-      setIsDescOverflowing(descRef.current.scrollHeight > descRef.current.clientHeight);
-    }
-  }, [product?.description, isDescExpanded]);
+  // Description logic removed
+
 
   useEffect(() => {
     let mounted = true;
@@ -318,11 +315,11 @@ function ProductDetail() {
             
             const doAction = async () => {
               try {
-                const existing = itemForProduct(product.id, intent.weightLabel);
+                const existing = itemForProduct(product.id, intent.weightLabel, intent.baseFlavour, intent.creamFlavour);
                 if (existing) {
                   await setCartQuantity(existing.id, intent.quantity);
                 } else {
-                  await addProduct(product, intent.quantity, intent.weightLabel);
+                  await addProduct(product, intent.quantity, intent.weightLabel, intent.baseFlavour, intent.creamFlavour);
                 }
                 toast.success(`${product.name} added to cart`);
                 if (intent.isBuyNow) {
@@ -359,7 +356,7 @@ function ProductDetail() {
     return () => window.removeEventListener(WISHLIST_EVENT, syncWishlist);
   }, [product?.id]);
 
-  const cartItem = product && selectedWeight ? itemForProduct(product.id, selectedWeight.label) : null;
+  const cartItem = product && selectedWeight ? itemForProduct(product.id, selectedWeight.label, baseFlavour, creamFlavour) : null;
 
   useEffect(() => {
     if (cartItem) {
@@ -421,6 +418,8 @@ function ProductDetail() {
         productId: product.id,
         quantity: cartItem ? quantity : 1,
         weightLabel: selectedWeight.label,
+        baseFlavour,
+        creamFlavour,
         isBuyNow
       }));
       navigate("/auth");
@@ -440,7 +439,7 @@ function ProductDetail() {
       if (cartItem) {
         await setCartQuantity(cartItem.id, nextQuantity);
       } else {
-        await addProduct(product, nextQuantity, selectedWeight.label);
+        await addProduct(product, nextQuantity, selectedWeight.label, baseFlavour, creamFlavour);
       }
       toast.success(`${product.name} added to cart`, {
         description: `${selectedWeight.label} | Qty ${nextQuantity}`
@@ -570,44 +569,42 @@ function ProductDetail() {
               )}
             </div>
 
-            {product.description && (
-              <div className="mb-4">
-                {isDescExpanded ? (
-                  <div className="text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em]">
-                    {product.description}
-                    <button 
-                      type="button"
-                      onClick={() => setIsDescExpanded(false)}
-                      className="ml-1 font-normal text-[#e61951]"
-                    >
-                      Read Less
-                    </button>
-                  </div>
-                ) : (
-                  <div 
-                    ref={descRef}
-                    className="relative text-sm md:text-base font-normal text-[#1f2221] leading-[1.5em] overflow-hidden" 
-                    style={{ maxHeight: '3em' }}
-                  >
-                    <div>
-                      {product.description}
-                    </div>
-                    {isDescOverflowing && (
-                      <div className="absolute bottom-0 right-0 flex items-center max-md:bg-[#f7f7f7] md:bg-white pl-1">
-                        <span className="text-[#1f2221]">...</span>
-                        <button 
-                          type="button"
-                          onClick={() => setIsDescExpanded(true)}
-                          className="ml-1 font-normal text-[#e61951]"
-                        >
-                          Read More
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
+            <div className="mb-4">
+              <div className="mt-3 flex items-center justify-between">
+                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Base Flavour</h2>
               </div>
-            )}
+              <div className="mt-1">
+                <select
+                  value={baseFlavour}
+                  onChange={(e) => setBaseFlavour(e.target.value)}
+                  className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                >
+                  <option value="Chocolate base">Chocolate base</option>
+                  <option value="Vanilla base">Vanilla base</option>
+                </select>
+              </div>
+
+              <div className="mt-4 flex items-center justify-between">
+                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Cream Flavour</h2>
+              </div>
+              <div className="mt-1">
+                <select
+                  value={creamFlavour}
+                  onChange={(e) => setCreamFlavour(e.target.value)}
+                  className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                >
+                  <option value="Vanilla cream">Vanilla cream</option>
+                  <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
+                  <option value="Chocolate cream">Chocolate cream</option>
+                  <option value="Chocolate cream with chocolate chips">Chocolate cream with chocolate chips</option>
+                  <option value="Strawberry cream">Strawberry cream</option>
+                </select>
+              </div>
+
+              <div className="mt-3 text-xs text-[#6f7573]">
+                <Link to="/contact" className="text-[#e61951] hover:underline font-semibold">Contact us</Link> for any other type of customization
+              </div>
+            </div>
 
             <div className=" flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (
