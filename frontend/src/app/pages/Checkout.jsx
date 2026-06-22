@@ -522,7 +522,7 @@ function Checkout() {
                                 <p className={`mt-0.5 ml-6 text-[11px] ${deliveryOption === "pickup" ? "text-[#0f8b57]" : "text-[#8e9492]"}`}>Near BIKANERWALA, NEHRUNAGAR</p>
                               </div>
                             </div>
-                            <span className="text-sm font-black text-[#0f8b57]">Free</span>
+                            <span className="text-sm font-black text-[#0f8b57]">FREE</span>
                           </label>
                         </div>
                       </div>

@@ -331,20 +331,7 @@ function Home() {
         </Link>
       </section>
 
-      <section className="bk-shell pb-12">
-        <div className="rounded-lg bg-[#fff2e9] px-4 py-5 md:flex md:items-center md:justify-between md:rounded-xl md:px-8 md:py-6">
-          <div className="flex items-start gap-4">
-            <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white text-[#e61951]">
-              <Clock size={22} />
-            </span>
-            <div>
-              <h2 className="text-lg font-black text-[#1f2221] md:text-xl">Need it today?</h2>
-              <p className="mt-1 text-sm leading-6 text-[#6f7573]">Choose express slots and send fresh cakes across major cities.</p>
-            </div>
-          </div>
-          <Link to="/shop?filter=Same%20Day" className="bk-btn mt-5 h-12 w-full px-5 text-sm md:mt-0 md:h-11 md:w-auto">Explore Same Day Cakes</Link>
-        </div>
-      </section>
+
     </div>
   );
 }

@@ -3,11 +3,6 @@ import { useState } from "react";
 
 const faqs = [
   {
-    question: "Are same day cakes also made after order or are they pre-made?",
-    answer:
-      "No, our same day cakes are also freshly made after receiving your order. They are not pre-made. These are cakes that are easier and quicker to prepare, so our bakers can complete them within a few hours while still maintaining the same quality and freshness you expect from ChocoRiches."
-  },
-  {
     question: "Do you add extra sugar in any product?",
     answer:
       "No, there is no added sugar from our side. We follow our tested recipes carefully to ensure balanced sweetness in every cake. What you taste is the natural sweetness from quality ingredients we use — nothing extra is added."

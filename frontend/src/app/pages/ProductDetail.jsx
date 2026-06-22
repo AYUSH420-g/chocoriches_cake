@@ -616,9 +616,7 @@ function ProductDetail() {
                   <span className="text-xs font-bold text-[#6f7573]">({product.numOfReviews} Reviews)</span>
                 </>
               )}
-              {product.isBestSeller && (
-                <span className="rounded bg-[#fff2e9] px-2 py-1 text-[11px] font-black text-[#e61951]">Bestseller</span>
-              )}
+
             </div>
 
             <div className="md:mt-5">

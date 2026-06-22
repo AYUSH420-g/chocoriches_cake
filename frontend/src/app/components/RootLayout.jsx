@@ -53,7 +53,6 @@ function RootLayout() {
     dbCategories.forEach((cat) => {
       links.push({ label: cat.name, to: `/shop?cat=${encodeURIComponent(cat.name)}` });
     });
-    links.push({ label: "Same Day Delivery", to: "/shop?filter=Same%20Day" });
     return links;
   }, [dbCategories]);
 

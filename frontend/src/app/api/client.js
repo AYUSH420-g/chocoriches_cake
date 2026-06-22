@@ -150,10 +150,7 @@ function getProductsPaginated(filters = {}, page = 1, limit = 12) {
   
   if (filters.category && filters.category !== "All") searchParams.set("category", filters.category);
   if (filters.subcategory) searchParams.set("subcategory", filters.subcategory);
-  if (filters.featured) searchParams.set("featured", "true");
   if (filters.q) searchParams.set("q", filters.q);
-  if (filters.sameDay) searchParams.set("sameDay", "true");
-  if (filters.bestseller) searchParams.set("bestseller", "true");
   if (filters.maxPrice) searchParams.set("maxPrice", String(filters.maxPrice));
   if (filters.sortBy) searchParams.set("sortBy", filters.sortBy);
   

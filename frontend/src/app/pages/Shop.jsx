@@ -4,8 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Filter, SlidersHorizontal, Truck, X } from "lucide-react";
 import { getProductsPaginated, getCategories, getSubcategories } from "../api/client";
 import ProductCard from "../components/ProductCard";
-
-const filters = ["Same Day", "Bestseller", "Under Rs. 799"];
+const filters = ["Bestseller", "Under Rs. 799"];
 const sortOptions = ["Recommended", "Newest", "Price: Low to High", "Price: High to Low", "Name: A to Z"];
 
 const shopCache = {
@@ -57,7 +56,6 @@ function Shop() {
       const options = { q: query };
       if (cat && cat !== "All") options.category = cat;
       if (subcat) options.subcategory = subcat;
-      if (filterArr.includes("Same Day")) options.sameDay = true;
       if (filterArr.includes("Bestseller")) options.bestseller = true;
       if (filterArr.includes("Under Rs. 799")) options.maxPrice = 799;
       if (sort && sort !== "Recommended") options.sortBy = sort;
@@ -202,10 +200,6 @@ function Shop() {
           <div className=" flex-col items-center gap-3 text-center md:flex-row md:items-end md:justify-between md:text-left hidden md:flex sm:flex">
             <div>
               <h1 className="text-[20px] font-bold tracking-tight text-[#1f2221] md:text-4xl">{pageTitle}</h1>
-            </div>
-            <div className=" w-fit items-center gap-2 rounded-full bg-[#fff2e9] px-3 py-1.5 text-xs font-bold text-[#e61951] md:px-4 md:py-2 md:text-sm hidden md:inline-flex sm:inline-flex">
-              <Truck size={18} />
-              Same Day Delivery Available
             </div>
           </div>
         </div>

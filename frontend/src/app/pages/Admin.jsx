@@ -526,8 +526,15 @@ function Admin() {
     if (swapIndex < 0 || swapIndex >= products.length) return;
     const current = products[index];
     const neighbor = products[swapIndex];
-    const currentOrder = current.sortOrder ?? index;
-    const neighborOrder = neighbor.sortOrder ?? swapIndex;
+    
+    let currentOrder = current.sortOrder ?? index;
+    let neighborOrder = neighbor.sortOrder ?? swapIndex;
+    
+    if (currentOrder === neighborOrder) {
+      currentOrder = index;
+      neighborOrder = swapIndex;
+    }
+    
     try {
       await Promise.all([
         updateAdminProduct(current.id, { ...current, sortOrder: neighborOrder }),
@@ -760,12 +767,7 @@ function Admin() {
                     </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
-                        ["isActive", "Active"],
-                        ["isFeatured", "Featured"],
-                        ["isBestSeller", "Bestseller"],
-                        ["isTrending", "Trending"],
-                        ["customizable", "Customizable"],
-                        ["sameDayDelivery", "Same Day Delivery"]
+                        ["isActive", "Active"]
                       ].map(([key, label]) => (
                         <Check
                           key={key}
