@@ -483,7 +483,7 @@ function RootLayout() {
                     </div>
                   );
                 })}
-                <div className="mt-4 px-2">
+                {/* <div className="mt-4 px-2">
                   <Link 
                     to="/custom" 
                     onClick={() => setIsMenuOpen(false)} 
@@ -492,7 +492,7 @@ function RootLayout() {
                     <Gift size={18} />
                     Order Custom Cake
                   </Link>
-                </div>
+                </div> */}
               </nav>
               <div className="absolute inset-x-0 bottom-0 border-t border-[#ebebeb] p-5">
                 <Link to={loggedIn ? "/profile" : "/auth"} className="bk-btn h-11 w-full text-sm">
