@@ -29,9 +29,9 @@ export const config = {
   adminSeed: {
     name: process.env.ADMIN_NAME || "ChocoRiches Admin",
     email: process.env.ADMIN_EMAIL || "admin@chocoriches.com",
-    password: process.env.ADMIN_PASSWORD || "ChocoAdmin@2026",
+    password: process.env.ADMIN_PASSWORD,
   },
-  jwtSecret: process.env.JWT_SECRET || process.env.SESSION_SECRET || "chocoriches-demo",
+  jwtSecret: process.env.JWT_SECRET || process.env.SESSION_SECRET,
   razorpayKeyId: process.env.RAZORPAY_KEY_ID || "",
   razorpayKeySecret: process.env.RAZORPAY_KEY_SECRET || "",
   cloudinary: {
@@ -40,3 +40,11 @@ export const config = {
     apiSecret: process.env.CLOUDINARY_API_SECRET,
   },
 };
+
+if (!config.jwtSecret) {
+  throw new Error("CRITICAL SECURITY ERROR: JWT_SECRET environment variable is missing. You must provide a secure random string for JWT_SECRET in your .env file or server environment settings.");
+}
+
+if (!config.adminSeed.password) {
+  throw new Error("CRITICAL SECURITY ERROR: ADMIN_PASSWORD environment variable is missing. You must define a secure password for the admin account in your .env file or server environment settings.");
+}
