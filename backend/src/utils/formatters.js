@@ -130,6 +130,7 @@ export function listProduct(product) {
     tags: product.tags || [],
     sortOrder: Number(product.sortOrder || 0),
     sameDayDelivery: Boolean(product.sameDayDelivery),
+    hasBaseAndCream: product.hasBaseAndCream !== false,
     createdAt: product.createdAt,
   };
 }
@@ -158,6 +159,7 @@ export function detailProduct(product = seedProducts[0]) {
     weightOptions,
     isActive: product.isActive !== false,
     sameDayDelivery: Boolean(product.sameDayDelivery),
+    hasBaseAndCream: product.hasBaseAndCream !== false,
   };
 }
 
@@ -183,6 +185,7 @@ export function adminProductView(product) {
     isBestSeller: Boolean(product.isBestSeller),
     isTrending: Boolean(product.isTrending),
     customizable: Boolean(product.customizable),
+    hasBaseAndCream: product.hasBaseAndCream !== false,
     tags: product.tags || [],
     sortOrder: Number(product.sortOrder || 0),
     createdAt: product.createdAt,

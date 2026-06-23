@@ -556,7 +556,9 @@ function ProductDetail() {
           <motion.div initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} className="bk-card p-4 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:shadow-none md:p-7">
             
             <h1 className="text-base font-semibold leading-tight tracking-tight text-[#1f2221] md:text-4xl">{product.name}</h1>
-            {/* <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p> */}
+            {product.hasBaseAndCream === false && product.description && (
+              <p className="mt-2 text-sm leading-6 text-[#6f7573] md:mt-3">{product.description}</p>
+            )}
 
             <div className="flex flex-wrap items-end gap-3  py-2 md:mt-5 md:py-5">
               <span className="text-[22px] font-[600] text-[#1f2221] md:text-3xl">{formatPrice(effectivePrice)}</span>

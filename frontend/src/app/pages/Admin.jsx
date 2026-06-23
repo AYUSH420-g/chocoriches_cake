@@ -762,6 +762,9 @@ function Admin() {
                       onPriceChange={updateProductWeight}
                       onDefaultChange={setDefaultWeight}
                     />
+                    {!productForm.hasBaseAndCream && (
+                      <Textarea label="Short Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
+                    )}
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
                         ["isActive", "Active"],

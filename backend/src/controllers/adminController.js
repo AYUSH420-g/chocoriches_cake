@@ -93,6 +93,7 @@ function productPayload(body) {
     isTrending: Boolean(body.isTrending),
     customizable: Boolean(body.customizable),
     sameDayDelivery: Boolean(body.sameDayDelivery),
+    hasBaseAndCream: body.hasBaseAndCream !== false,
     tags: Array.isArray(body.tags) ? body.tags : [],
     sortOrder: Number(body.sortOrder || 0),
   };
