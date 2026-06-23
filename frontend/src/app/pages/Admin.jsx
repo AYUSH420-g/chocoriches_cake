@@ -141,6 +141,7 @@ function Admin() {
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoadingMoreProducts, setIsLoadingMoreProducts] = useState(false);
   const [draggedProductIndex, setDraggedProductIndex] = useState(null);
+  const [overviewOrderStatusFilter, setOverviewOrderStatusFilter] = useState("All");
   const sentinelRef = useRef(null);
 
   const handleStatusChange = async (order, targetStatus) => {
@@ -699,12 +700,27 @@ function Admin() {
                 <Stat label="Orders" value={summary?.orders || 0} icon={ShoppingBag} />
                 <Stat label="Service Pincodes" value={summary?.pincodes || 0} icon={MapPin} />
               </div>
-              <div className="grid gap-5 xl:grid-cols-2">
-                <Panel title="Latest Orders">
-                  <Rows data={orders.slice(0, 6)} columns={["orderId", "customerEmail", "status", "total"]} />
-                </Panel>
-                <Panel title="Custom Cake Inquiries">
-                  <Rows data={inquiries.slice(0, 6)} columns={["name", "email", "eventDate", "status"]} />
+              <div className="grid gap-5 xl:grid-cols-1">
+                <Panel 
+                  title="Latest Orders"
+                  action={
+                    <select
+                      value={overviewOrderStatusFilter}
+                      onChange={(e) => setOverviewOrderStatusFilter(e.target.value)}
+                      className="bk-input h-8 px-2 py-0 text-xs w-[140px]"
+                    >
+                      <option value="All">All Statuses</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Packed">Packed</option>
+                      <option value="Out For Delivery">Out For Delivery</option>
+                      <option value="Delivered">Delivered</option>
+                    </select>
+                  }
+                >
+                  <Rows 
+                    data={orders.filter(o => overviewOrderStatusFilter === "All" || o.status === overviewOrderStatusFilter).slice(0, 10)} 
+                    columns={["orderId", "customerEmail", "status", "total"]} 
+                  />
                 </Panel>
               </div>
             </div>
@@ -1221,10 +1237,13 @@ function normalizeProductForm(form) {
   };
 }
 
-function Panel({ title, children, className = "" }) {
+function Panel({ title, action, children, className = "" }) {
   return (
     <section className={`rounded-xl border border-[#ebebeb] bg-white p-5 shadow-sm shadow-black/5 ${className}`}>
-      <h2 className="mb-4 text-xl font-black text-[#1f2221]">{title}</h2>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <h2 className="text-xl font-black text-[#1f2221]">{title}</h2>
+        {action && <div>{action}</div>}
+      </div>
       {children}
     </section>
   );
