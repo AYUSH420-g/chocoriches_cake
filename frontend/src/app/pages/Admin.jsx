@@ -6,6 +6,7 @@ import {
   ChevronDown,
   ChevronUp,
   Edit3,
+  GripVertical,
   Layers,
   Lock,
   MapPin,
@@ -139,6 +140,7 @@ function Admin() {
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoadingMoreProducts, setIsLoadingMoreProducts] = useState(false);
+  const [draggedProductIndex, setDraggedProductIndex] = useState(null);
   const sentinelRef = useRef(null);
 
   const handleStatusChange = async (order, targetStatus) => {
@@ -523,30 +525,27 @@ function Admin() {
     }
   };
 
-  const moveProductOrder = async (index, direction) => {
-    const swapIndex = index + direction;
-    if (swapIndex < 0 || swapIndex >= products.length) return;
-    const current = products[index];
-    const neighbor = products[swapIndex];
+  const reorderProducts = async (startIndex, endIndex) => {
+    if (startIndex === endIndex) return;
     
-    let currentOrder = current.sortOrder ?? index;
-    let neighborOrder = neighbor.sortOrder ?? swapIndex;
+    const newProducts = Array.from(products);
+    const [removed] = newProducts.splice(startIndex, 1);
+    newProducts.splice(endIndex, 0, removed);
     
-    if (currentOrder === neighborOrder) {
-      currentOrder = index;
-      neighborOrder = swapIndex;
+    const minIdx = Math.min(startIndex, endIndex);
+    const maxIdx = Math.max(startIndex, endIndex);
+    
+    const updates = [];
+    for (let i = minIdx; i <= maxIdx; i++) {
+      const item = newProducts[i];
+      const newOrder = products[i].sortOrder ?? i; 
+      newProducts[i] = { ...item, sortOrder: newOrder };
+      updates.push(updateAdminProduct(item.id, { ...item, sortOrder: newOrder }));
     }
     
     try {
-      await Promise.all([
-        updateAdminProduct(current.id, { ...current, sortOrder: neighborOrder }),
-        updateAdminProduct(neighbor.id, { ...neighbor, sortOrder: currentOrder }),
-      ]);
-      const next = [...products];
-      next[index] = { ...current, sortOrder: neighborOrder };
-      next[swapIndex] = { ...neighbor, sortOrder: currentOrder };
-      next.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
-      setProducts(next);
+      setProducts(newProducts);
+      await Promise.all(updates);
       toast.success("Product order updated");
     } catch {
       toast.error("Failed to update product order");
@@ -800,26 +799,32 @@ function Admin() {
                 <div className="p-5 pt-4">
                   <div className="grid gap-3">
                     {products.map((product, index) => (
-                      <div key={product.id} className="grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[auto_72px_1fr_auto] sm:items-center">
-                        <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1]">
-                          <button
-                            type="button"
-                            title="Move up"
-                            disabled={index === 0}
-                            onClick={() => moveProductOrder(index, -1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
-                          >
-                            <ChevronUp size={14} />
-                          </button>
-                          <button
-                            type="button"
-                            title="Move down"
-                            disabled={index === products.length - 1}
-                            onClick={() => moveProductOrder(index, 1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
-                          >
-                            <ChevronDown size={14} />
-                          </button>
+                      <div 
+                        key={product.id} 
+                        draggable
+                        onDragStart={(e) => {
+                          setDraggedProductIndex(index);
+                          e.dataTransfer.effectAllowed = "move";
+                          e.target.style.opacity = "0.5";
+                        }}
+                        onDragEnd={(e) => {
+                          setDraggedProductIndex(null);
+                          e.target.style.opacity = "1";
+                        }}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.dataTransfer.dropEffect = "move";
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          if (draggedProductIndex !== null) {
+                            reorderProducts(draggedProductIndex, index);
+                          }
+                        }}
+                        className={`grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[auto_72px_1fr_auto] sm:items-center transition-all cursor-move hover:shadow-md ${draggedProductIndex === index ? "bg-[#f9f9f9] border-[#e61951]/50" : "bg-white"}`}
+                      >
+                        <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1] text-[#9a9f9d] hover:text-[#e61951] cursor-grab active:cursor-grabbing">
+                          <GripVertical size={20} />
                         </div>
                         <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                         <div>

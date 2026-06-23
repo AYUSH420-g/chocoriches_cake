@@ -326,7 +326,7 @@ function RootLayout() {
                         item.isSpecial
                           ? "bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-black drop-shadow-sm hover:opacity-80"
                           : isActiveCategory(item.to) || isOpen
-                          ? "text-[#e61951] underline decoration-2 underline-offset-4"
+                          ? "text-[#e61951] decoration-2 underline-offset-4"
                           : "text-[#323635] hover:text-[#e61951]"
                       }`}
                     >
