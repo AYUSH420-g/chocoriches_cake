@@ -569,42 +569,44 @@ function ProductDetail() {
               )}
             </div>
 
-            <div className="mb-4">
-              <div className="mt-3 flex items-center justify-between">
-                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Base Flavour</h2>
-              </div>
-              <div className="mt-1">
-                <select
-                  value={baseFlavour}
-                  onChange={(e) => setBaseFlavour(e.target.value)}
-                  className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
-                >
-                  <option value="Chocolate base">Chocolate base</option>
-                  <option value="Vanilla base">Vanilla base</option>
-                </select>
-              </div>
+            {product.hasBaseAndCream !== false && (
+              <div className="mb-4">
+                <div className="mt-3 flex items-center justify-between">
+                  <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Base Flavour <span className="text-xs text-[#6f7573]">(this will not affect the outer look of cake)</span></h2>
+                </div>
+                <div className="mt-1">
+                  <select
+                    value={baseFlavour}
+                    onChange={(e) => setBaseFlavour(e.target.value)}
+                    className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                  >
+                    <option value="Chocolate base">Chocolate base</option>
+                    <option value="Vanilla base">Vanilla base</option>
+                  </select>
+                </div>
 
-              <div className="mt-4 flex items-center justify-between">
-                <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Cream Flavour</h2>
-              </div>
-              <div className="mt-1">
-                <select
-                  value={creamFlavour}
-                  onChange={(e) => setCreamFlavour(e.target.value)}
-                  className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
-                >
-                  <option value="Vanilla cream">Vanilla cream</option>
-                  <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
-                  <option value="Chocolate cream">Chocolate cream</option>
-                  <option value="Chocolate cream with chocolate chips">Chocolate cream with chocolate chips</option>
-                  <option value="Strawberry cream">Strawberry cream</option>
-                </select>
-              </div>
+                <div className="mt-4 flex items-center justify-between">
+                  <h2 className="text-sm font-normal text-[#1f2221] md:text-base">Select Cream Flavour <span className="text-xs text-[#6f7573]">(this will not affect the outer look of cake)</span></h2>
+                </div>
+                <div className="mt-1">
+                  <select
+                    value={creamFlavour}
+                    onChange={(e) => setCreamFlavour(e.target.value)}
+                    className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                  >
+                    <option value="Vanilla cream">Vanilla cream</option>
+                    <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
+                    <option value="Chocolate cream">Chocolate cream</option>
+                    <option value="Chocolate cream with chocolate chips">Chocolate cream with chocolate chips</option>
+                    <option value="Strawberry cream">Strawberry cream</option>
+                  </select>
+                </div>
 
-              <div className="mt-3 text-xs text-[#6f7573]">
-                <Link to="/contact" className="text-[#e61951] hover:underline font-semibold">Contact us</Link> for any other type of customization
+                <div className="mt-3 text-xs text-[#6f7573]">
+                  <Link to="/contact" className="text-[#e61951] hover:underline font-semibold">Contact us</Link> for any other type of customization
+                </div>
               </div>
-            </div>
+            )}
 
             <div className=" flex flex-wrap items-center gap-2">
               {product.numOfReviews > 0 && (

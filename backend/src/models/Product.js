@@ -42,6 +42,7 @@ const productSchema = new mongoose.Schema(
     isTrending: { type: Boolean, default: false, index: true },
     customizable: { type: Boolean, default: false },
     sameDayDelivery: { type: Boolean, default: false, index: true },
+    hasBaseAndCream: { type: Boolean, default: true },
     tags: [{ type: String }],
     sortOrder: { type: Number, default: 0 },
   },

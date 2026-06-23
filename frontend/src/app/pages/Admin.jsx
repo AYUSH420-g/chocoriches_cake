@@ -94,6 +94,7 @@ const emptyProduct = {
   isTrending: false,
   customizable: false,
   sameDayDelivery: false,
+  hasBaseAndCream: true,
   tags: "",
 };
 
@@ -442,6 +443,7 @@ function Admin() {
       isTrending: product.isTrending,
       customizable: product.customizable,
       sameDayDelivery: Boolean(product.sameDayDelivery),
+      hasBaseAndCream: product.hasBaseAndCream !== false,
     });
     setActiveTab("products");
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -721,7 +723,6 @@ function Admin() {
                     <ImageField value={productForm.image} onUrlChange={(value) => setProductForm({ ...productForm, image: value })} onFileChange={handleImageFile} />
                     <div className="grid gap-3 sm:grid-cols-2">
                       <MultiSelectField label="Categories" values={selectedCategories} options={categoryOptions} onToggle={toggleProductCategory} />
-                      <Field label="Stock" type="number" value={productForm.stock} onChange={(value) => setProductForm({ ...productForm, stock: value })} />
                     </div>
                     <Field label="Discount Percent" type="number" value={productForm.discountPercent} onChange={(value) => setProductForm({ ...productForm, discountPercent: value })} />
                     <GroupedSubcategoryField
@@ -761,13 +762,10 @@ function Admin() {
                       onPriceChange={updateProductWeight}
                       onDefaultChange={setDefaultWeight}
                     />
-                    <Textarea label="Short Description" value={productForm.description} onChange={(value) => setProductForm({ ...productForm, description: value })} />
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <TagsField label="Tags" value={productForm.tags} onChange={(value) => setProductForm({ ...productForm, tags: value })} placeholder="e.g. Vegan, Eggless" />
-                    </div>
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
-                        ["isActive", "Active"]
+                        ["isActive", "Active"],
+                        ["hasBaseAndCream", "Show Base & Cream Options"]
                       ].map(([key, label]) => (
                         <Check
                           key={key}
