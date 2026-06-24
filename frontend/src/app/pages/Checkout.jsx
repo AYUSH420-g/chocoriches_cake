@@ -50,7 +50,7 @@ function Checkout() {
 
 
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
   const rawDeliveryFee = cart.length ? (dynamicDeliveryFee !== null ? dynamicDeliveryFee : (siteSettings?.deliveryFee ?? 0)) : 0;
   const deliveryFee = deliveryOption === "pickup" ? 0 : rawDeliveryFee;
   const discount = 0;

@@ -41,7 +41,7 @@ function Cart() {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
   }, []);
 
-  const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
   const deliveryFee = 0; // Calculated at checkout
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
@@ -96,10 +96,19 @@ function Cart() {
                     <h2 className="text-[14px] font-[500] leading-5 text-[#1f2221] sm:text-lg">
                       {item.name}
                     </h2>
+                    {item.isStampReward && (
+                      <span className="mt-1 inline-block rounded-full bg-[#eefbf3] px-2 py-0.5 text-[10px] font-black text-[#0f8b57]">
+                        🎁 Loyalty Reward
+                      </span>
+                    )}
                     <div className="col-span-2 flex items-center pt-1 justify-between  text-left sm:col-auto sm:block sm:border-0 sm:pt-0 sm:text-right">
-                      <p className="text-[14px] font-[500] text-[#1f2221] sm:text-xl">
-                        {formatPrice(item.price * item.quantity)}
-                      </p>
+                      {item.isStampReward ? (
+                        <p className="text-[14px] font-[500] text-[#0f8b57] sm:text-xl">₹1</p>
+                      ) : (
+                        <p className="text-[14px] font-[500] text-[#1f2221] sm:text-xl">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
+                      )}
                       {/* <p className="mt-1 text-xs font-bold text-[#6f7573]">{formatPrice(item.price)} each</p> */}
                     </div>
                     <div className="mb-2 pt-1 flex flex-col gap-1">
@@ -118,30 +127,36 @@ function Cart() {
                     </div>
                     
                     <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
-                      <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-white">
-                        <button
-                          type="button"
-                          onClick={() =>
-                            handleQuantityChange(item.id, item.quantity - 1)
-                          }
-                          className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
-                        >
-                          <Minus size={10} />
-                        </button>
-                        <span className="w-6 text-center text-[10px] font-black">
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          disabled={item.quantity >= 9}
-                          onClick={() =>
-                            handleQuantityChange(item.id, item.quantity + 1)
-                          }
-                          className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
-                        >
-                          <Plus size={10} />
-                        </button>
-                      </div>
+                      {item.isStampReward ? (
+                        <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-[#f7f7f7] px-3">
+                          <span className="text-[10px] font-black text-[#6f7573]">Qty: 1</span>
+                        </div>
+                      ) : (
+                        <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-white">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              handleQuantityChange(item.id, item.quantity - 1)
+                            }
+                            className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
+                          >
+                            <Minus size={10} />
+                          </button>
+                          <span className="w-6 text-center text-[10px] font-black">
+                            {item.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            disabled={item.quantity >= 9}
+                            onClick={() =>
+                              handleQuantityChange(item.id, item.quantity + 1)
+                            }
+                            className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
+                          >
+                            <Plus size={10} />
+                          </button>
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={() => handleRemove(item.id)}

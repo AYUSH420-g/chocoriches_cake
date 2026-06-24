@@ -15,8 +15,9 @@ function StampSystem() {
   const [isSelectorOpen, setIsSelectorOpen] = useState(false);
   const [rewardProducts, setRewardProducts] = useState([]);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [addedRewardId, setAddedRewardId] = useState(null);
   
-  const { addProduct } = useCart();
+  const { cart, addProduct } = useCart();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -28,18 +29,32 @@ function StampSystem() {
     return () => window.removeEventListener(SESSION_EVENT, syncSession);
   }, []);
 
+  // Check if cart already has a stamp reward item
+  const hasRewardInCart = cart.some((item) => item.isStampReward);
+
+  useEffect(() => {
+    if (hasRewardInCart) {
+      const rewardItem = cart.find((item) => item.isStampReward);
+      if (rewardItem) setAddedRewardId(rewardItem.productId || rewardItem.id);
+    } else {
+      setAddedRewardId(null);
+    }
+  }, [cart, hasRewardInCart]);
+
   const stampCount = user?.stampCount || 0;
   const maxStamps = 5;
 
   const loadRewardProducts = async () => {
     setIsLoadingProducts(true);
     try {
-      const res = await getProductsPaginated({}, 1, 100);
+      const res = await getProductsPaginated({}, 1, 1000);
       const allProducts = res.products || [];
       const filtered = allProducts.filter(p => 
         p.isTrending || 
+        (p.categories && p.categories.some(c => c.toLowerCase().includes("bento"))) ||
         (p.category && p.category.toLowerCase().includes("bento")) ||
         (p.subcategory && p.subcategory.toLowerCase().includes("bento")) ||
+        (p.subcategories && p.subcategories.some(s => s.toLowerCase().includes("bento"))) ||
         (p.name && p.name.toLowerCase().includes("bento"))
       );
       setRewardProducts(filtered);
@@ -60,16 +75,21 @@ function StampSystem() {
   };
 
   const handleAddFreeItem = async (product) => {
+    if (hasRewardInCart) {
+      toast.error("You can only add one reward item.");
+      return;
+    }
     try {
       toast.loading("Adding to cart...");
       await addProduct(product, 1, product.defaultWeight || "Half Kg", "", "", true);
       toast.dismiss();
-      toast.success("Free item added to cart!");
+      toast.success("Reward item added to cart for ₹1!");
+      setAddedRewardId(product.id);
       setIsSelectorOpen(false);
       navigate("/cart");
     } catch (error) {
       toast.dismiss();
-      toast.error("Failed to add free item.");
+      toast.error("Failed to add reward item.");
     }
   };
 
@@ -78,10 +98,8 @@ function StampSystem() {
       <button
         onClick={() => setIsModalOpen(true)}
         className="relative flex h-10 w-8 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
-        aria-label="Loyalty Stamp Card"
-        title="Your Stamp Card"
       >
-        <CreditCard size={21} className="" />
+        <CreditCard size={22} />
       </button>
 
       <AnimatePresence>
@@ -112,7 +130,7 @@ function StampSystem() {
                 </div>
                 <h3 className="text-xl font-black text-[#1f2221]">Loyalty Card</h3>
                 <p className="mt-2 text-xs font-bold text-[#e61951]">
-                 Complete all stamps and grab your favorite Bento or Trending product at just ₹1!
+                  Fill this card by doing orders and get any one product for only ₹1 from bento or trending section!
                 </p>
               </div>
 
@@ -181,8 +199,8 @@ function StampSystem() {
             >
               <div className="flex shrink-0 items-center justify-between border-b border-[#ebebeb] p-5">
                 <div>
-                  <h3 className="text-lg font-black text-[#1f2221]">Select Your Free Item</h3>
-                  <p className="text-xs font-bold text-[#6f7573]">Choose from Bento or Trending products</p>
+                  <h3 className="text-lg font-black text-[#1f2221]">Select Your Reward Item</h3>
+                  <p className="text-xs font-bold text-[#6f7573]">Choose any one from Bento or Trending for just ₹1</p>
                 </div>
                 <button
                   onClick={() => setIsSelectorOpen(false)}
@@ -192,7 +210,7 @@ function StampSystem() {
                 </button>
               </div>
 
-              <div className="flex-1 overflow-y-auto p-5">
+              <div className="flex-1 overflow-y-auto p-4">
                 {isLoadingProducts ? (
                   <div className="flex h-full items-center justify-center text-sm font-bold text-[#6f7573]">
                     Loading reward options...
@@ -202,32 +220,41 @@ function StampSystem() {
                     No eligible products found.
                   </div>
                 ) : (
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {rewardProducts.map((product) => (
-                      <div key={product.id} className="overflow-hidden rounded-xl border border-[#ebebeb] bg-white transition hover:border-[#0f8b57]">
-                        <div className="aspect-[4/3] w-full overflow-hidden bg-[#f7f7f7]">
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="h-full w-full object-cover"
-                            loading="lazy"
-                          />
-                        </div>
-                        <div className="p-3">
-                          <p className="line-clamp-1 text-sm font-black text-[#1f2221]">{product.name}</p>
-                          <div className="mt-1 flex items-center gap-2">
-                            <span className="text-xs font-bold text-[#6f7573] line-through">{formatPrice(product.price)}</span>
-                            <span className="text-xs font-black text-[#0f8b57]">FREE</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    {rewardProducts.map((product) => {
+                      const isAdded = hasRewardInCart || addedRewardId === product.id;
+                      return (
+                        <div key={product.id} className="overflow-hidden rounded-xl border border-[#ebebeb] bg-white transition hover:border-[#0f8b57]">
+                          <div className="aspect-[4/3] w-full overflow-hidden bg-[#f7f7f7]">
+                            <img
+                              src={product.image}
+                              alt={product.name}
+                              className="h-full w-full object-cover"
+                              loading="lazy"
+                            />
                           </div>
-                          <button
-                            onClick={() => handleAddFreeItem(product)}
-                            className="mt-3 flex h-9 w-full items-center justify-center rounded-lg bg-[#eefbf3] text-xs font-black text-[#0f8b57] transition hover:bg-[#0f8b57] hover:text-white"
-                          >
-                            Add to Cart
-                          </button>
+                          <div className="p-2.5">
+                            <p className="line-clamp-1 text-xs font-black text-[#1f2221]">{product.name}</p>
+                            <div className="mt-1 flex items-center gap-2">
+                              <span className="text-[10px] font-bold text-[#6f7573] line-through">{formatPrice(product.price)}</span>
+                              <span className="text-xs font-black text-[#0f8b57]">₹1</span>
+                            </div>
+                            {isAdded ? (
+                              <div className="mt-2 flex h-8 w-full items-center justify-center rounded-lg bg-[#e8e8e8] text-[10px] font-black text-[#6f7573]">
+                                Added ✓
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleAddFreeItem(product)}
+                                className="mt-2 flex h-8 w-full items-center justify-center rounded-lg bg-[#eefbf3] text-[10px] font-black text-[#0f8b57] transition hover:bg-[#0f8b57] hover:text-white"
+                              >
+                                Add to Cart
+                              </button>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>

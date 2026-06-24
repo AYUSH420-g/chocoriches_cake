@@ -50,9 +50,22 @@ export async function addCartItem(req, res) {
 
   const requestedProductId = productId(product);
   const requestedSize = String(size || "Half Kg");
-  const nextQuantity = Math.max(1, Number(quantity) || 1);
+  const nextQuantity = isStampReward ? 1 : Math.max(1, Number(quantity) || 1);
   const owner = cartOwner(req);
   const requestedDate = String(deliveryDate || new Date().toISOString().slice(0, 10));
+
+  // Prevent adding more than 1 stamp reward item
+  if (isStampReward) {
+    const existingCartItems = isDatabaseConnected()
+      ? await CartItem.find(owner).lean()
+      : memory.cartItems.filter((item) => ownerMatches(item, owner));
+    const hasExistingReward = existingCartItems.some((item) => item.isStampReward);
+    if (hasExistingReward) {
+      res.status(422).json({ message: "You can only add one reward item." });
+      return;
+    }
+  }
+
   const capacity = await cakeCapacityStatus(requestedDate, nextQuantity, await ownerCartQuantity(owner, requestedDate));
   if (!capacity.allowed) {
     res.status(422).json({ message: capacity.message });
@@ -63,7 +76,12 @@ export async function addCartItem(req, res) {
     const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour, creamFlavour, isStampReward });
     if (existingItem) {
       Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
-      existingItem.quantity += nextQuantity;
+      if (isStampReward) {
+        existingItem.quantity = 1;
+        existingItem.price = 1;
+      } else {
+        existingItem.quantity += nextQuantity;
+      }
       await existingItem.save();
       res.status(200).json(existingItem.toObject());
       return;
@@ -74,17 +92,24 @@ export async function addCartItem(req, res) {
     );
     if (existingItem) {
       Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
-      existingItem.quantity += nextQuantity;
+      if (isStampReward) {
+        existingItem.quantity = 1;
+        existingItem.price = 1;
+      } else {
+        existingItem.quantity += nextQuantity;
+      }
       res.status(200).json(existingItem);
       return;
     }
   }
 
+  const snapshot = productCartSnapshot(product, requestedSize);
   const item = {
     id: `${requestedProductId}-${Date.now()}`,
     productId: requestedProductId,
     ...owner,
-    ...productCartSnapshot(product, requestedSize),
+    ...snapshot,
+    price: isStampReward ? 1 : snapshot.price,
     size: requestedSize,
     weight: requestedSize,
     quantity: nextQuantity,
@@ -115,6 +140,10 @@ export async function updateCartItem(req, res) {
   const currentItem = cartItems.find((item) => item.id === req.params.id);
   
   if (updates.quantity && currentItem) {
+    // Stamp reward items are locked at quantity 1
+    if (currentItem.isStampReward) {
+      updates.quantity = 1;
+    }
     const requestedDate = currentItem.deliveryDate || String(new Date().toISOString().slice(0, 10));
     // only count reserved quantity for the same date!
     const reservedQuantity = cartItems.reduce((count, item) => count + ((item.id === req.params.id || item.deliveryDate !== requestedDate) ? 0 : Number(item.quantity || 0)), 0);

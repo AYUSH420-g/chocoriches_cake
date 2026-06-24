@@ -86,7 +86,7 @@ export async function createOrder(req, res) {
       : Number(ci.price || 0);
 
     if (ci.isStampReward && userRecord && userRecord.stampCount >= 5) {
-      verifiedPrice = 0;
+      verifiedPrice = 1;
       isStampRewardOrder = true;
     }
 
@@ -114,7 +114,7 @@ export async function createOrder(req, res) {
         : 0;
 
       if (ri.isStampReward && userRecord && userRecord.stampCount >= 5) {
-        verifiedPrice = 0;
+        verifiedPrice = 1;
         isStampRewardOrder = true;
       }
 
