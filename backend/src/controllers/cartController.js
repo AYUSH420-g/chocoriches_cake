@@ -19,12 +19,16 @@ function ownerMatches(item, owner) {
   return Object.entries(owner).every(([key, value]) => String(item[key] || "") === String(value));
 }
 
-async function ownerCartQuantity(owner) {
+async function ownerCartQuantity(owner, requestedDate) {
   const cartItems = isDatabaseConnected()
     ? await CartItem.find(owner).lean()
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
 
-  return cartItems.reduce((count, item) => count + Number(item.quantity || 0), 0);
+  return cartItems.reduce((count, item) => {
+    const itemDate = item.deliveryDate || String(new Date().toISOString().slice(0, 10));
+    if (requestedDate && itemDate !== requestedDate) return count;
+    return count + Number(item.quantity || 0);
+  }, 0);
 }
 
 export async function getCart(req, res) {
@@ -49,7 +53,7 @@ export async function addCartItem(req, res) {
   const nextQuantity = Math.max(1, Number(quantity) || 1);
   const owner = cartOwner(req);
   const requestedDate = String(deliveryDate || new Date().toISOString().slice(0, 10));
-  const capacity = await cakeCapacityStatus(requestedDate, nextQuantity, await ownerCartQuantity(owner));
+  const capacity = await cakeCapacityStatus(requestedDate, nextQuantity, await ownerCartQuantity(owner, requestedDate));
   if (!capacity.allowed) {
     res.status(422).json({ message: capacity.message });
     return;
@@ -86,6 +90,7 @@ export async function addCartItem(req, res) {
     quantity: nextQuantity,
     baseFlavour,
     creamFlavour,
+    deliveryDate: requestedDate,
     isStampReward,
   };
 
@@ -109,9 +114,10 @@ export async function updateCartItem(req, res) {
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
   const currentItem = cartItems.find((item) => item.id === req.params.id);
   
-  if (updates.quantity) {
-    const reservedQuantity = cartItems.reduce((count, item) => count + (item.id === req.params.id ? 0 : Number(item.quantity || 0)), 0);
-    const requestedDate = String(req.body.deliveryDate || new Date().toISOString().slice(0, 10));
+  if (updates.quantity && currentItem) {
+    const requestedDate = currentItem.deliveryDate || String(new Date().toISOString().slice(0, 10));
+    // only count reserved quantity for the same date!
+    const reservedQuantity = cartItems.reduce((count, item) => count + ((item.id === req.params.id || item.deliveryDate !== requestedDate) ? 0 : Number(item.quantity || 0)), 0);
     const capacity = await cakeCapacityStatus(requestedDate, updates.quantity, reservedQuantity);
     if (currentItem && !capacity.allowed) {
       res.status(422).json({ message: capacity.message });

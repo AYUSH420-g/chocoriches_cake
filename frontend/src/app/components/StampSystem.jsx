@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, Gift } from "lucide-react";
+import { X, Gift, CreditCard } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
 import { getProductsPaginated } from "../api/client";
@@ -80,14 +80,12 @@ function StampSystem() {
       <button
         onClick={() => setIsModalOpen(true)}
         className="relative flex h-10 w-10 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
-        aria-label="Stamp Card"
+        aria-label="Loyalty Stamp Card"
         title="Your Stamp Card"
       >
-        <span className="flex h-6 w-6 items-center justify-center rounded-md border-2 border-current font-black text-sm">
-          C
-        </span>
+        <CreditCard size={24} className="text-[#e61951] rotate-[-5deg]" strokeWidth={2.5} />
         {stampCount > 0 && (
-          <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0f8b57] px-1 text-[10px] font-black leading-none text-white">
+          <span className="absolute right-1.5 top-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#0f8b57] px-1 text-[10px] font-black leading-none text-white border border-white">
             {stampCount}
           </span>
         )}
