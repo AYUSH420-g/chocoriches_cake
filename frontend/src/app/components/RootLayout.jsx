@@ -225,10 +225,7 @@ function RootLayout() {
               <Menu size={20} />
             </button>
 
-            <Link to="/" className="flex min-w-0 shrink-0 items-center gap-2 pr-1 md:pr-2" aria-label="ChocoRiches home">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:h-10 md:w-10">
-                <CakeSlice size={21} />
-              </span>
+            <Link to="/" className="flex min-w-0 shrink-0 items-center pr-1 md:pr-2" aria-label="ChocoRiches home">
               <span className="min-w-0 leading-none">
                 <span className="block truncate text-[20px] font-black tracking-tight text-[#e61951] md:text-[22px]">ChocoRiches</span>
                 <span className="hidden text-[10px] font-bold uppercase tracking-[0.18em] text-[#6f7573] sm:block">Fresh Cakes Online</span>
@@ -406,8 +403,7 @@ function RootLayout() {
               className="fixed inset-y-0 left-0 z-[70] flex w-[65vw] max-w-[280px] flex-col bg-white shadow-2xl"
             >
               <div className="flex h-16 items-center justify-between border-b border-[#ebebeb] px-5">
-                <Link to="/" className="flex items-center gap-2 text-xl font-black text-[#e61951]">
-                  <CakeSlice size={22} />
+                <Link to="/" className="flex items-center text-xl font-black text-[#e61951]">
                   ChocoRiches
                 </Link>
                 <button type="button" aria-label="Close menu" title="Close" onClick={() => setIsMenuOpen(false)} className="grid h-10 w-10 place-items-center rounded-full bg-[#f7f7f7]">

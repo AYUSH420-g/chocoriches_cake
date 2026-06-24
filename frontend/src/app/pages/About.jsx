@@ -5,9 +5,6 @@ export default function About() {
     <div className="bk-page min-h-screen bg-[#f7f7f7] py-6 md:py-20">
       <div className="bk-shell max-w-4xl mx-auto">
         <div className="mb-6 text-center md:mb-12">
-          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-16 md:w-16">
-            <CakeSlice size={28} />
-          </span>
           <h1 className="text-2xl font-black tracking-tight text-[#1f2221] sm:text-5xl">
             About ChocoRiches
           </h1>

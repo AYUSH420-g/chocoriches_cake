@@ -18,9 +18,8 @@ export default function FullScreenLoader({ visible = false }) {
             exit={{ opacity: 0, scale: 0.85 }}
             className="flex flex-col items-center gap-3"
           >
-            <div className="relative grid h-16 w-16 place-items-center">
+            <div className="relative grid h-10 w-10 place-items-center">
               <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e61951]" />
-              <CakeSlice size={24} className="text-[#e61951]" />
             </div>
             <p className="text-sm font-bold text-[#6f7573]">Please wait...</p>
           </motion.div>

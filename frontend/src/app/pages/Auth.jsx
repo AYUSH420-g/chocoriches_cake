@@ -146,11 +146,7 @@ function Auth() {
           </div>
         </div>
 
-        <div className="relative -mt-8 rounded-t-[28px] bg-white px-6 pb-10 pt-16 shadow-[0_-10px_22px_rgba(0,0,0,0.08)]">
-          <div className="absolute left-1/2 top-0 grid h-18 w-18 -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full bg-white text-[#e61951] shadow-lg shadow-black/15">
-            <CakeSlice size={32} />
-            
-          </div>
+        <div className="relative -mt-8 rounded-t-[28px] bg-white px-6 pb-10 pt-8 shadow-[0_-10px_22px_rgba(0,0,0,0.08)]">
 
           <div className="text-center">
             <h1 className="text-[18px] font-black leading-tight text-[#171a17] sm:text-[28px]">
@@ -224,7 +220,6 @@ function Auth() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-black/10 to-black/60" />
             <div className="relative z-10 flex h-full flex-col justify-between text-white">
               <Link to="/" className="flex items-center gap-2 text-2xl font-black">
-                <CakeSlice size={28} />
                 ChocoRiches
               </Link>
               <div>

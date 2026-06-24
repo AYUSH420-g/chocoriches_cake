@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { CakeSlice } from "lucide-react";
+import { Loader } from "lucide-react";
 
 export default function PageLoader() {
   return (
@@ -12,9 +12,9 @@ export default function PageLoader() {
         <motion.span
           animate={{ rotate: 360 }}
           transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
-          className="grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]"
+          className="grid h-12 w-12 place-items-center text-[#e61951]"
         >
-          <CakeSlice size={26} />
+          <Loader size={32} />
         </motion.span>
         <p className="text-sm font-bold text-[#6f7573]">Loading...</p>
       </motion.div>
