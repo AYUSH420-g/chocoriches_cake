@@ -165,12 +165,14 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
   const tomorrowIso = toIso(tomorrow);
   const minDate = isSameDay ? today : tomorrow;
 
+  const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : "")));
+
   const options = [];
   if (isSameDay) {
-    options.push({ key: "today", label: "Today", sub: shortDate(today), value: todayIso });
+    options.push({ key: "today", label: "Today", sub: shortDate(today), value: todayIso, isDisabled: blockedSet.has(todayIso) });
   }
-  options.push({ key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso });
-  options.push({ key: "later", label: "Later", sub: null, value: null });
+  options.push({ key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso, isDisabled: blockedSet.has(tomorrowIso) });
+  options.push({ key: "later", label: "Later", sub: null, value: null, isDisabled: false });
 
   const isLaterSelected = selectedDate && selectedDate !== todayIso && selectedDate !== tomorrowIso;
 
@@ -185,6 +187,7 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
               <button
                 key={opt.key}
                 type="button"
+                disabled={opt.isDisabled}
                 onClick={() => {
                   if (opt.value) {
                     onSelect(opt.value);
@@ -193,9 +196,11 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
                   }
                 }}
                 className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2 transition ${
-                  isActive
-                    ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
-                    : "border-[#36363670] bg-transparent hover:border-[#e61951]"
+                  opt.isDisabled
+                    ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
+                    : isActive
+                      ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
+                      : "border-[#36363670] bg-transparent hover:border-[#e61951]"
                 }`}
               >
                 <span className="text-sm font-semibold text-[#1f2221]">{opt.label}</span>
@@ -294,7 +299,6 @@ function ProductDetail() {
           setLoading(false);
         }
       });
-      
     getBlockedDates().then((dates) => {
       if (mounted) setBlockedDates(dates || []);
     }).catch(() => void 0);
@@ -343,6 +347,23 @@ function ProductDetail() {
       sessionStorage.setItem("chocoriches_delivery_date", deliveryDate);
     }
   }, [deliveryDate]);
+
+  useEffect(() => {
+    if (blockedDates.length > 0 && deliveryDate) {
+      const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : "")));
+      if (blockedSet.has(deliveryDate)) {
+        let currentIso = deliveryDate;
+        let daysOffset = product?.sameDayDelivery && new Date().getHours() >= 6 && new Date().getHours() < 18 ? 0 : 1;
+        
+        currentIso = toIso(localDate(daysOffset));
+        while (blockedSet.has(currentIso) && daysOffset < 30) {
+          daysOffset++;
+          currentIso = toIso(localDate(daysOffset));
+        }
+        setDeliveryDate(currentIso);
+      }
+    }
+  }, [blockedDates, deliveryDate, product]);
 
   useEffect(() => {
     if (!product?.id) {

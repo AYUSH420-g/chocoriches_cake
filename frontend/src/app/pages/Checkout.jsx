@@ -3,11 +3,11 @@ import { Link, useNavigate } from "react-router";
 import { CheckCircle2, ChevronRight, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase, Package } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings } from "../api/client";
+import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings, getProfile } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice, priceToRupees } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
-import { getStoredUser, getGuestUser, saveGuestUser } from "../utils/session";
+import { getStoredUser, getGuestUser, saveGuestUser, saveUserSession } from "../utils/session";
 import FullScreenLoader from "../components/FullScreenLoader";
 
 const steps = ["Details", "Review"];
@@ -83,6 +83,12 @@ function Checkout() {
       await clearCart().catch(() => void 0);
       toast.success("Order placed successfully");
       setPlacedOrder(order);
+      
+      if (storedUser) {
+        getProfile().then(profile => {
+          if (profile) saveUserSession({ user: profile });
+        }).catch(() => void 0);
+      }
     } catch (error) {
       setLoading(false);
       toast.error(error.message || "Order could not be placed for this pincode or date");
