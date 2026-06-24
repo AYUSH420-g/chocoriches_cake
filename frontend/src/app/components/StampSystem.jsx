@@ -28,9 +28,7 @@ function StampSystem() {
     return () => window.removeEventListener(SESSION_EVENT, syncSession);
   }, []);
 
-  if (!loggedIn || !user) return null;
-
-  const stampCount = user.stampCount || 0;
+  const stampCount = user?.stampCount || 0;
   const maxStamps = 5;
 
   const loadRewardProducts = async () => {
@@ -79,11 +77,11 @@ function StampSystem() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="relative flex h-10 w-10 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
+        className="relative flex h-10 w-8 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
         aria-label="Loyalty Stamp Card"
         title="Your Stamp Card"
       >
-        <CreditCard size={21} className="rotate-[-5deg]" />
+        <CreditCard size={21} className="" />
       </button>
 
       <AnimatePresence>

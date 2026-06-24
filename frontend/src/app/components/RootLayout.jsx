@@ -258,7 +258,7 @@ function RootLayout() {
               />
             </form>
 
-            <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-2">
               <Link
                 to="/track"
                 title="Track order"
