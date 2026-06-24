@@ -129,9 +129,8 @@ function StampSystem() {
                   <Gift size={28} />
                 </div>
                 <h3 className="text-xl font-black text-[#1f2221]">Loyalty Card</h3>
-                <p className="mt-2 text-xs font-bold text-[#e61951]">
-                  Fill this card by doing orders and get any one product for only ₹1 from bento or trending section!
-                </p>
+                <p className="mt-2 text-sm font-bold text-[#e61951]">
+              Fill this card with your orders and grab any Bento or Trending item for only ₹1!  </p>
               </div>
 
               <div className="p-6">
