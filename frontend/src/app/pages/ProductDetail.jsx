@@ -165,13 +165,17 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
   const tomorrowIso = toIso(tomorrow);
   const minDate = isSameDay ? today : tomorrow;
 
-  const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : "")));
+  const blockedMap = new Map();
+  blockedDates.forEach((d) => {
+    if (typeof d === "string") blockedMap.set(d.slice(0, 10), "Unavailable");
+    else if (d && d.date) blockedMap.set(d.date.slice(0, 10), d.reason || "Unavailable");
+  });
 
   const options = [];
   if (isSameDay) {
-    options.push({ key: "today", label: "Today", sub: shortDate(today), value: todayIso, isDisabled: blockedSet.has(todayIso) });
+    options.push({ key: "today", label: "Today", sub: shortDate(today), value: todayIso, isDisabled: blockedMap.has(todayIso), reason: blockedMap.get(todayIso) });
   }
-  options.push({ key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso, isDisabled: blockedSet.has(tomorrowIso) });
+  options.push({ key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso, isDisabled: blockedMap.has(tomorrowIso), reason: blockedMap.get(tomorrowIso) });
   options.push({ key: "later", label: "Later", sub: null, value: null, isDisabled: false });
 
   const isLaterSelected = selectedDate && selectedDate !== todayIso && selectedDate !== tomorrowIso;
@@ -219,6 +223,13 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
             );
           })}
         </div>
+        {options.some(opt => opt.isDisabled && opt.value) && (
+          <div className="mt-2 space-y-0.5 text-[11px] font-bold text-red-500">
+            {options.filter(opt => opt.isDisabled && opt.value).map(opt => (
+              <p key={opt.key}>* {opt.label} is blocked: {opt.reason}</p>
+            ))}
+          </div>
+        )}
       </div>
 
       <AnimatePresence>
@@ -350,7 +361,11 @@ function ProductDetail() {
 
   useEffect(() => {
     if (blockedDates.length > 0 && deliveryDate) {
-      const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : "")));
+      const blockedSet = new Set(blockedDates.map((d) => {
+        if (typeof d === "string") return d.slice(0, 10);
+        if (d && d.date) return d.date.slice(0, 10);
+        return "";
+      }));
       if (blockedSet.has(deliveryDate)) {
         let currentIso = deliveryDate;
         let daysOffset = product?.sameDayDelivery && new Date().getHours() >= 6 && new Date().getHours() < 18 ? 0 : 1;
