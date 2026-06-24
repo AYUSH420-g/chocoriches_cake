@@ -166,10 +166,15 @@ function Checkout() {
       await placeOrder(nextCheckoutData, { mode: "offline-fallback" });
     }
   };
+  useEffect(() => {
+    if (placedOrder) {
+      window.scrollTo(0, 0);
+    }
+  }, [placedOrder]);
 
   if (placedOrder) {
     return (
-    <div className="bk-page grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-8 md:py-12">
+    <div className="bk-page grid place-items-center bg-[#f7f7f7] px-4 py-16 md:py-24 min-h-[60vh] lg:min-h-[70vh]">
         <div className="bk-card w-full max-w-md rounded-lg border border-[#ebebeb] bg-white p-6 text-center shadow-xl md:rounded-2xl md:p-8">
           <div className="mb-6">
             <motion.div
