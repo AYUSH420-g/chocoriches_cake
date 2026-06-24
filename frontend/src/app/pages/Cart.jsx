@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
-import { ArrowRight, BadgePercent, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck } from "lucide-react";
-import { motion } from "motion/react";
-import { getPublicSettings } from "../api/client";
+import { ArrowRight, BadgePercent, Calendar, ChevronLeft, ChevronRight, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck, X } from "lucide-react";
+import { motion, AnimatePresence } from "motion/react";
+import { getBlockedDates, getPublicSettings } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import {
@@ -18,11 +18,217 @@ import {
 } from "../components/ui/alert-dialog";
 import DeliveryTimeSlotSelector from "../components/DeliveryTimeSlotSelector";
 
+/* ── date helpers ── */
+function localDate(offsetDays = 0) {
+  const d = new Date();
+  d.setDate(d.getDate() + offsetDays);
+  return d;
+}
+
+function toIso(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function shortDate(date) {
+  return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short" });
+}
+
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WEEK_DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+function CartCalendarModal({ minDate, blockedDates, selectedDate, onSelect, onClose }) {
+  const [viewMonth, setViewMonth] = useState(minDate.getMonth());
+  const [viewYear, setViewYear] = useState(minDate.getFullYear());
+
+  const minIso = toIso(minDate);
+  const blockedSet = new Set(blockedDates.map((d) => (typeof d === "string" ? d.slice(0, 10) : d?.date?.slice(0, 10) || "")));
+
+  const firstDayOfMonth = new Date(viewYear, viewMonth, 1).getDay();
+  const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+  const canGoPrev = viewYear > minDate.getFullYear() || (viewYear === minDate.getFullYear() && viewMonth > minDate.getMonth());
+
+  const cells = [];
+  for (let i = 0; i < firstDayOfMonth; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+  const prevMonth = () => {
+    if (!canGoPrev) return;
+    if (viewMonth === 0) { setViewMonth(11); setViewYear(viewYear - 1); }
+    else setViewMonth(viewMonth - 1);
+  };
+  const nextMonth = () => {
+    if (viewMonth === 11) { setViewMonth(0); setViewYear(viewYear + 1); }
+    else setViewMonth(viewMonth + 1);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4 backdrop-blur-sm" onClick={onClose}>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 12 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 12 }}
+        transition={{ duration: 0.2 }}
+        onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[360px] rounded-2xl bg-white shadow-2xl"
+      >
+        <div className="flex items-center justify-between border-b border-[#ebebeb] px-5 py-4">
+          <h3 className="text-base font-black text-[#1f2221]">Select Delivery Date</h3>
+          <button type="button" onClick={onClose} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7]">
+            <X size={18} className="text-[#6f7573]" />
+          </button>
+        </div>
+        <div className="flex items-center justify-between px-5 py-3">
+          <button type="button" onClick={prevMonth} disabled={!canGoPrev} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7] disabled:opacity-30">
+            <ChevronLeft size={18} />
+          </button>
+          <span className="text-sm font-black text-[#1f2221]">{MONTHS[viewMonth]} {viewYear}</span>
+          <button type="button" onClick={nextMonth} className="grid h-8 w-8 place-items-center rounded-full hover:bg-[#f7f7f7]">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+        <div className="grid grid-cols-7 px-4 pb-1">
+          {WEEK_DAYS.map((day) => (
+            <span key={day} className="text-center text-[11px] font-bold text-[#9a9f9d]">{day}</span>
+          ))}
+        </div>
+        <div className="grid grid-cols-7 gap-y-1 px-4 pb-5">
+          {cells.map((day, i) => {
+            if (day === null) return <span key={`e-${i}`} />;
+            const dateObj = new Date(viewYear, viewMonth, day);
+            const iso = toIso(dateObj);
+            const isPast = iso < minIso;
+            const isBlocked = blockedSet.has(iso);
+            const isDisabled = isPast || isBlocked;
+            const isSelected = selectedDate === iso;
+            return (
+              <button
+                key={iso}
+                type="button"
+                disabled={isDisabled}
+                onClick={() => { onSelect(iso); onClose(); }}
+                className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition ${
+                  isSelected
+                    ? "bg-[#e61951] text-white shadow-md shadow-[#e61951]/30"
+                    : isDisabled
+                      ? "cursor-not-allowed text-[#d5d8d6] opacity-40"
+                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                }`}
+              >
+                {day}
+              </button>
+            );
+          })}
+        </div>
+      </motion.div>
+    </div>
+  );
+}
+
+function RewardDeliveryDatePicker({ selectedDate, onSelect, blockedDates }) {
+  const [showCalendar, setShowCalendar] = useState(false);
+  const today = localDate(0);
+  const tomorrow = localDate(1);
+  const todayIso = toIso(today);
+  const tomorrowIso = toIso(tomorrow);
+
+  const blockedMap = new Map();
+  blockedDates.forEach((d) => {
+    if (typeof d === "string") blockedMap.set(d.slice(0, 10), "Unavailable");
+    else if (d && d.date) blockedMap.set(d.date.slice(0, 10), d.reason || "Unavailable");
+  });
+
+  const options = [
+    { key: "today", label: "Today", sub: shortDate(today), value: todayIso, isDisabled: blockedMap.has(todayIso), reason: blockedMap.get(todayIso) },
+    { key: "tomorrow", label: "Tomorrow", sub: shortDate(tomorrow), value: tomorrowIso, isDisabled: blockedMap.has(tomorrowIso), reason: blockedMap.get(tomorrowIso) },
+    { key: "later", label: "Later", sub: null, value: null, isDisabled: false },
+  ];
+
+  const isLaterSelected = selectedDate && selectedDate !== todayIso && selectedDate !== tomorrowIso;
+
+  return (
+    <>
+      <div className="mt-3">
+        <h2 className="mb-2 text-xs font-black text-[#1f2221] flex items-center gap-1.5">
+          <Calendar size={13} className="text-[#6f7573]" />
+          Select Delivery Date
+        </h2>
+        <div className="grid grid-cols-3 gap-2">
+          {options.map((opt) => {
+            const isActive = opt.value ? selectedDate === opt.value : isLaterSelected;
+            return (
+              <button
+                key={opt.key}
+                type="button"
+                disabled={opt.isDisabled}
+                onClick={() => {
+                  if (opt.value) {
+                    onSelect(opt.value);
+                  } else {
+                    setShowCalendar(true);
+                  }
+                }}
+                className={`flex flex-col items-center justify-center gap-0.5 rounded-lg border px-2 py-2 transition ${
+                  opt.isDisabled
+                    ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
+                    : isActive
+                      ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
+                      : "border-[#36363670] bg-transparent hover:border-[#e61951]"
+                }`}
+              >
+                <span className="text-xs font-semibold text-[#1f2221]">{opt.label}</span>
+                {opt.sub ? (
+                  <span className="text-[10px] text-[#6f7573]">{opt.sub}</span>
+                ) : isLaterSelected ? (
+                  <span className="text-[10px] text-[#e61951] font-bold">
+                    {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-[10px] text-[#6f7573]">
+                    <Calendar size={9} /> Pick date
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+        {options.some(opt => opt.isDisabled && opt.value) && (
+          <div className="mt-2 space-y-0.5 text-[11px] font-bold text-red-500">
+            {options.filter(opt => opt.isDisabled && opt.value).map(opt => (
+              <p key={opt.key}>* {opt.label} is blocked: {opt.reason}</p>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <AnimatePresence>
+        {showCalendar && (
+          <CartCalendarModal
+            minDate={today}
+            blockedDates={blockedDates}
+            selectedDate={selectedDate}
+            onSelect={onSelect}
+            onClose={() => setShowCalendar(false)}
+          />
+        )}
+      </AnimatePresence>
+    </>
+  );
+}
+
 function Cart() {
   const { cart, removeItem, setQuantity, setMessageOnCake } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
+  const [blockedDates, setBlockedDates] = useState([]);
+  const [deliveryDate, setDeliveryDate] = useState(
+    () => sessionStorage.getItem("chocoriches_delivery_date") || ""
+  );
   const navigate = useNavigate();
+
+  const hasRewardInCart = cart.some((item) => item.isStampReward);
 
   const handleProceed = (e) => {
     e.preventDefault();
@@ -37,8 +243,14 @@ function Cart() {
     navigate("/checkout");
   };
 
+  const handleDeliveryDateSelect = (date) => {
+    setDeliveryDate(date);
+    sessionStorage.setItem("chocoriches_delivery_date", date);
+  };
+
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
+    getBlockedDates().then((dates) => setBlockedDates(dates || [])).catch(() => void 0);
   }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
@@ -179,6 +391,13 @@ function Cart() {
                   </div>
                   {index === cart.length - 1 && (
                     <div className="col-span-2 sm:col-span-3 mt-1 w-full">
+                      {hasRewardInCart && (
+                        <RewardDeliveryDatePicker
+                          selectedDate={deliveryDate}
+                          onSelect={handleDeliveryDateSelect}
+                          blockedDates={blockedDates}
+                        />
+                      )}
                       <DeliveryTimeSlotSelector />
                     </div>
                   )}

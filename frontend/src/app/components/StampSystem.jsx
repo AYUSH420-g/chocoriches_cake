@@ -51,10 +51,10 @@ function StampSystem() {
       const allProducts = res.products || [];
       const filtered = allProducts.filter(p => 
         p.isTrending || 
-        (p.categories && p.categories.some(c => c.toLowerCase().includes("bento"))) ||
-        (p.category && p.category.toLowerCase().includes("bento")) ||
-        (p.subcategory && p.subcategory.toLowerCase().includes("bento")) ||
-        (p.subcategories && p.subcategories.some(s => s.toLowerCase().includes("bento"))) ||
+        (p.categories && p.categories.some(c => c.toLowerCase().includes("bento") || c.toLowerCase().includes("trending"))) ||
+        (p.category && (p.category.toLowerCase().includes("bento") || p.category.toLowerCase().includes("trending"))) ||
+        (p.subcategory && (p.subcategory.toLowerCase().includes("bento") || p.subcategory.toLowerCase().includes("trending"))) ||
+        (p.subcategories && p.subcategories.some(s => s.toLowerCase().includes("bento") || s.toLowerCase().includes("trending"))) ||
         (p.name && p.name.toLowerCase().includes("bento"))
       );
       setRewardProducts(filtered);
