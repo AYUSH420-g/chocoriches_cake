@@ -112,7 +112,7 @@ function StampSystem() {
                 </div>
                 <h3 className="text-xl font-black text-[#1f2221]">Loyalty Card</h3>
                 <p className="mt-2 text-xs font-bold text-[#e61951]">
-                  Fill this card by doing orders and get any one product for free from bento or trending section!
+                 Complete all stamps and grab your favorite Bento or Trending product at just ₹1!
                 </p>
               </div>
 
