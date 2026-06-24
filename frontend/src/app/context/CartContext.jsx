@@ -58,9 +58,9 @@ function CartProvider({ children }) {
   }, [refreshCart]);
 
   const addProduct = useCallback(
-    async (product, quantity = 1, size = "Half Kg", baseFlavour = "", creamFlavour = "") => {
+    async (product, quantity = 1, size = "Half Kg", baseFlavour = "", creamFlavour = "", isStampReward = false) => {
       const deliveryDate = sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10);
-      const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour, deliveryDate });
+      const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour, deliveryDate, isStampReward });
       await refreshCart();
       return item;
     },

@@ -21,6 +21,7 @@ import { getPublicSettings, getCategories, getSubcategories } from "../api/clien
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT, getGuestUser } from "../utils/session";
 import TopLoader from "./TopLoader";
+import StampSystem from "./StampSystem";
 
 
 
@@ -269,6 +270,8 @@ function RootLayout() {
                 <Truck size={19} className="text-[#e61951]" />
                 Track Order
               </Link>
+              
+              <StampSystem />
               
               <Link
                 to="/cart"

@@ -16,6 +16,7 @@ const cartItemSchema = new mongoose.Schema(
     messageOnCake: { type: String },
     baseFlavour: { type: String },
     creamFlavour: { type: String },
+    isStampReward: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

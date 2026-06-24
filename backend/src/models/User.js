@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema(
     blockedReason: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
+    stampCount: { type: Number, default: 0 },
     addresses: [addressSchema],
   },
   { timestamps: true }

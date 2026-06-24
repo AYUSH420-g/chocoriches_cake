@@ -1,5 +1,6 @@
 import { isDatabaseConnected } from "../db.js";
 import { Order } from "../models/Order.js";
+import { User } from "../models/User.js";
 import { Product } from "../models/Product.js";
 import { CartItem } from "../models/CartItem.js";
 import { cakeCapacityStatus, isDeliveryDateBlocked, pincodeStatus } from "../services/availabilityService.js";
@@ -72,11 +73,23 @@ export async function createOrder(req, res) {
   // For each cart item, verify price against the Product DB
   let serverTotal = 0;
   const items = [];
+  let isStampRewardOrder = false;
+  let userRecord = null;
+  if (isDatabaseConnected() && customerEmail) {
+    userRecord = await User.findOne({ email: customerEmail });
+  }
+
   for (const ci of cartItems) {
     const dbProduct = await findProductForCart(ci.productId);
-    const verifiedPrice = dbProduct
+    let verifiedPrice = dbProduct
       ? productPriceForWeight(dbProduct, ci.size || ci.weight || "")
       : Number(ci.price || 0);
+
+    if (ci.isStampReward && userRecord && userRecord.stampCount >= 5) {
+      verifiedPrice = 0;
+      isStampRewardOrder = true;
+    }
+
     const qty = Math.max(1, parseInt(ci.quantity, 10) || 1);
     serverTotal += verifiedPrice * qty;
     items.push({
@@ -88,6 +101,7 @@ export async function createOrder(req, res) {
       messageOnCake: ci.messageOnCake || "",
       baseFlavour: ci.baseFlavour || "",
       creamFlavour: ci.creamFlavour || "",
+      isStampReward: ci.isStampReward || false,
     });
   }
 
@@ -95,9 +109,15 @@ export async function createOrder(req, res) {
   if (items.length === 0 && rawItems.length > 0) {
     for (const ri of rawItems) {
       const dbProduct = ri.productId ? await findProductForCart(ri.productId) : null;
-      const verifiedPrice = dbProduct
+      let verifiedPrice = dbProduct
         ? productPriceForWeight(dbProduct, ri.size || "")
         : 0;
+
+      if (ri.isStampReward && userRecord && userRecord.stampCount >= 5) {
+        verifiedPrice = 0;
+        isStampRewardOrder = true;
+      }
+
       const qty = Math.max(1, parseInt(ri.quantity, 10) || 1);
       serverTotal += verifiedPrice * qty;
       items.push({
@@ -109,6 +129,7 @@ export async function createOrder(req, res) {
         messageOnCake: ri.messageOnCake || "",
         baseFlavour: ri.baseFlavour || "",
         creamFlavour: ri.creamFlavour || "",
+        isStampReward: ri.isStampReward || false,
       });
     }
   }
@@ -162,10 +183,20 @@ export async function createOrder(req, res) {
     deliveryTimeSlot: String(req.body.deliveryTimeSlot || "").trim(),
     deliveryOption,
     payment: req.body.payment || {},
+    isStampRewardOrder,
   };
 
   if (isDatabaseConnected()) {
     const created = await Order.create(order);
+    
+    if (userRecord) {
+      if (isStampRewardOrder) {
+        userRecord.stampCount = 0;
+      } else {
+        userRecord.stampCount = Math.min(5, (userRecord.stampCount || 0) + 1);
+      }
+      await userRecord.save();
+    }
     
     const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
     const adminEmailContent = `
@@ -204,6 +235,17 @@ Pincode: ${deliveryPincode}
 
   memory.orders.push(order);
   
+  if (customerEmail) {
+    const memoryUser = memory.users.find((u) => String(u.email).toLowerCase() === customerEmail.toLowerCase());
+    if (memoryUser) {
+      if (isStampRewardOrder) {
+        memoryUser.stampCount = 0;
+      } else {
+        memoryUser.stampCount = Math.min(5, (memoryUser.stampCount || 0) + 1);
+      }
+    }
+  }
+
   const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
   const adminEmailContent = `
 New Order Received!

@@ -30,6 +30,7 @@ export function publicUser(user = profileUser) {
     role: user.role || "user",
     isBlocked: Boolean(user.isBlocked),
     blockedReason: user.blockedReason || "",
+    stampCount: Number(user.stampCount || 0),
     addresses: Array.isArray(user.addresses) ? user.addresses : [],
     createdAt: user.createdAt,
   };
@@ -278,6 +279,7 @@ export function publicOrderView(order = {}) {
     deliveryTimeSlot: order.deliveryTimeSlot || "",
     deliveryOption: order.deliveryOption || "pickup",
     payment: order.payment || {},
+    isStampRewardOrder: Boolean(order.isStampRewardOrder),
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   };

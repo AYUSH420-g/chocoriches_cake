@@ -1016,7 +1016,7 @@ function Admin() {
             <Panel title="Orders">
               <div className="grid gap-3">
                 {orders.map((order) => (
-                  <div key={order.id} className="rounded-lg border border-[#ebebeb] bg-white overflow-hidden">
+                  <div key={order.id} className={`rounded-lg border overflow-hidden ${order.isStampRewardOrder ? "bg-[#eefbf3] border-[#0f8b57]" : "bg-white border-[#ebebeb]"}`}>
                     <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
                       <div>
                         <h3 className="font-black">{order.customerName || order.customerEmail || "Guest User"}</h3>

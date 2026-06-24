@@ -17,6 +17,7 @@ const orderSchema = new mongoose.Schema(
     deliveryTimeSlot: { type: String },
     deliveryOption: { type: String, default: "pickup" },
     payment: { type: mongoose.Schema.Types.Mixed },
+    isStampRewardOrder: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
