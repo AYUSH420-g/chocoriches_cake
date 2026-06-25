@@ -323,10 +323,10 @@ function RootLayout() {
                         }
                       }}
                       className={`whitespace-nowrap rounded-lg px-2.5 py-1.5 text-sm font-bold transition md:py-2 ${
-                        item.isSpecial
-                          ? "bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-black drop-shadow-sm hover:opacity-80"
-                          : isActiveCategory(item.to) || isOpen
-                          ? "text-[#e61951] decoration-2 underline-offset-4"
+                        isActiveCategory(item.to) || isOpen
+                          ? "text-[#e61951] font-black decoration-2 underline-offset-4"
+                          : item.isSpecial
+                          ? "text-[#323635] font-black hover:text-[#e61951]"
                           : "text-[#323635] hover:text-[#e61951]"
                       }`}
                     >
@@ -452,9 +452,9 @@ function RootLayout() {
                             onClick={() => setIsMenuOpen(false)}
                             className={`flex-1 rounded-lg px-4 py-3 text-base flex items-center justify-between transition ${
                               item.isSpecial
-                                ? "bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent font-black"
-                                : isActiveCategory(item.to)
-                                ? "text-[#e61951] font-bold underline decoration-2 underline-offset-4"
+                                ? isActiveCategory(item.to)
+                                ? "text-[#e61951] font-black underline decoration-2 underline-offset-4"
+                                : "text-[#323635] font-black hover:text-[#e61951]"
                                 : "text-[#1f2221] hover:text-[#e61951] font-bold"
                             }`}
                           >

@@ -466,7 +466,7 @@ function Cart() {
                 <button
                   type="button"
                   onClick={handleProceed}
-                  className={`bk-btn h-12 w-full flex justify-center items-center gap-2 text-sm ${
+                  className={`h-12 w-full flex justify-center items-center gap-2 text-sm rounded-lg bg-[#2d2d2d] text-white font-semibold transition-all duration-200 hover:bg-[#3a3a3a] hover:shadow-[0_8px_18px_rgba(45,45,45,0.2)] active:scale-[0.96] ${
                     cart.length
                       ? "max-md:fixed max-md:inset-x-4 max-md:bottom-[calc(12px+env(safe-area-inset-bottom))] max-md:z-40 max-md:w-[calc(100%-2rem)] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.12)]"
                       : "pointer-events-none opacity-50"

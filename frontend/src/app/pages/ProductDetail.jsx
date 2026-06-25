@@ -747,7 +747,7 @@ function ProductDetail() {
   </div>
 </div>
               ) : (
-                <button type="button" onClick={handleAddToCart} className="bk-outline-btn h-12 px-3 text-sm md:px-5">
+                <button type="button" onClick={handleAddToCart} className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#2d2d2d] bg-white text-[#2d2d2d] font-semibold transition-all duration-200 hover:bg-[#2d2d2d] hover:text-white active:scale-[0.96] h-12 px-3 text-sm md:px-5">
                   <ShoppingCart size={18} />
                   Add To Cart
                 </button>
@@ -756,7 +756,7 @@ function ProductDetail() {
                 type="button"
                 onClick={handleBuyNow}
                 disabled={isBuying}
-                className="bk-btn flex h-12 items-center justify-center gap-2 px-3 text-sm md:px-5"
+                className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#2d2d2d] text-white font-semibold transition-all duration-200 hover:bg-[#3a3a3a] hover:shadow-[0_8px_18px_rgba(45,45,45,0.2)] active:scale-[0.96] px-3 text-sm md:px-5"
               >
                 {isBuying ? (
                   <>

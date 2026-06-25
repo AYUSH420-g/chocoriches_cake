@@ -563,16 +563,16 @@ function Checkout() {
                         justify-center
                         gap-2
                         rounded-xl
-                        bg-[#e61951]
+                        bg-[#2d2d2d]
                         px-8
                         text-sm
                         font-black
                         text-white
                         shadow-lg
-                        shadow-[#e61951]/25
+                        shadow-[#2d2d2d]/25
                         transition-all
                         hover:scale-[1.01]
-                        hover:bg-[#d61448]
+                        hover:bg-[#3a3a3a]
                         disabled:scale-100
                         disabled:opacity-70
                         sm:h-12
