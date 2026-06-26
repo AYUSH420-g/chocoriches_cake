@@ -385,7 +385,7 @@ function Cart() {
                         value={item.messageOnCake || ""}
                         onChange={(e) => setMessageOnCake(item.id, e.target.value)}
                         maxLength={30}
-                        className="bk-input h-9 w-full px-3 text-[12px] placeholder:text-[#8e9492] placeholder:font-medium rounded-lg border border-[#ebebeb] bg-[#fdfdfd] focus:border-[#e61951] focus:ring-1 focus:ring-[#e61951] transition-all"
+                        className="bk-input h-9 w-full px-3 text-[12px] placeholder:text-[#8e9492] placeholder:font-medium rounded-lg border border-[#ebebeb] bg-[#fdfdfd] focus:border-[#3e3e3e] focus:ring-1 transition-all"
                       />
                     </div>
                   </div>

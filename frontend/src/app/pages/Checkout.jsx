@@ -281,7 +281,7 @@ function Checkout() {
               const current = index + 1;
               return (
                 <div key={label} className="flex items-center gap-2">
-                  <span className={`grid h-8 w-8 place-items-center rounded-full ${step >= current ? "bg-[#e61951] text-white" : "bg-white text-[#6f7573]"}`}>
+                  <span className={`grid h-8 w-8 place-items-center rounded-full ${step >= current ? "bg-[#797979] text-white" : "bg-white text-[#6f7573]"}`}>
                     {step > current ? <CheckCircle2 size={16} /> : current}
                   </span>
                   <span className={step >= current ? "text-[#1f2221]" : "text-[#8e9492]"}>{label}</span>

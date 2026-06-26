@@ -274,10 +274,12 @@ function RootLayout() {
                 to="/cart"
                 title="Cart"
                 aria-label="Cart"
-                className="relative grid h-10 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
+                className="relative grid h-6 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
               >
                 <ShoppingCart size={21} />
-                <span className="absolute right-1.5 top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-[#e61951] px-1 text-[10px] font-black leading-none text-white">{cartCount}</span>
+                {cartCount>0 ? 
+                <span className="absolute right-1 top-0 grid h-3.5 min-w-3.5 place-items-center rounded-full bg-[#e61951] px-1 text-[10px] font-black leading-none text-white">{cartCount}</span>
+                :<span className=""></span>}
               </Link>
               <Link
                 to={loggedIn ? "/profile" : "/auth"}
@@ -286,7 +288,7 @@ function RootLayout() {
                 className="grid h-10 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
               >
                 {loggedIn && user?.name ? (
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#fff2e9] text-xs font-black text-[#e61951] border-[#e6195150] border">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f4f4f4] text-sm font-black text-[#454545] border-[#49494950] border">
                     {user.name.slice(0, 1).toUpperCase()}
                   </span>
                 ) : (
