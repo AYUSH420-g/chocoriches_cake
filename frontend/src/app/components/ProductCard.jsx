@@ -86,7 +86,7 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
             </div>
             
             <div className="mt-0.5 text-[12px] font-normal text-[#437ff6]">
-              Earliest Delivery : {earliestDelivery}
+              Get By {earliestDelivery}
             </div>
           </div>
         </div>

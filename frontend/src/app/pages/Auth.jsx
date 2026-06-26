@@ -173,7 +173,7 @@ function Auth() {
 
                 </div>
               )}
-              <button type="submit" disabled={loading} className="bk-btn h-[48px] w-full text-base disabled:opacity-60">
+              <button type="submit" disabled={loading} className="bk-btn h-[48px] bg-[#3e3e3e] w-full text-base disabled:opacity-60">
                 {loading ? "Please wait..." : "Continue"}
               </button>
             </motion.form>

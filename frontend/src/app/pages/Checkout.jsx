@@ -563,7 +563,7 @@ function Checkout() {
                         justify-center
                         gap-2
                         rounded-xl
-                        bg-[#2d2d2d]
+                        bg-[#3e3e3e]
                         px-8
                         text-sm
                         font-black

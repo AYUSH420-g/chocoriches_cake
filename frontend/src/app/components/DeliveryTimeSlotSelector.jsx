@@ -84,7 +84,7 @@ export default function DeliveryTimeSlotSelector() {
             onClick={() => handleSelect(slot)}
             className={`px-3 py-1.5 rounded-md text-[10px] md:text-[11px] font-bold border transition-colors ${
               selectedSlot === slot
-                ? "border-[#2d2d2d] bg-[#2d2d2d] text-white"
+                ? "border-[#3e3e3e] bg-[#3e3e3e] text-white"
                 : "border-[#ebebeb] bg-[#fbfbfb] text-[#6f7573] hover:border-[#b6bab8]"
             }`}
           >

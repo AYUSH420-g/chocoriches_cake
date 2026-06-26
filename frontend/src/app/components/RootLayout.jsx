@@ -359,7 +359,7 @@ function RootLayout() {
                   className="block px-4 py-2 text-sm font-normal text-[#323635] transition hover:bg-[#fff2e9] hover:text-[#e61951]"
                   onClick={() => setHoveredCat(null)}
                 >
-                  {hoveredCat.label}
+                  Show All
                 </Link>
                 <div className="my-1 border-t border-[#f1f1f1]" />
                 {subcatsByCategory[hoveredCat.label].map((sub) => (
@@ -410,7 +410,7 @@ function RootLayout() {
                   <X size={20} />
                 </button>
               </div>
-              <div className="border-b border-[#ebebeb] bg-[#fdefef] p-3">
+              {/* <div className="border-b border-[#ebebeb] bg-[#fdefef] p-3">
                 <button type="button" className="flex w-full items-center justify-between rounded-lg bg-white px-4 py-3 text-left">
                   <span className="flex items-center gap-3">
                     <MapPin className="text-[#e61951]" size={19} />
@@ -421,7 +421,7 @@ function RootLayout() {
                   </span>
                   
                 </button>
-              </div>
+              </div> */}
               <nav className="flex flex-1 flex-col overflow-y-auto p-3 pb-28">
                 {categoryLinks.map((item) => {
                   const subs = subcatsByCategory[item.label];

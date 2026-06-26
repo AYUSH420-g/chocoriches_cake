@@ -756,7 +756,7 @@ function ProductDetail() {
                 type="button"
                 onClick={handleBuyNow}
                 disabled={isBuying}
-                className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#2d2d2d] text-white font-semibold transition-all duration-200 hover:bg-[#3a3a3a] hover:shadow-[0_8px_18px_rgba(45,45,45,0.2)] active:scale-[0.96] px-3 text-sm md:px-5"
+                className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#3e3e3e] text-white font-semibold transition-all duration-200 hover:bg-[#3a3a3a] hover:shadow-[0_8px_18px_rgba(45,45,45,0.2)] active:scale-[0.96] px-3 text-sm md:px-5"
               >
                 {isBuying ? (
                   <>
