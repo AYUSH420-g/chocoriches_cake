@@ -419,7 +419,7 @@ function Cart() {
                 </p>
                 <Link
                   to="/shop"
-                  className="bk-btn mt-5 h-12 w-[226px] px-6 text-sm md:mt-6 md:h-11 md:w-auto"
+                  className="bk-btn mt-5 h-12 w-[226px] bg-[#3e3e3e] px-6 text-sm md:mt-6 md:h-11 md:w-auto"
                 >
                   Shop Cakes
                 </Link>
@@ -502,8 +502,8 @@ function Cart() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-row justify-end space-x-0 gap-2 mt-2">
-            <AlertDialogCancel className="flex-1 sm:flex-initial mt-0">Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmRemove} className="flex-1 sm:flex-initial mt-0 bg-[#e61951] text-white hover:bg-[#d61448]">Remove</AlertDialogAction>
+            <AlertDialogCancel className="flex-1 sm:flex-initial hover:bg-[#d5d5d5] mt-0">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmRemove} className="flex-1 sm:flex-initial mt-0 bg-[#3e3e3e] text-white hover:bg-[#837e80]">Remove</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

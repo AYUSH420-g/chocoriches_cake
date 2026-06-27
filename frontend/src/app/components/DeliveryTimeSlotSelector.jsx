@@ -2,8 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Clock } from "lucide-react";
 
 const SLOTS = [
-  { label: "12:00 PM - 02:00 PM", startHour: 12, startMin: 0 },
-  { label: "03:00 PM - 06:00 PM", startHour: 15, startMin: 0 },
   { label: "07:00 PM - 10:00 PM", startHour: 19, startMin: 0 },
   { label: "11:15 PM - 11:45 PM", startHour: 23, startMin: 15 },
 ];

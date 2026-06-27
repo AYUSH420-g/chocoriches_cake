@@ -496,7 +496,8 @@ function RootLayout() {
                 </div> */}
               </nav>
               <div className="absolute inset-x-0 bottom-0 border-t border-[#ebebeb] p-5">
-                <Link to={loggedIn ? "/profile" : "/auth"} className="bk-btn h-11 w-full text-sm">
+                <Link to={loggedIn ? "/profile" : "/auth"} className={`bk-btn h-11 w-full text-sm
+                  ${loggedIn ? "bg-[#3e3e3e] hover:bg-[#4a4a4a]" : "bg-[#3e3e3e] hover:bg-[#4a4a4a]"}`}>
                   {loggedIn ? "My Profile" : "Login / Signup"}
                 </Link>
               </div>

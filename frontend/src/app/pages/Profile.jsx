@@ -667,7 +667,7 @@ function Profile() {
             {activeSection === "address" && (
               <section className="bk-card p-4 shadow-sm">
                 <div className="mb-4 flex items-center justify-end">
-                  <button type="button" onClick={() => setShowAddAddress(!showAddAddress)} className="bk-btn h-9 px-4 text-xs">
+                  <button type="button" onClick={() => setShowAddAddress(!showAddAddress)} className="bk-btn h-9 bg-[#3e3e3e] px-4 text-xs">
                     {showAddAddress ? "Cancel" : "+ Add New"}
                   </button>
                 </div>
@@ -733,7 +733,7 @@ function Profile() {
                       </div>
                     </div>
                     
-                    <button type="submit" className="bk-btn mt-6 h-12 w-full text-sm font-black shadow-lg shadow-[#e61951]/25 hover:scale-[1.01] hover:bg-[#d61448]">Save Address</button>
+                    <button type="submit" className="bk-btn mt-6 h-12 w-full bg-[#3e3e3e] text-sm font-black shadow-lg hover:scale-[1.01]">Save Address</button>
                   </form>
                 )}
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -789,7 +789,7 @@ function Profile() {
                     />
                   </label>
 
-                  <button type="submit" className="bk-btn h-10 text-sm font-black mt-2">
+                  <button type="submit" className="bk-btn h-10 text-sm font-black bg-[#3e3e3e] mt-2">
                     Save Changes
                   </button>
                 </form>

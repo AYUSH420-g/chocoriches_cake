@@ -321,7 +321,7 @@ function Shop() {
             <div className="bk-card py-12 text-center md:py-20">
               <h3 className="text-xl font-black text-[#1f2221] md:text-2xl">No cakes found</h3>
               <p className="mt-2 text-sm text-[#6f7573]">Try another category or clear filters.</p>
-              <button type="button" onClick={clearFilters} className="bk-btn mt-5 h-12 px-6 text-sm md:mt-6 md:h-11">
+              <button type="button" onClick={clearFilters} className="bk-btn mt-5 h-12 px-6 bg-[#3e3e3e] text-sm md:mt-6 md:h-11">
                 Show All Cakes
               </button>
             </div>

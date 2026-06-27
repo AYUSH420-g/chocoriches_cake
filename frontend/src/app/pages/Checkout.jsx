@@ -253,7 +253,7 @@ function Checkout() {
           >
             <Link
               to={`/track?orderId=${encodeURIComponent(placedOrder.orderId || placedOrder.id)}`}
-              className="bk-btn h-12 w-full text-sm font-black flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] transition-transform"
+              className="bk-btn h-12 w-full bg-[#3e3e3e] text-sm font-black flex items-center justify-center gap-2 shadow-md hover:scale-[1.01] transition-transform"
             >
               <Truck size={17} />
               Track Order
