@@ -168,8 +168,9 @@ export async function listProducts(req, res) {
   if (bestseller === "true") {
     query.$or = [...(query.$or || []), { isBestSeller: true }, { featured: true }];
   }
-  if (maxPrice) {
-    query.price = { $lte: Number(maxPrice) };
+  const numericMaxPrice = Number(maxPrice);
+  if (Number.isFinite(numericMaxPrice) && numericMaxPrice > 0) {
+    query.price = { $lte: numericMaxPrice };
   }
 
   query.isActive = { $ne: false };
@@ -188,10 +189,10 @@ export async function listProducts(req, res) {
   }
 
   let sortCriteria = { sortOrder: 1, createdAt: -1 };
-  if (sort === "Price: Low to High") sortCriteria = { price: 1 };
-  else if (sort === "Price: High to Low") sortCriteria = { price: -1 };
-  else if (sort === "Name: A to Z") sortCriteria = { name: 1 };
-  else if (sort === "Newest") sortCriteria = { createdAt: -1 };
+  if (sort === "Price: Low to High") sortCriteria = { price: 1, _id: 1 };
+  else if (sort === "Price: High to Low") sortCriteria = { price: -1, _id: 1 };
+  else if (sort === "Name: A to Z") sortCriteria = { name: 1, _id: 1 };
+  else if (sort === "Newest") sortCriteria = { createdAt: -1, _id: -1 };
 
   // If page param is provided, return paginated response
   if (page) {
@@ -301,10 +302,10 @@ export async function listProducts(req, res) {
           return searchText.includes(String(q).trim().toLowerCase());
         })
         .sort((left, right) => {
-          if (sortBy === "Price: Low to High") return Number(left.price) - Number(right.price);
-          if (sortBy === "Price: High to Low") return Number(right.price) - Number(left.price);
-          if (sortBy === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
-          if (sortBy === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
+          if (sort === "Price: Low to High") return Number(left.price) - Number(right.price);
+          if (sort === "Price: High to Low") return Number(right.price) - Number(left.price);
+          if (sort === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
+          if (sort === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
           return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
         });
 

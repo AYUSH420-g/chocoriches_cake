@@ -783,7 +783,8 @@ function Admin() {
                     <div className="grid gap-2 sm:grid-cols-2">
                       {[
                         ["isActive", "Active"],
-                        ["hasBaseAndCream", "Show Base & Cream Options"]
+                        ["hasBaseAndCream", "Show Base & Cream Options"],
+                        ["sameDayDelivery", "Same Day Delivery"]
                       ].map(([key, label]) => (
                         <Check
                           key={key}

@@ -4,8 +4,15 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Filter, SlidersHorizontal, Truck, X } from "lucide-react";
 import { getProductsPaginated, getCategories, getSubcategories } from "../api/client";
 import ProductCard from "../components/ProductCard";
-const filters = ["Bestseller", "Under Rs. 799"];
-const sortOptions = ["Recommended", "Newest", "Price: Low to High", "Price: High to Low", "Name: A to Z"];
+
+const priceFilters = {
+  "Under Rs. 249": 249,
+  "Under Rs. 549": 549,
+  "Under Rs. 999": 999,
+};
+const filters = Object.keys(priceFilters);
+const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
+const defaultSort = "Newest";
 
 const shopCache = {
   products: [],
@@ -15,7 +22,7 @@ const shopCache = {
   activeCategory: null,
   activeSubcategory: null,
   activeFilters: null,
-  sortBy: "Recommended"
+  sortBy: defaultSort
 };
 
 function Shop() {
@@ -26,12 +33,20 @@ function Shop() {
   const initialFilters = filter && filters.includes(filter) ? [filter] : [];
   const initialSearch = searchParams.get("q") || "";
 
-  const isRestoring = shopCache.searchQuery === initialSearch && shopCache.activeCategory === initialCategory && shopCache.activeSubcategory === initialSubcategory;
+  const cachedFilterMatchesUrl = !filter || (
+    shopCache.activeFilters?.length === initialFilters.length
+    && initialFilters.every((item) => shopCache.activeFilters.includes(item))
+  );
+  const isRestoring = shopCache.searchQuery === initialSearch
+    && shopCache.activeCategory === initialCategory
+    && shopCache.activeSubcategory === initialSubcategory
+    && cachedFilterMatchesUrl;
+  const cachedSort = sortOptions.includes(shopCache.sortBy) ? shopCache.sortBy : defaultSort;
 
   const [activeCategory, setActiveCategory] = useState(initialCategory);
   const [activeSubcategory, setActiveSubcategory] = useState(initialSubcategory);
   const [activeFilters, setActiveFilters] = useState(() => isRestoring && shopCache.activeFilters ? shopCache.activeFilters : initialFilters);
-  const [sortBy, setSortBy] = useState(() => isRestoring && shopCache.sortBy ? shopCache.sortBy : "Recommended");
+  const [sortBy, setSortBy] = useState(() => isRestoring ? cachedSort : defaultSort);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [products, setProducts] = useState(() => isRestoring ? shopCache.products : []);
   const [categories, setCategories] = useState([]);
@@ -42,23 +57,33 @@ function Shop() {
   const pageRef = useRef(isRestoring ? shopCache.currentPage : 1);
   const requestIdRef = useRef(0);
   const sentinelRef = useRef(null);
+  const skipRestoredFetchRef = useRef(isRestoring && shopCache.products.length > 0);
+  const searchParamsKey = searchParams.toString();
+  const previousSearchParamsKeyRef = useRef(searchParamsKey);
   const searchQuery = searchParams.get("q") || "";
 
   useEffect(() => {
+    if (previousSearchParamsKeyRef.current === searchParamsKey) return;
+    previousSearchParamsKeyRef.current = searchParamsKey;
     setActiveCategory(searchParams.get("cat") || "All");
     setActiveSubcategory(searchParams.get("subcat") || "");
-    const filter = searchParams.get("filter");
-    setActiveFilters(filter && filters.includes(filter) ? [filter] : []);
-  }, [searchParams]);
+    const nextFilter = searchParams.get("filter");
+    const nextFilters = nextFilter && filters.includes(nextFilter) ? [nextFilter] : [];
+    setActiveFilters((current) => (
+      current.length === nextFilters.length && current.every((item) => nextFilters.includes(item))
+        ? current
+        : nextFilters
+    ));
+  }, [searchParams, searchParamsKey]);
 
   const loadPage = useCallback(async (page, query, cat, subcat, filterArr, sort, requestId = requestIdRef.current) => {
     try {
       const options = { q: query };
       if (cat && cat !== "All") options.category = cat;
       if (subcat) options.subcategory = subcat;
-      if (filterArr.includes("Bestseller")) options.bestseller = true;
-      if (filterArr.includes("Under Rs. 799")) options.maxPrice = 799;
-      if (sort && sort !== "Recommended") options.sortBy = sort;
+      const selectedPriceFilter = filterArr.find((item) => priceFilters[item]);
+      if (selectedPriceFilter) options.maxPrice = priceFilters[selectedPriceFilter];
+      if (sortOptions.includes(sort)) options.sortBy = sort;
 
       const data = await getProductsPaginated(options, page, 8);
       if (requestId !== requestIdRef.current) {
@@ -82,13 +107,9 @@ function Shop() {
   }, []);
 
   useEffect(() => {
-    // Skip the initial fetch if we successfully restored from cache
-    if (isRestoring && products.length > 0 && pageRef.current === shopCache.currentPage) {
-      shopCache.searchQuery = searchQuery;
-      shopCache.activeCategory = activeCategory;
-      shopCache.activeSubcategory = activeSubcategory;
-      shopCache.activeFilters = activeFilters;
-      shopCache.sortBy = sortBy;
+    // Use restored results once, then fetch normally for every control change.
+    if (skipRestoredFetchRef.current) {
+      skipRestoredFetchRef.current = false;
       return;
     }
 
@@ -159,13 +180,12 @@ function Shop() {
   }, [hasMore, loadingMore, isLoading, loadPage, searchQuery, activeCategory, activeSubcategory, activeFilters, sortBy]);
 
   const toggleFilter = (filter) => {
-    setActiveFilters((current) =>
-      current.includes(filter) ? current.filter((item) => item !== filter) : [...current, filter]
-    );
+    setActiveFilters((current) => current.includes(filter) ? [] : [filter]);
   };
 
   const clearFilters = () => {
     setActiveCategory("All");
+    setActiveSubcategory("");
     setActiveFilters([]);
   };
 
