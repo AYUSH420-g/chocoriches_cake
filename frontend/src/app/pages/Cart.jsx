@@ -174,7 +174,7 @@ function RewardDeliveryDatePicker({ selectedDate, onSelect, blockedDates }) {
                     ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
                     : isActive
                       ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
-                      : "border-[#36363670] bg-transparent hover:border-[#e61951]"
+                      : "border-[#ebebeb] bg-transparent hover:border-[#e61951]"
                 }`}
               >
                 <span className="text-xs font-semibold text-[#1f2221]">{opt.label}</span>

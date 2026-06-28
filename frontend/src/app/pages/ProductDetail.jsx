@@ -203,7 +203,7 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
                     ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
                     : isActive
                       ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
-                      : "border-[#36363670] bg-transparent hover:border-[#e61951]"
+                      : "border-[#ebebeb] bg-transparent hover:border-[#e61951]"
                 }`}
               >
                 <span className="text-sm font-semibold text-[#1f2221]">{opt.label}</span>
@@ -618,11 +618,12 @@ function ProductDetail() {
                     onChange={(e) => setCreamFlavour(e.target.value)}
                     className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
                   >
-                    <option value="Vanilla cream">Vanilla cream</option>
-                    <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
                     <option value="Chocolate cream">Chocolate cream</option>
+                    <option value="Vanilla cream">Vanilla cream</option>
                     <option value="Chocolate cream with chocolate chips">Chocolate cream with chocolate chips</option>
+                    <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
                     <option value="Strawberry cream">Strawberry cream</option>
+                    <option value="Strawberry cream">Chocolate Truffle</option>
                   </select>
                 </div>
 
@@ -659,7 +660,7 @@ function ProductDetail() {
                     className={`rounded-sm border p-1 text-left transition ${
                       selectedWeight.label === option.label
                         ? "border-[#e61951]/50 font-semibold bg-[#ffeadc]"
-                        : "border-[#36363670] font-normal bg-transparent hover:border-[#e61951]"
+                        : "border-[#ebebeb] font-normal bg-transparent hover:border-[#e61951]"
                     }`}
                   >
                     <span className="block text-[14px]  text-[#1f2221] text-center items-center">{option.label=='Half Kg'?'0.5 Kg':option.label}</span>

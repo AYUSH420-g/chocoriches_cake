@@ -288,7 +288,7 @@ function RootLayout() {
                 className="grid h-10 w-10 place-items-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
               >
                 {loggedIn && user?.name ? (
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#f4f4f4] text-sm font-black text-[#454545] border-[#49494950] border">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#fefefe] text-sm font-black text-[#454545] border-[#49494950] border">
                     {user.name.slice(0, 1).toUpperCase()}
                   </span>
                 ) : (
@@ -525,7 +525,7 @@ function RootLayout() {
 
       {!isAuthPage && (
       <footer className="min-h-[520px] shrink-0 border-t border-[#e8e8e8] bg-white sm:min-h-[340px] lg:min-h-[300px]">
-        <div className="bk-shell py-10">
+        <div className="bk-shell py-7">
           <div className="grid gap-8 lg:grid-cols-[1.3fr_2fr_1fr]">
             <div>
               <Link to="/" className="mb-4 flex items-center gap-2 text-2xl font-black text-[#e61951]">

@@ -69,9 +69,9 @@ export default function DeliveryTimeSlotSelector() {
   }
 
   return (
-    <div className="mt-4 border-t border-[#ebebeb] pt-3">
-      <h4 className="text-xs font-black text-[#1f2221] mb-2 flex items-center gap-1.5">
-        <Clock size={13} className="text-[#6f7573]"/>
+    <div className="mt-4 border-t border-[#f7f7f7] pt-1">
+      <h4 className="mb-2 text-sm font-normal text-[#1f2221] md:text-base">
+        {/* <Clock size={13} className="text-[#6f7573]"/> */}
         Select Delivery Time Slot
       </h4>
       <div className="flex flex-wrap gap-2">
