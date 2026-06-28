@@ -11,8 +11,8 @@ const priceFilters = {
   "Under Rs. 999": 999,
 };
 const filters = Object.keys(priceFilters);
-const sortOptions = ["Newest", "Price: Low to High", "Price: High to Low"];
-const defaultSort = "Newest";
+const sortOptions = ["Recommended", "Newest", "Price: Low to High", "Price: High to Low"];
+const defaultSort = "Recommended";
 
 const shopCache = {
   products: [],
