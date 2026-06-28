@@ -146,15 +146,16 @@ function Admin() {
 
   const handleStatusChange = async (order, targetStatus) => {
     const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
+    const statusLabels = { "Processing": "Processing", "Packed": "Making", "Out For Delivery": "Out For Delivery", "Delivered": "Delivered" };
     const currentIndex = statuses.indexOf(order.status || "Processing");
     const targetIndex = statuses.indexOf(targetStatus);
 
     if (targetIndex !== currentIndex + 1) {
-      toast.error(`You can only change the status to ${statuses[currentIndex + 1]}`);
+      toast.error(`You can only change the status to ${statusLabels[statuses[currentIndex + 1]] || statuses[currentIndex + 1]}`);
       return;
     }
 
-    if (window.confirm(`Are you sure you want to mark this order as ${targetStatus}?`)) {
+    if (window.confirm(`Are you sure you want to mark this order as ${statusLabels[targetStatus] || targetStatus}?`)) {
       await updateAdminOrder(order.id, { status: targetStatus });
       await loadAdmin();
     }
@@ -711,7 +712,7 @@ function Admin() {
                     >
                       <option value="All">All Statuses</option>
                       <option value="Processing">Processing</option>
-                      <option value="Packed">Packed</option>
+                      <option value="Packed">Making</option>
                       <option value="Out For Delivery">Out For Delivery</option>
                       <option value="Delivered">Delivered</option>
                     </select>
@@ -1021,7 +1022,7 @@ function Admin() {
                     <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
                       <div>
                         <h3 className="font-black">{order.customerName || order.customerEmail || "Guest User"}</h3>
-                        <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e61951]">{order.status}</span></p>
+                        <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e61951]">{order.status === "Packed" ? "Making" : order.status}</span></p>
                       </div>
                       <div className="flex flex-wrap gap-4 items-center">
                         {["Processing", "Packed", "Out For Delivery", "Delivered"].map((status) => {
@@ -1038,7 +1039,7 @@ function Admin() {
                                 disabled={isChecked || statusIndex > currentIndex + 1}
                                 className="h-4 w-4 accent-[#e61951] disabled:opacity-50"
                               />
-                              {status}
+                              {status === "Packed" ? "Making" : status}
                             </label>
                           );
                         })}
