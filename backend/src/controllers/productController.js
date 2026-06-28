@@ -93,7 +93,7 @@ export async function warmProductListCache() {
   const baseQuery = { isActive: { $ne: false } };
   const pageNum = 1;
   const limitNum = 8;
-  const defaultSort = { sortOrder: 1, createdAt: -1 };
+  const defaultSort = { sortOrder: -1, createdAt: -1 };
   const newestSort = { createdAt: -1 };
 
   const [defaultPayload, newestPayload] = await Promise.all([
@@ -188,7 +188,7 @@ export async function listProducts(req, res) {
     ];
   }
 
-  let sortCriteria = { sortOrder: 1, createdAt: -1 };
+  let sortCriteria = { sortOrder: -1, createdAt: -1 };
   if (sort === "Price: Low to High") sortCriteria = { price: 1, _id: 1 };
   else if (sort === "Price: High to Low") sortCriteria = { price: -1, _id: 1 };
   else if (sort === "Name: A to Z") sortCriteria = { name: 1, _id: 1 };
@@ -255,7 +255,7 @@ export async function listProducts(req, res) {
         if (sort === "Newest") return new Date(b.createdAt) - new Date(a.createdAt);
         const orderA = a.sortOrder ?? 0;
         const orderB = b.sortOrder ?? 0;
-        if (orderA !== orderB) return orderA - orderB;
+        if (orderA !== orderB) return orderB - orderA;
         return new Date(b.createdAt) - new Date(a.createdAt);
       });
 
@@ -306,7 +306,7 @@ export async function listProducts(req, res) {
           if (sort === "Price: High to Low") return Number(right.price) - Number(left.price);
           if (sort === "Name: A to Z") return String(left.name || "").localeCompare(String(right.name || ""));
           if (sort === "Newest") return new Date(right.createdAt || 0) - new Date(left.createdAt || 0);
-          return Number(left.sortOrder || 0) - Number(right.sortOrder || 0);
+          return Number(right.sortOrder || 0) - Number(left.sortOrder || 0);
         });
 
   res.json(source.map(listProduct));

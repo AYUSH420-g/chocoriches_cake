@@ -64,7 +64,7 @@ function productPayload(body) {
     : weights[0]?.label || "Half Kg";
   const defaultWeightPrice = weights.find((weight) => weight.label === defaultWeight)?.price || Number(body.discountPrice || body.price || 0);
 
-  return {
+  const payload = {
     id: body.id || `prod-${Date.now()}`,
     name: body.name,
     price: Number(defaultWeightPrice || body.price || body.originalPrice || 0),
@@ -95,8 +95,15 @@ function productPayload(body) {
     sameDayDelivery: Boolean(body.sameDayDelivery),
     hasBaseAndCream: body.hasBaseAndCream !== false,
     tags: Array.isArray(body.tags) ? body.tags : [],
-    sortOrder: Number(body.sortOrder || 0),
   };
+
+  if (body.sortOrder !== undefined && body.sortOrder !== null) {
+    payload.sortOrder = Number(body.sortOrder);
+  } else if (!body.id) {
+    payload.sortOrder = Date.now();
+  }
+  
+  return payload;
 }
 
 export async function summary(_req, res) {
@@ -179,8 +186,8 @@ export async function products(req, res) {
   // If no pagination params, return all (backward compatible)
   if (!page || !limit) {
     const source = isDatabaseConnected()
-      ? await Product.find(query).sort({ sortOrder: 1, createdAt: -1 }).lean()
-      : memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category)).sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+      ? await Product.find(query).sort({ sortOrder: -1, createdAt: -1 }).lean()
+      : memory.products.filter(p => Object.keys(query).length === 0 || p.category === category || (p.categories || []).includes(category)).sort((a, b) => (b.sortOrder ?? 0) - (a.sortOrder ?? 0));
     res.json(source.map(adminProductView));
     return;
   }
@@ -189,7 +196,7 @@ export async function products(req, res) {
 
   if (isDatabaseConnected()) {
     const [source, total] = await Promise.all([
-      Product.find(query).sort({ sortOrder: 1, createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Product.find(query).sort({ sortOrder: -1, createdAt: -1 }).skip(skip).limit(limit).lean(),
       Product.countDocuments(query),
     ]);
     res.json({
@@ -291,8 +298,8 @@ export async function createCategory(req, res) {
     description: req.body.description || "",
     image: req.body.image || "",
     isActive: req.body.isActive !== false,
-    sortOrder: Number(req.body.sortOrder || 0),
   };
+  if (req.body.sortOrder !== undefined) payload.sortOrder = Number(req.body.sortOrder);
 
   if (isDatabaseConnected()) {
     const category = await Category.create(payload);
@@ -308,8 +315,8 @@ export async function updateCategory(req, res) {
   const updates = {
     ...req.body,
     slug: req.body.slug || slugify(req.body.name),
-    sortOrder: Number(req.body.sortOrder || 0),
   };
+  if (req.body.sortOrder !== undefined) updates.sortOrder = Number(req.body.sortOrder);
 
   if (isDatabaseConnected()) {
     const oldCategory = await Category.findOne(objectIdOrField(req.params.id, "slug")).lean();
@@ -395,8 +402,8 @@ export async function createSubcategory(req, res) {
     slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
     category: req.body.category,
     isActive: req.body.isActive !== false,
-    sortOrder: Number(req.body.sortOrder || 0),
   };
+  if (req.body.sortOrder !== undefined) payload.sortOrder = Number(req.body.sortOrder);
 
   if (isDatabaseConnected()) {
     const subcategory = await Subcategory.create(payload);
@@ -413,8 +420,8 @@ export async function updateSubcategory(req, res) {
   const updates = {
     ...req.body,
     slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
-    sortOrder: Number(req.body.sortOrder || 0),
   };
+  if (req.body.sortOrder !== undefined) updates.sortOrder = Number(req.body.sortOrder);
 
   if (isDatabaseConnected()) {
     const subcategory = await Subcategory.findOneAndUpdate(objectIdOrField(req.params.id, "slug"), updates, {
