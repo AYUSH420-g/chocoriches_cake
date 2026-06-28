@@ -18,6 +18,8 @@ const allowedOrigins = new Set(
     cleanOrigin(process.env.CLIENT_ORIGIN),
     "http://localhost:5173",
     "http://localhost:5174",
+    "https://www.chocoriches.in",
+    "https://chocoriches.in"
   ].filter(Boolean)
 );
 
