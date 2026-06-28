@@ -1,23 +1,15 @@
-import { motion } from "motion/react";
-import { Loader } from "lucide-react";
-
 export default function PageLoader() {
   return (
-    <div className="grid min-h-[60vh] place-items-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        className="flex flex-col items-center gap-4"
-      >
-        <motion.span
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1.6, repeat: Infinity, ease: "linear" }}
-          className="grid h-12 w-12 place-items-center text-[#e61951]"
-        >
-          <Loader size={32} />
-        </motion.span>
-        <p className="text-sm font-bold text-[#6f7573]">Loading...</p>
-      </motion.div>
+    <div className="bk-page min-h-[80vh] p-4 md:p-8 animate-pulse">
+      <div className="mx-auto max-w-6xl space-y-6">
+        <div className="h-8 w-1/3 rounded-lg bg-[#f1f1f1]"></div>
+        <div className="h-4 w-1/2 rounded-lg bg-[#f1f1f1]"></div>
+        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="aspect-[4/5] rounded-2xl bg-[#f5f0ec]"></div>
+          <div className="aspect-[4/5] rounded-2xl bg-[#f5f0ec]"></div>
+          <div className="aspect-[4/5] rounded-2xl bg-[#f5f0ec] hidden lg:block"></div>
+        </div>
+      </div>
     </div>
   );
 }

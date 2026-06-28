@@ -264,7 +264,7 @@ function ProductDetail() {
   const [creamFlavour, setCreamFlavour] = useState("Vanilla cream");
   const [isInfoExpanded, setIsInfoExpanded] = useState(false);
   const descRef = useRef(null);
-  const { addProduct, itemForProduct, setQuantity: setCartQuantity } = useCart();
+  const { addProduct, itemForProduct, setQuantity: setCartQuantity, removeItem } = useCart();
 
   // Description logic removed
 
@@ -439,9 +439,9 @@ function ProductDetail() {
       } else {
         await addProduct(product, nextQuantity, selectedWeight.label, baseFlavour, creamFlavour);
       }
-      toast.success(`${product.name} added to cart`, {
-        description: `${selectedWeight.label} | Qty ${nextQuantity}`
-      });
+      if (!isBuyNow) {
+        window.dispatchEvent(new Event("open-cart"));
+      }
       if (showLoader) setIsBuying(false);
       return true;
     } catch (error) {
@@ -466,21 +466,45 @@ function ProductDetail() {
     setIsBuying(false);
   };
 
-  const handleQuantityChange = (nextQuantity) => {
-    const safeQuantity = Math.max(1, nextQuantity);
-    setQuantity(safeQuantity);
+  const handleQuantityChange = async (nextQuantity) => {
+    if (nextQuantity < 1) {
+      if (cartItem) {
+        await removeItem(cartItem.id).catch(() => void 0);
+      }
+      setQuantity(1);
+      return;
+    }
+    setQuantity(nextQuantity);
     if (cartItem) {
-      setCartQuantity(cartItem.id, safeQuantity).catch(() => void 0);
+      setCartQuantity(cartItem.id, nextQuantity).catch(() => void 0);
     }
   };
 
   if (loading || !product || !selectedWeight) {
     return (
+      <div className="bk-page animate-pulse">
+        <div className="mx-auto max-w-6xl p-4 md:p-8">
+           <div className="grid gap-6 md:grid-cols-2 md:gap-8">
+              <div className="aspect-square w-full rounded-2xl bg-[#f5f0ec]"></div>
+              <div className="space-y-4 pt-4">
+                 <div className="h-8 w-3/4 rounded-lg bg-[#f1f1f1]"></div>
+                 <div className="h-4 w-1/2 rounded-lg bg-[#f1f1f1]"></div>
+                 <div className="mt-8 h-10 w-1/3 rounded-lg bg-[#f1f1f1]"></div>
+                 <div className="h-32 w-full rounded-lg bg-[#f5f0ec]"></div>
+              </div>
+           </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!loading && !product) {
+    return (
       <div className="bk-page">
         <div className="bk-shell grid min-h-[420px] place-items-center py-6 text-center">
           <div>
-            <h1 className="text-2xl font-black text-[#1f2221]">{loading ? "Loading cake..." : "Cake not found"}</h1>
-            {!loading && <Link to="/shop" className="bk-btn mt-5 h-11 px-5 text-sm">Back To Shop</Link>}
+            <h1 className="text-2xl font-black text-[#1f2221]">Cake not found</h1>
+            <Link to="/shop" className="bk-btn mt-5 h-11 px-5 text-sm">Back To Shop</Link>
           </div>
         </div>
       </div>

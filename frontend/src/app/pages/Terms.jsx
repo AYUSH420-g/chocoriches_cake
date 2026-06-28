@@ -51,7 +51,16 @@ export default function Terms() {
           <hr className="border-[#ebebeb]" />
 
           <section>
-            <h2 className="mb-3 text-lg font-black text-[#1f2221] md:text-xl">5. Agreement</h2>
+            <h2 className="mb-3 text-lg font-black text-[#1f2221] md:text-xl">5. Home Bakery Disclosure</h2>
+            <p className="text-sm leading-7 text-[#6f7573]">
+              Please note that ChocoRiches operates as a passionate home bakery. While we exclusively use high-quality ingredients from certified and trusted brands, we currently do not hold a formal FSSAI certificate for the ChocoRiches brand itself. Our foundation is built entirely on the love, satisfaction, and trust of our customers across 1000+ successful offline orders.
+            </p>
+          </section>
+
+          <hr className="border-[#ebebeb]" />
+
+          <section>
+            <h2 className="mb-3 text-lg font-black text-[#1f2221] md:text-xl">6. Agreement</h2>
             <p className="text-sm leading-7 text-[#6f7573]">
               By placing an order on ChocoRiches, you acknowledge that you have read, understood, and agreed to all the terms and conditions mentioned above. Continued use of our website and services constitutes your acceptance of these terms.
             </p>

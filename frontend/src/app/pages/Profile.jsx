@@ -88,8 +88,7 @@ function Profile() {
 
     try {
       await Promise.all(matchedProducts.map((product) => addProduct(product, 1, product.defaultWeight || product.weightOptions?.[0]?.label || "Half Kg")));
-      toast.success("Added previous order to cart");
-      navigate("/cart");
+        window.dispatchEvent(new Event("open-cart"));
     } catch (error) {
       toast.error(error.message || "Could not add order to cart");
     }

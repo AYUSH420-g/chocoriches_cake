@@ -58,13 +58,11 @@ function Auth() {
       if (data.user?.role === "admin") {
         clearUserSession();
         localStorage.setItem("chocoriches_admin_token", data.token);
-        toast.success("Admin login successful");
         navigate("/admin");
         return;
       }
 
       saveUserSession(data);
-      toast.success(isLogin ? "Welcome back" : "Account created");
       const redirectUrl = sessionStorage.getItem("post_login_redirect");
       if (redirectUrl) {
         sessionStorage.removeItem("post_login_redirect");
@@ -88,13 +86,11 @@ function Auth() {
         if (data.user?.role === "admin") {
           clearUserSession();
           localStorage.setItem("chocoriches_admin_token", data.token);
-          toast.success("Admin login successful");
           navigate("/admin");
           return;
         }
 
         saveUserSession(data);
-        toast.success("Logged in with Google");
         const redirectUrl = sessionStorage.getItem("post_login_redirect");
         if (redirectUrl) {
           sessionStorage.removeItem("post_login_redirect");

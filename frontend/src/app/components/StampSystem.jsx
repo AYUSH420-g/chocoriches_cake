@@ -83,8 +83,7 @@ function StampSystem() {
       toast.loading("Adding to cart...");
       await addProduct(product, 1, product.defaultWeight || "Half Kg", "", "", true);
       toast.dismiss();
-      toast.success("Reward item added to cart for ₹1!");
-      setAddedRewardId(product.id);
+      window.dispatchEvent(new Event("open-cart"));
       setIsSelectorOpen(false);
       navigate("/cart");
     } catch (error) {

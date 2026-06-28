@@ -25,7 +25,7 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
     event.stopPropagation();
     try {
       await addProduct(product, 1, defaultWeight);
-      toast.success(`${product.name} added to cart`);
+      window.dispatchEvent(new Event("open-cart"));
     } catch (error) {
       toast.error(error.message || "Could not add item to cart");
     }
