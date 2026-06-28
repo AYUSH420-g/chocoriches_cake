@@ -20,16 +20,15 @@ import {
   Info
 } from "lucide-react";
 import { toast } from "sonner";
-import { checkPincode, getBlockedDates, getProduct, getProductReviews } from "../api/client";
+import { getBlockedDates, getProduct, getProductReviews } from "../api/client";
 import { isUserLoggedIn } from "../utils/session";
 import { useCart } from "../context/CartContext";
 import { formatOriginalPrice, formatPrice, optimizeImage } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 import FullScreenLoader from "../components/FullScreenLoader";
+import DeliveryTimeSlotSelector from "../components/DeliveryTimeSlotSelector";
 
-function normalizePincode(value) {
-  return String(value || "").replace(/\D/g, "").slice(0, 6);
-}
+
 
 function formatReviewDate(value) {
   const date = new Date(value);
@@ -253,8 +252,6 @@ function ProductDetail() {
   const [selectedWeight, setSelectedWeight] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
-  const [pincode, setPincode] = useState(() => sessionStorage.getItem("chocoriches_pincode") || "");
-  const [pincodeStatus, setPincodeStatus] = useState({ checked: false, valid: false, message: "" });
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isBuying, setIsBuying] = useState(false);
@@ -415,36 +412,7 @@ function ProductDetail() {
     return () => window.clearInterval(intervalId);
   }, [reviews.length]);
 
-  const ensureValidDelivery = async (showToast = true) => {
-    if (pincodeStatus.valid && pincodeStatus.checked) {
-      sessionStorage.setItem("chocoriches_pincode", normalizePincode(pincode));
-      return true;
-    }
 
-    const deliveryPincode = normalizePincode(pincode);
-
-    if (deliveryPincode.length !== 6) {
-      setPincodeStatus({ checked: true, valid: false, message: "Enter a valid 6-digit pincode" });
-      if (showToast) toast.error("Please enter a valid 6-digit pincode");
-      return false;
-    }
-
-    const result = await checkPincode(deliveryPincode).catch(() => null);
-    if (result?.serviceable) {
-      setPincodeStatus({ checked: true, valid: true, message: result.message || "Delivery is available for this pincode." });
-      sessionStorage.setItem("chocoriches_pincode", deliveryPincode);
-      return true;
-    }
-    
-    setPincodeStatus({ checked: true, valid: false, message: result?.message || "Invalid pincode" });
-    if (showToast) toast.error("Sorry, delivery is not available for this pincode.");
-    return false;
-  };
-
-  const handleCheckDelivery = async () => {
-    const isValid = await ensureValidDelivery(false);
-    if (isValid) toast.success("Delivery slot available today");
-  };
 
   const handleAddToCart = async (showLoader = true, isBuyNow = false) => {
     if (!isUserLoggedIn()) {
@@ -463,12 +431,6 @@ function ProductDetail() {
     }
 
     if (showLoader) setIsBuying(true);
-
-    const isValid = await ensureValidDelivery();
-    if (!isValid) {
-      if (showLoader) setIsBuying(false);
-      return false;
-    }
 
     try {
       const nextQuantity = cartItem ? quantity : 1;
@@ -692,31 +654,7 @@ function ProductDetail() {
             />
 
             <div className="mt-4 md:mt-5">
-              <label className="mb-2 block text-sm font-normal text-[#1f2221]">Delivery Location</label>
-              <div className="flex overflow-hidden rounded-lg border border-[#36363670] bg-transparent">
-                <span className="grid w-11 place-items-center text-[#e61951]">
-                  <MapPin size={18} />
-                </span>
-                <input
-                  value={pincode}
-                  onChange={(event) => {
-                    setPincode(normalizePincode(event.target.value));
-                    setPincodeStatus({ checked: false, valid: false, message: "" });
-                  }}
-                  inputMode="numeric"
-                  maxLength={6}
-                  placeholder="Enter pincode"
-                  className="min-w-0 flex-1 py-3 pr-3 text-sm outline-none"
-                />
-                <button type="button" onClick={handleCheckDelivery} className="px-4 text-sm font-black text-[#3e3e3e]">
-                  Check
-                </button>
-              </div>
-              {pincodeStatus.checked && (
-                <p className={`mt-2 text-xs font-bold ${pincodeStatus.valid ? "text-[#0f8b57]" : "text-red-600"}`}>
-                  {pincodeStatus.message || (pincodeStatus.valid ? "Pincode verified" : "Invalid pincode")}
-                </p>
-              )}
+              <DeliveryTimeSlotSelector />
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#ebebeb] bg-white p-3 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:pb-[calc(12px+env(safe-area-inset-bottom))] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.1)] sm:grid-cols-[1fr_1fr_auto] md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">

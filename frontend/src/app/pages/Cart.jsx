@@ -16,7 +16,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "../components/ui/alert-dialog";
-import DeliveryTimeSlotSelector from "../components/DeliveryTimeSlotSelector";
 
 /* ── date helpers ── */
 function localDate(offsetDays = 0) {
@@ -338,67 +337,63 @@ function Cart() {
                       )}
                     </div>
                     
-                    <div className="mt-3 flex flex-wrap items-center gap-2 sm:mt-4 sm:gap-3">
-                      {item.isStampReward ? (
-                        <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-[#f7f7f7] px-3">
-                          <span className="text-[10px] font-black text-[#6f7573]">Qty: 1</span>
-                        </div>
-                      ) : (
-                        <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-white">
-                          <button
-                            type="button"
-                            onClick={() =>
-                              handleQuantityChange(item.id, item.quantity - 1)
-                            }
-                            className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
-                          >
-                            <Minus size={10} />
-                          </button>
-                          <span className="w-6 text-center text-[10px] font-black">
-                            {item.quantity}
-                          </span>
-                          <button
-                            type="button"
-                            disabled={item.quantity >= 9}
-                            onClick={() =>
-                              handleQuantityChange(item.id, item.quantity + 1)
-                            }
-                            className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
-                          >
-                            <Plus size={10} />
-                          </button>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(item.id)}
-                        className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[12px] font-black text-[#e61951] hover:bg-[#fff2e9] sm:px-3"
-                      >
-                        <Trash2 size={12} />
-                        Remove
-                      </button>
-                    </div>
-                    <div className="mt-2 w-full max-w-[200px]">
-                      <input
-                        type="text"
-                        placeholder="Message on cake (Optional)"
-                        value={item.messageOnCake || ""}
-                        onChange={(e) => setMessageOnCake(item.id, e.target.value)}
-                        maxLength={30}
-                        className="bk-input h-9 w-full px-3 text-[12px] placeholder:text-[#8e9492] placeholder:font-medium rounded-lg border border-[#ebebeb] bg-[#fdfdfd] focus:border-[#3e3e3e] focus:ring-1 transition-all"
-                      />
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2 sm:mt-4 sm:gap-3">
+                      <div className="w-full max-w-[200px] flex-1">
+                        <input
+                          type="text"
+                          placeholder="Message on cake (Optional)"
+                          value={item.messageOnCake || ""}
+                          onChange={(e) => setMessageOnCake(item.id, e.target.value)}
+                          maxLength={30}
+                          className="bk-input h-9 w-full px-3 text-[12px] placeholder:text-[#8e9492] placeholder:font-medium rounded-lg border border-[#ebebeb] bg-[#fdfdfd] focus:border-[#3e3e3e] focus:ring-1 transition-all"
+                        />
+                      </div>
+                      
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        {item.isStampReward ? (
+                          <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-[#f7f7f7] px-3">
+                            <span className="text-[10px] font-black text-[#6f7573]">Qty: 1</span>
+                          </div>
+                        ) : (
+                          <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-white">
+                            <button
+                              type="button"
+                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
+                            >
+                              <Minus size={10} />
+                            </button>
+                            <span className="w-6 text-center text-[10px] font-black">
+                              {item.quantity}
+                            </span>
+                            <button
+                              type="button"
+                              disabled={item.quantity >= 9}
+                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
+                            >
+                              <Plus size={10} />
+                            </button>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemove(item.id)}
+                          className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[12px] font-black text-[#e61951] hover:bg-[#fff2e9] sm:px-3"
+                        >
+                          <Trash2 size={12} />
+                          Remove
+                        </button>
+                      </div>
                     </div>
                   </div>
-                  {index === cart.length - 1 && (
+                  {index === cart.length - 1 && hasRewardInCart && (
                     <div className="col-span-2 sm:col-span-3 mt-1 w-full">
-                      {hasRewardInCart && (
-                        <RewardDeliveryDatePicker
-                          selectedDate={deliveryDate}
-                          onSelect={handleDeliveryDateSelect}
-                          blockedDates={blockedDates}
-                        />
-                      )}
-                      <DeliveryTimeSlotSelector />
+                      <RewardDeliveryDatePicker
+                        selectedDate={deliveryDate}
+                        onSelect={handleDeliveryDateSelect}
+                        blockedDates={blockedDates}
+                      />
                     </div>
                   )}
                   {/* <div className="col-span-2 flex items-center justify-between border-t border-[#ebebeb] pt-3 text-left sm:col-auto sm:block sm:border-0 sm:pt-0 sm:text-right">

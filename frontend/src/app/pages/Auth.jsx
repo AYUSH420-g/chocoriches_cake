@@ -40,7 +40,7 @@ function Auth() {
       if (!payload.email.trim()) return toast.error("Email Address is required");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return toast.error("Please enter a valid email address");
       if (!payload.phone.trim()) return toast.error("Mobile Number is required");
-      if (!/^\d{10,}$/.test(payload.phone.replace(/\D/g, ""))) return toast.error("Please enter a valid mobile number (at least 10 digits)");
+      if (!/^\d{10}$/.test(payload.phone.replace(/\D/g, ""))) return toast.error("Please enter a valid exactly 10-digit mobile number");
       if (!payload.password) return toast.error("Password is required");
       if (payload.password.length < 6) return toast.error("Password must be at least 6 characters long");
     } else {
@@ -167,7 +167,7 @@ function Auth() {
             >
               {!isLogin && <MobileField icon={User} label="Full Name" name="name" placeholder="Enter full name" required />}
               <MobileField icon={Mail} label="Email Address" name="email" type="email" placeholder="Enter email address" required />
-              {!isLogin && <MobileField icon={Phone} label="Mobile Number" name="phone" placeholder="Enter mobile number" required />}
+              {!isLogin && <MobileField icon={Phone} label="Mobile Number" name="phone" placeholder="Enter mobile number" required maxLength={10} />}
               <MobileField icon={Lock} label="Password" name="password" type="password" placeholder="Enter password" required />
               {isLogin && (
                 <div className="flex justify-end text-sm">
@@ -266,7 +266,7 @@ function Auth() {
                   <Field icon={User} label="Full Name" name="name" placeholder="Ayush Sharma" required />
                 )}
                 <Field icon={Mail} label="Email Address" name="email" type="email" placeholder="ayush@example.com" required />
-                {!isLogin && <Field icon={Phone} label="Mobile Number" name="phone" placeholder="98765 43210" required />}
+                {!isLogin && <Field icon={Phone} label="Mobile Number" name="phone" placeholder="98765 43210" required maxLength={10} />}
                 <Field icon={Lock} label="Password" name="password" type="password" placeholder="Enter password" required />
 
                 {isLogin && (
@@ -312,7 +312,7 @@ function Auth() {
   );
 }
 
-function Field({ icon: Icon, label, name, type = "text", placeholder, required = false }) {
+function Field({ icon: Icon, label, name, type = "text", placeholder, required = false, maxLength }) {
   return (
     <label className="block">
       <span className="mb-2 block text-sm font-black text-[#1f2221]">{label}</span>
@@ -323,6 +323,7 @@ function Field({ icon: Icon, label, name, type = "text", placeholder, required =
           type={type}
           placeholder={placeholder}
           required={required}
+          maxLength={maxLength}
           className="bk-input h-12 px-4 pl-12 text-sm"
         />
       </span>
@@ -330,7 +331,7 @@ function Field({ icon: Icon, label, name, type = "text", placeholder, required =
   );
 }
 
-function MobileField({ icon: Icon, label, name, type = "text", placeholder, required = false }) {
+function MobileField({ icon: Icon, label, name, type = "text", placeholder, required = false, maxLength }) {
   return (
     <label className="block">
       <span className="sr-only">{label}</span>
@@ -341,6 +342,7 @@ function MobileField({ icon: Icon, label, name, type = "text", placeholder, requ
           type={type}
           placeholder={placeholder}
           required={required}
+          maxLength={maxLength}
           className="h-[48px] w-full rounded-[10px] border border-[#dfe3e1] bg-white px-4 pl-14 text-base font-bold text-[#1f2221] outline-none transition focus:border-[#e61951] focus:ring-4 focus:ring-[#e61951]/10"
         />
       </span>
