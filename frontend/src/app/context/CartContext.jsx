@@ -61,7 +61,18 @@ function CartProvider({ children }) {
     async (product, quantity = 1, size = "Half Kg", baseFlavour = "", creamFlavour = "", isStampReward = false) => {
       const deliveryDate = sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10);
       const item = await addCartItem({ productId: product.id, size, quantity, baseFlavour, creamFlavour, deliveryDate, isStampReward });
-      await refreshCart();
+      // Optimistically merge the returned item into cart state immediately
+      setCart((prev) => {
+        const exists = prev.findIndex((ci) => ci.id === item.id);
+        if (exists >= 0) {
+          const next = [...prev];
+          next[exists] = item;
+          return next;
+        }
+        return [...prev, item];
+      });
+      // Sync with server in background (don't block the UI)
+      refreshCart().catch(() => void 0);
       return item;
     },
     [refreshCart]
