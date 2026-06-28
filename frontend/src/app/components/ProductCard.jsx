@@ -3,7 +3,7 @@ import { Heart } from "lucide-react";
 import { toast } from "sonner";
 import { useEffect, useState } from "react";
 import { useCart } from "../context/CartContext";
-import { formatOriginalPrice, formatPrice } from "../utils/format";
+import { formatOriginalPrice, formatPrice, optimizeImage } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 
 function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, mobileShopCard = false, inlineRating = false }) {
@@ -48,7 +48,7 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
       <article className="bk-card flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-lg hover:shadow-black/10">
         <div className={`relative overflow-hidden bg-[#f1f1f1] ${compact ? "aspect-square md:aspect-[1.12/1]" : "aspect-square md:aspect-[1.05/1]"}`}>
           <img
-            src={product.image}
+            src={optimizeImage(product.image, 500)}
             alt={product.name}
             loading="lazy"
             className="h-full w-full object-cover transition duration-700 group-hover:scale-105"

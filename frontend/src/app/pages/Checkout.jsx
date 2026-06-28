@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { toast } from "sonner";
 import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings, getProfile } from "../api/client";
 import { useCart } from "../context/CartContext";
-import { formatPrice, priceToRupees } from "../utils/format";
+import { formatPrice, priceToRupees, optimizeImage } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
 import { getStoredUser, getGuestUser, saveGuestUser, saveUserSession } from "../utils/session";
 import FullScreenLoader from "../components/FullScreenLoader";
@@ -445,7 +445,7 @@ function Checkout() {
                       <div className="space-y-3">
                         {cart.map((item) => (
                           <div key={item.id} className="flex gap-4 rounded-xl border border-[#ebebeb] p-4">
-                            <img src={item.image} alt={item.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
+                            <img src={optimizeImage(item.image, 200)} alt={item.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                             <div className="min-w-0 flex-1 flex flex-col justify-center">
                               <p className="line-clamp-1 text-base font-black text-[#1f2221]">{item.name}</p>
                               <p className="mt-1 text-sm font-bold text-[#6f7573]">{item.size} × {item.quantity}</p>

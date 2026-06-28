@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { motion } from "motion/react";
 import { Camera, CheckCircle2, MessageCircle, Palette, Sparkles, Heart } from "lucide-react";
+import { optimizeImage } from "../utils/format";
 
 const process = [
   [MessageCircle, "Message on WhatsApp", "Reach out to us on WhatsApp to start your custom cake journey."],
@@ -66,7 +67,7 @@ function CustomCake() {
             <div className="group relative mt-6 w-full max-w-lg md:mt-10">
               <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-[#e61951] to-[#ff8c00] opacity-20 blur transition group-hover:opacity-40 duration-500" />
               <img 
-                src="https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&q=80&w=800" 
+                src={optimizeImage("https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&q=80&w=800", 800)} 
                 alt="Beautiful customized cake" 
                 loading="lazy"
                 className="relative mx-auto h-[250px] w-full rounded-lg object-cover shadow-md transition duration-500 group-hover:scale-[1.02] md:h-[320px] md:rounded-2xl" 

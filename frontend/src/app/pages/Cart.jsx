@@ -5,7 +5,7 @@ import { ArrowRight, BadgePercent, Calendar, ChevronLeft, ChevronRight, Minus, P
 import { motion, AnimatePresence } from "motion/react";
 import { getBlockedDates, getPublicSettings } from "../api/client";
 import { useCart } from "../context/CartContext";
-import { formatPrice } from "../utils/format";
+import { formatPrice, optimizeImage } from "../utils/format";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -298,7 +298,7 @@ function Cart() {
                 >
                   <div className="aspect-square overflow-hidden rounded-lg bg-[#f1f1f1]">
                     <img
-                      src={item.image}
+                      src={optimizeImage(item.image, 300)}
                       alt={item.name}
                       loading="lazy"
                       className="h-full w-full object-cover"

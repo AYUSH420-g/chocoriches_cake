@@ -4,7 +4,7 @@ import { X, Gift, CreditCard } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { getStoredUser, isUserLoggedIn, SESSION_EVENT } from "../utils/session";
 import { getProductsPaginated } from "../api/client";
-import { formatPrice } from "../utils/format";
+import { formatPrice, optimizeImage } from "../utils/format";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
 
@@ -226,7 +226,7 @@ function StampSystem() {
                         <div key={product.id} className="overflow-hidden rounded-xl border border-[#ebebeb] bg-white transition hover:border-[#0f8b57]">
                           <div className="aspect-[4/3] w-full overflow-hidden bg-[#f7f7f7]">
                             <img
-                              src={product.image}
+                              src={optimizeImage(product.image, 200)}
                               alt={product.name}
                               className="h-full w-full object-cover"
                               loading="lazy"

@@ -58,7 +58,7 @@ import {
   deleteAdminSubcategory,
   uploadImage
 } from "../api/client";
-import { formatPrice } from "../utils/format";
+import { formatPrice, optimizeImage } from "../utils/format";
 import { isUserLoggedIn } from "../utils/session";
 import { Link } from "react-router";
 
@@ -843,7 +843,7 @@ function Admin() {
                         <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1] text-[#9a9f9d] hover:text-[#e61951] cursor-grab active:cursor-grabbing">
                           <GripVertical size={20} />
                         </div>
-                        <img src={product.image} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
+                        <img src={optimizeImage(product.image, 100)} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                         <div>
                           <h3 className="font-black">{product.name}</h3>
                           <p className="text-sm font-bold text-[#6f7573]">
@@ -1275,7 +1275,7 @@ function ImageField({ value, onUrlChange, onFileChange }) {
       </label>
       <div className="grid gap-3 sm:grid-cols-[120px_1fr] sm:items-center">
         <div className="aspect-square overflow-hidden rounded-lg border border-[#ebebeb] bg-[#f7f7f7]">
-          {value ? <img src={value} alt="Product preview" className="h-full w-full object-cover" /> : null}
+          {value ? <img src={optimizeImage(value, 300)} alt="Product preview" className="h-full w-full object-cover" /> : null}
         </div>
         <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[#e61951]/40 bg-[#fff2e9] px-4 py-5 text-center text-sm font-bold text-[#e61951]">
           <Upload size={20} />

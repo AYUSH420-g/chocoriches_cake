@@ -5,9 +5,9 @@ import { ArrowRight, CakeSlice, Clock, Gift, ShieldCheck, Sparkles, Star, Truck 
 import { getProductsPaginated } from "../api/client";
 
 const heroBanners = [
-  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208225/chocoriches_migrated/hero-banner.png", alt: "Theme Cakes Delivery" },
-  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208226/chocoriches_migrated/hreo-banner-2.png", alt: "Special Cake Collection" },
-  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208228/chocoriches_migrated/hero-banner-3.png", alt: "Premium Cake Selection" },
+  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/q_auto,f_auto,w_1000/v1781208225/chocoriches_migrated/hero-banner.png", alt: "Theme Cakes Delivery" },
+  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/q_auto,f_auto,w_1000/v1781208226/chocoriches_migrated/hreo-banner-2.png", alt: "Special Cake Collection" },
+  { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/q_auto,f_auto,w_1000/v1781208228/chocoriches_migrated/hero-banner-3.png", alt: "Premium Cake Selection" },
 ];
 import ProductCard from "../components/ProductCard";
 

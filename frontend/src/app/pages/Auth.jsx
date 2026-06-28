@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useGoogleLogin } from "@react-oauth/google";
 import { login, register, googleLogin } from "../api/client";
 import { clearUserSession, isUserLoggedIn, saveUserSession } from "../utils/session";
+import { optimizeImage } from "../utils/format";
 import FullScreenLoader from "../components/FullScreenLoader";
 
 function Auth() {
@@ -134,7 +135,7 @@ function Auth() {
       <div className="min-h-screen bg-white lg:hidden">
         <div className="relative h-[270px] overflow-hidden bg-[#ffd8dc]">
           <img
-            src="https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208224/chocoriches_migrated/auth-banner.jpg"
+            src={optimizeImage("https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208224/chocoriches_migrated/auth-banner.jpg", 800)}
             alt="Celebration cake with berries and flowers"
             loading="eager"
             className="absolute inset-0 h-full w-full object-cover"
@@ -212,7 +213,7 @@ function Auth() {
         <div className="grid w-full max-w-5xl overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-[#ebebeb] md:rounded-xl lg:grid-cols-[0.95fr_1.05fr]">
           <div className="relative hidden min-h-[620px] overflow-hidden bg-[#fff2e9] p-10 lg:block">
             <img
-              src="https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208224/chocoriches_migrated/auth-banner.jpg"
+              src={optimizeImage("https://res.cloudinary.com/dyk0mzxqu/image/upload/v1781208224/chocoriches_migrated/auth-banner.jpg", 800)}
               alt="Celebration cake with berries and flowers"
               loading="lazy"
               className="absolute inset-0 h-full w-full object-cover"

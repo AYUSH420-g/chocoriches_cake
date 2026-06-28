@@ -32,6 +32,16 @@ function reviewCountFor(id = "1") {
   return counts[(seed - 1) % counts.length];
 }
 
+export function optimizeImage(url, width = 500) {
+  if (!url || typeof url !== "string") return url;
+  if (url.includes("res.cloudinary.com") && url.includes("/upload/")) {
+    // Prevent double injection if already optimized
+    if (url.includes("/upload/q_auto")) return url;
+    return url.replace("/upload/", `/upload/q_auto,f_auto,w_${width}/`);
+  }
+  return url;
+}
+
 export {
   formatOriginalPrice,
   formatPrice,

@@ -8,6 +8,7 @@ import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
 import { wishlistIds } from "../utils/wishlist";
+import { optimizeImage } from "../utils/format";
 import FullScreenLoader from "../components/FullScreenLoader";
 
 function SectionLoader({ label }) {
@@ -518,7 +519,7 @@ function Profile() {
                               return (
                                 <div key={idx} className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white shadow-sm bg-[#fbfbfb] grid place-items-center">
                                   {p?.image ? (
-                                    <img src={p.image} alt={itemName} className="h-full w-full object-cover" />
+                                    <img src={optimizeImage(p.image, 100)} alt={itemName} className="h-full w-full object-cover" />
                                   ) : (
                                     <Package size={14} className="text-[#a0a5a3]" />
                                   )}
@@ -653,7 +654,7 @@ function Profile() {
                 <div className="grid gap-3 sm:grid-cols-2">
                   {favouriteProducts.length ? favouriteProducts.map((product) => (
                     <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e61951]">
-                      <img src={product.image} alt={product.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
+                      <img src={optimizeImage(product.image, 200)} alt={product.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
                       <div>
                         <h3 className="text-sm font-black text-[#1f2221]">{product.name}</h3>
                         <p className="mt-1 text-sm font-bold text-[#1f2221]">{formatPrice(product.price)}</p>

@@ -23,7 +23,7 @@ import { toast } from "sonner";
 import { checkPincode, getBlockedDates, getProduct, getProductReviews } from "../api/client";
 import { isUserLoggedIn } from "../utils/session";
 import { useCart } from "../context/CartContext";
-import { formatOriginalPrice, formatPrice } from "../utils/format";
+import { formatOriginalPrice, formatPrice, optimizeImage } from "../utils/format";
 import { WISHLIST_EVENT, isWishlisted, toggleWishlist } from "../utils/wishlist";
 import FullScreenLoader from "../components/FullScreenLoader";
 
@@ -543,7 +543,7 @@ function ProductDetail() {
             className="bk-card self-start overflow-hidden p-3 max-md:rounded-none max-md:border-0 max-md:bg-transparent max-md:p-0 max-md:shadow-none"
           >
             <div className="relative aspect-square overflow-hidden bg-[#f1f1f1] md:rounded-lg">
-              <img src={product.image} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+              <img src={optimizeImage(product.image, 1000)} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
               <button
                 type="button"
                 title="Wishlist"
