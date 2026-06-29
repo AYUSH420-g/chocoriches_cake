@@ -10,7 +10,7 @@ const heroBanners = [
   { src: "https://res.cloudinary.com/dyk0mzxqu/image/upload/q_auto,f_auto,w_1000/v1781208228/chocoriches_migrated/hero-banner-3.png", alt: "Premium Cake Selection" },
 ];
 import ProductCard from "../components/ProductCard";
-
+import { ProductCardSkeleton } from "../components/ui/ProductCardSkeleton";
 const wishCategories = [
   {
     name: "Classic",
@@ -212,11 +212,7 @@ function Home() {
         <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
-                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
-                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
-                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
-                </div>
+                <ProductCardSkeleton key={i} compact />
               ))
             : trendingCakes.map((cake) => <ProductCard key={cake.id} product={cake} mobileShopCard={true} />)}
         </div>
@@ -249,11 +245,7 @@ function Home() {
         <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
           {isLoading
             ? Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
-                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
-                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
-                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
-                </div>
+                <ProductCardSkeleton key={i} compact />
               ))
             : allCakes.map((cake) => <ProductCard key={cake.id} product={cake}  mobileShopCard={true} />)}
         </div>
@@ -264,8 +256,8 @@ function Home() {
           </div>
         )}
         {loadingMore && (
-          <div className="flex justify-center py-6">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e63946]" />
+          <div className="grid grid-cols-2 gap-[8px] mt-4 md:mt-5 md:gap-4 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} compact />)}
           </div>
         )}
         <div ref={sentinelRef} className="h-1" />

@@ -272,7 +272,7 @@ function Checkout() {
 
   return (
     <div className="bk-page bg-[#f8f8f8] min-h-screen">
-      <FullScreenLoader visible={loading} />
+
       <div className="bk-shell pb-4 pt-2 md:py-5 bg-[#ffffff]">
         <div className="mb-4 text-center md:mb-5">
          

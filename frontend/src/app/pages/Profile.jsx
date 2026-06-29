@@ -10,14 +10,15 @@ import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from
 import { wishlistIds } from "../utils/wishlist";
 import { optimizeImage } from "../utils/format";
 import FullScreenLoader from "../components/FullScreenLoader";
+import { Skeleton } from "../components/ui/Skeleton";
 
 function SectionLoader({ label }) {
   return (
-    <div className="flex flex-col items-center justify-center gap-3 py-16">
-      <div className="relative grid h-12 w-12 place-items-center">
-        <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e63946]" />
-      </div>
-      <p className="text-sm font-bold text-[#6f7573]">{label || "Loading..."}</p>
+    <div className="space-y-4 py-8">
+      <Skeleton className="h-6 w-1/4" />
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-24 w-full" />
+      <Skeleton className="h-24 w-full" />
     </div>
   );
 }
@@ -430,23 +431,23 @@ function Profile() {
       return (
         <div className="bk-page bg-white">
           <div className="bk-shell py-4 md:py-8">
-            <div className="mx-auto max-w-2xl space-y-4 animate-pulse">
+            <div className="mx-auto max-w-2xl space-y-4">
               <div className="rounded-2xl border border-[#ebebeb] p-5 md:p-6 flex items-center gap-5">
-                <div className="h-16 w-16 md:h-20 md:w-20 rounded-full bg-[#f5f0ec] shrink-0"></div>
+                <Skeleton className="h-16 w-16 md:h-20 md:w-20 rounded-full shrink-0" />
                 <div className="flex-1 space-y-3">
-                  <div className="h-6 w-2/3 rounded-lg bg-[#f1f1f1]"></div>
-                  <div className="h-4 w-1/2 rounded-lg bg-[#f5f0ec]"></div>
+                  <Skeleton className="h-6 w-2/3" />
+                  <Skeleton className="h-4 w-1/2" />
                 </div>
               </div>
               <div className="rounded-2xl border border-[#ebebeb] overflow-hidden">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <div key={i} className="flex items-center gap-4 border-b border-[#ebebeb] last:border-0 px-5 py-4">
-                    <div className="h-5 w-5 rounded bg-[#f5f0ec]"></div>
-                    <div className="h-4 w-1/3 rounded-lg bg-[#f1f1f1]"></div>
+                    <Skeleton className="h-5 w-5 rounded" />
+                    <Skeleton className="h-4 w-1/3" />
                   </div>
                 ))}
               </div>
-              <div className="h-[60px] rounded-2xl border border-[#ebebeb] bg-[#fdf8f5]"></div>
+              <Skeleton className="h-[60px] rounded-2xl w-full" />
             </div>
           </div>
         </div>

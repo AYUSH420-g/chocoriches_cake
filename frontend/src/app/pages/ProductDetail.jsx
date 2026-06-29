@@ -16,9 +16,9 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  X,
   Info
 } from "lucide-react";
+import { Skeleton } from "../components/ui/Skeleton";
 import { toast } from "sonner";
 import { getBlockedDates, getProduct, getProductReviews } from "../api/client";
 import { isUserLoggedIn } from "../utils/session";
@@ -482,15 +482,15 @@ function ProductDetail() {
 
   if (loading || !product || !selectedWeight) {
     return (
-      <div className="bk-page animate-pulse">
+      <div className="bk-page">
         <div className="mx-auto max-w-6xl p-4 md:p-8">
            <div className="grid gap-6 md:grid-cols-2 md:gap-8">
-              <div className="aspect-square w-full rounded-2xl bg-[#f5f0ec]"></div>
+              <Skeleton className="aspect-square w-full rounded-2xl" />
               <div className="space-y-4 pt-4">
-                 <div className="h-8 w-3/4 rounded-lg bg-[#f1f1f1]"></div>
-                 <div className="h-4 w-1/2 rounded-lg bg-[#f1f1f1]"></div>
-                 <div className="mt-8 h-10 w-1/3 rounded-lg bg-[#f1f1f1]"></div>
-                 <div className="h-32 w-full rounded-lg bg-[#f5f0ec]"></div>
+                 <Skeleton className="h-8 w-3/4 rounded-lg" />
+                 <Skeleton className="h-4 w-1/2 rounded-lg" />
+                 <Skeleton className="mt-8 h-10 w-1/3 rounded-lg" />
+                 <Skeleton className="h-32 w-full rounded-lg" />
               </div>
            </div>
         </div>

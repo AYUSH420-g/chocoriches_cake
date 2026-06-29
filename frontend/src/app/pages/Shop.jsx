@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { ChevronDown, Filter, SlidersHorizontal, Truck, X } from "lucide-react";
 import { getProductsPaginated, getCategories, getSubcategories } from "../api/client";
 import ProductCard from "../components/ProductCard";
-
+import { ProductCardSkeleton } from "../components/ui/ProductCardSkeleton";
 const priceFilters = {
   "Under Rs. 249": 249,
   "Under Rs. 549": 549,
@@ -293,11 +293,7 @@ function Shop() {
           <div className="grid grid-cols-2 gap-[8px] md:gap-4 xl:grid-cols-3">
             {isLoading ? (
               Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="animate-pulse rounded-lg border border-[#ebebeb] bg-white p-2 shadow-sm md:p-3">
-                  <div className="aspect-square w-full rounded-lg bg-[#f5f0ec]"></div>
-                  <div className="mt-4 h-4 w-2/3 rounded-full bg-[#f1f1f1]"></div>
-                  <div className="mt-2 h-4 w-1/2 rounded-full bg-[#f1f1f1]"></div>
-                </div>
+                <ProductCardSkeleton key={i} compact />
               ))
             ) : (
               <AnimatePresence mode="popLayout">
@@ -327,8 +323,8 @@ function Shop() {
             </div>
           )}
           {loadingMore && (
-            <div className="flex justify-center py-6">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e63946]" />
+            <div className="grid grid-cols-2 gap-[8px] mt-4 md:mt-5 md:gap-4 lg:grid-cols-4">
+              {Array.from({ length: 4 }).map((_, i) => <ProductCardSkeleton key={i} compact />)}
             </div>
           )}
           <div ref={sentinelRef} className="h-1" />
