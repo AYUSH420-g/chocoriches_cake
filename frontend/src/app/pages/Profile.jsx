@@ -10,7 +10,7 @@ import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from
 import { wishlistIds } from "../utils/wishlist";
 import { optimizeImage } from "../utils/format";
 import FullScreenLoader from "../components/FullScreenLoader";
-import { Skeleton } from "../components/ui/Skeleton";
+import { Skeleton } from "../components/ui/skeleton";
 
 function SectionLoader({ label }) {
   return (

@@ -18,7 +18,7 @@ import {
   Truck,
   Info
 } from "lucide-react";
-import { Skeleton } from "../components/ui/Skeleton";
+import { Skeleton } from "../components/ui/skeleton";
 import { toast } from "sonner";
 import { getBlockedDates, getProduct, getProductReviews } from "../api/client";
 import { isUserLoggedIn } from "../utils/session";
