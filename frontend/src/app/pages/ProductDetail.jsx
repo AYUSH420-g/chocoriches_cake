@@ -202,11 +202,11 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
                   opt.isDisabled
                     ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
                     : isActive
-                      ? "border-[#e63946]/50 bg-[#ffeadc] font-semibold"
+                      ? "border-[#ffbfbf] bg-[#fff4ed] font-semibold"
                       : "border-[#ebebeb] bg-transparent hover:border-[#e63946]"
                 }`}
               >
-                <span className="text-sm font-semibold text-[#1f2221]">{opt.label}</span>
+                <span className="text-sm font-bold text-[#1f2221]">{opt.label}</span>
                 {opt.sub ? (
                   <span className="text-[11px] text-[#6f7573]">{opt.sub}</span>
                 ) : isLaterSelected ? (
@@ -602,7 +602,7 @@ function ProductDetail() {
                   <select
                     value={baseFlavour}
                     onChange={(e) => setBaseFlavour(e.target.value)}
-                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e63946] focus:border-[#e63946]"
+                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#5c505f] outline-none hover:border-[#e63946] focus:border-[#e63946]"
                   >
                     <option value="Chocolate base">Chocolate base</option>
                     <option value="Vanilla base">Vanilla base</option>
@@ -616,7 +616,7 @@ function ProductDetail() {
                   <select
                     value={creamFlavour}
                     onChange={(e) => setCreamFlavour(e.target.value)}
-                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e63946] focus:border-[#e63946]"
+                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#5c605f] outline-none hover:border-[#e63946] focus:border-[#e63946]"
                   >
                     <option value="Chocolate cream">Chocolate cream</option>
                     <option value="Vanilla cream">Vanilla cream</option>
@@ -659,7 +659,7 @@ function ProductDetail() {
                     onClick={() => setSelectedWeight(option)}
                     className={`rounded-sm border p-1 text-left transition ${
                       selectedWeight.label === option.label
-                        ? "border-[#e63946]/50 font-semibold bg-[#ffeadc]"
+                        ? "border-[#ffbfbf] font-bold bg-[#fff4ed]"
                         : "border-[#ebebeb] font-normal bg-transparent hover:border-[#e63946]"
                     }`}
                   >
