@@ -5,10 +5,10 @@ export default function Terms() {
     <div className="bk-page min-h-screen bg-[#f7f7f7] py-6 md:py-16">
       <div className="bk-shell max-w-4xl mx-auto">
         <div className="mb-6 text-center md:mb-10">
-          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-14 md:w-14">
+          <span className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-full bg-[#fff2e9] text-[#e63946] md:mb-4 md:h-14 md:w-14">
             <ShieldCheck size={28} />
           </span>
-          <h1 className="text-2xl font-black tracking-tight text-[#e61951] sm:text-4xl">
+          <h1 className="text-2xl font-black tracking-tight text-[#e63946] sm:text-4xl">
             Terms &amp; Conditions
           </h1>
         </div>

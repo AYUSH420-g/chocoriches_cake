@@ -25,7 +25,7 @@ export default function TopLoader() {
           animate={{ width: "100%", opacity: 1 }}
           exit={{ opacity: 0, transition: { duration: 0.3 } }}
           transition={{ duration: 0.6, ease: "easeInOut" }}
-          className="fixed top-0 left-0 z-[9999] h-[3px] bg-[#e61951] shadow-[0_0_10px_#e61951]"
+          className="fixed top-0 left-0 z-[9999] h-[3px] bg-[#e63946] shadow-[0_0_10px_#e63946]"
         />
       )}
     </AnimatePresence>

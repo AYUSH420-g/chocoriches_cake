@@ -341,18 +341,18 @@ function Checkout() {
                               }}
                               className={`relative overflow-hidden rounded-xl border-2 p-4 text-left transition-all ${
                                   checkoutData.addressId === addr.id
-                                    ? "border-[#e61951] bg-[#fff2e9] shadow-sm"
-                                    : "border-[#ebebeb] bg-white hover:border-[#e61951]"
+                                    ? "border-[#e63946] bg-[#fff2e9] shadow-sm"
+                                    : "border-[#ebebeb] bg-white hover:border-[#e63946]"
                                 }`}
                             >
                               <div className="mb-2 flex items-center justify-between">
                                 <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-black uppercase tracking-wider ${
-                                  checkoutData.addressId === addr.id ? "bg-[#e61951] text-white" : "bg-[#f1f1f1] text-[#6f7573]"
+                                  checkoutData.addressId === addr.id ? "bg-[#e63946] text-white" : "bg-[#f1f1f1] text-[#6f7573]"
                                 }`}>
                                   {addr.label === "Home" ? <Home size={12}/> : addr.label === "Office" ? <Briefcase size={12}/> : <MapPin size={12}/>}
                                   {addr.label}
                                 </span>
-                                {checkoutData.addressId === addr.id && <CheckCircle2 size={18} className="text-[#e61951]" />}
+                                {checkoutData.addressId === addr.id && <CheckCircle2 size={18} className="text-[#e63946]" />}
                               </div>
                               <p className="truncate text-sm font-black text-[#1f2221]">{addr.name}</p>
                               <p className="truncate mt-1 text-xs text-[#6f7573]">{addr.address}</p>
@@ -409,21 +409,21 @@ function Checkout() {
                       <div className="flex gap-3">
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Home" defaultChecked={checkoutData.addressLabel !== "Office" && checkoutData.addressLabel !== "Other"} className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <Home size={20} />
                             <span className="text-xs font-bold">Home</span>
                           </div>
                         </label>
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Office" defaultChecked={checkoutData.addressLabel === "Office"} className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <Briefcase size={20} />
                             <span className="text-xs font-bold">Office</span>
                           </div>
                         </label>
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Other" defaultChecked={checkoutData.addressLabel === "Other"} className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <MapPin size={20} />
                             <span className="text-xs font-bold">Other</span>
                           </div>
@@ -486,8 +486,8 @@ function Checkout() {
                           <label
                             className={`flex cursor-pointer items-center justify-between rounded-xl border-2 p-3 transition-all ${
                               deliveryOption === "delivery"
-                                ? "border-[#e61951] bg-[#fff2e9]"
-                                : "border-[#ebebeb] bg-white hover:border-[#e61951]/40"
+                                ? "border-[#e63946] bg-[#fff2e9]"
+                                : "border-[#ebebeb] bg-white hover:border-[#e63946]/40"
                             }`}
                             onClick={() => setDeliveryOption("delivery")}
                           >
@@ -498,10 +498,10 @@ function Checkout() {
                                 value="delivery"
                                 checked={deliveryOption === "delivery"}
                                 onChange={() => setDeliveryOption("delivery")}
-                                className="h-4 w-4 accent-[#e61951]"
+                                className="h-4 w-4 accent-[#e63946]"
                               />
                               <div className="flex items-center gap-2">
-                                <Truck size={16} className={deliveryOption === "delivery" ? "text-[#e61951]" : "text-[#6f7573]"} />
+                                <Truck size={16} className={deliveryOption === "delivery" ? "text-[#e63946]" : "text-[#6f7573]"} />
                                 <span className={`text-sm font-bold ${deliveryOption === "delivery" ? "text-[#1f2221]" : "text-[#6f7573]"}`}>Delivery Fee</span>
                               </div>
                             </div>

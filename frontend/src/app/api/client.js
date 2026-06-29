@@ -2,7 +2,6 @@ import { getCartSessionId, getUserToken } from "../utils/session";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 const API_BASE_URLS = apiBaseUrls(API_BASE_URL);
-const productDetailRequests = new Map();
 let publicSettingsRequest = null;
 let categoriesRequest = null;
 let subcategoriesRequest = null;
@@ -157,17 +156,7 @@ function getProductsPaginated(filters = {}, page = 1, limit = 12) {
   return request(`/products?${searchParams.toString()}`);
 }
 function getProduct(id) {
-  const productId = String(id || "");
-  if (!productDetailRequests.has(productId)) {
-    productDetailRequests.set(
-      productId,
-      request(`/products/${encodeURIComponent(productId)}`).catch((error) => {
-        productDetailRequests.delete(productId);
-        throw error;
-      })
-    );
-  }
-  return productDetailRequests.get(productId);
+  return request(`/products/${encodeURIComponent(String(id || ""))}`);
 }
 function getCart() {
   return request("/cart");

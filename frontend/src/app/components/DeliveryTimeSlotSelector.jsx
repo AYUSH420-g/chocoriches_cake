@@ -61,7 +61,7 @@ export default function DeliveryTimeSlotSelector() {
 
   if (availableSlots.length === 0) {
     return (
-      <div className="mt-4 rounded-lg bg-[#fff2e9] p-3 text-xs text-[#e61951] font-bold flex items-center gap-2">
+      <div className="mt-4 rounded-lg bg-[#fff2e9] p-3 text-xs text-[#e63946] font-bold flex items-center gap-2">
         <Clock size={14} />
         No delivery slots available for the selected date. Please select a different date.
       </div>

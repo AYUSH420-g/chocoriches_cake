@@ -138,10 +138,10 @@ function CalendarModal({ minDate, blockedDates, selectedDate, onSelect, onClose 
                 onClick={() => { onSelect(iso); onClose(); }}
                 className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition ${
                   isSelected
-                    ? "bg-[#e61951] text-white shadow-md shadow-[#e61951]/30"
+                    ? "bg-[#e63946] text-white shadow-md shadow-[#e63946]/30"
                     : isDisabled
                       ? "cursor-not-allowed text-[#d5d8d6] opacity-40"
-                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946]"
                 }`}
               >
                 {day}
@@ -202,15 +202,15 @@ function DeliveryDatePicker({ isSameDay, selectedDate, onSelect, blockedDates })
                   opt.isDisabled
                     ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
                     : isActive
-                      ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
-                      : "border-[#ebebeb] bg-transparent hover:border-[#e61951]"
+                      ? "border-[#e63946]/50 bg-[#ffeadc] font-semibold"
+                      : "border-[#ebebeb] bg-transparent hover:border-[#e63946]"
                 }`}
               >
                 <span className="text-sm font-semibold text-[#1f2221]">{opt.label}</span>
                 {opt.sub ? (
                   <span className="text-[11px] text-[#6f7573]">{opt.sub}</span>
                 ) : isLaterSelected ? (
-                  <span className="text-[11px] text-[#e61951] font-bold">
+                  <span className="text-[11px] text-[#e63946] font-bold">
                     {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                   </span>
                 ) : (
@@ -537,7 +537,7 @@ function ProductDetail() {
                 aria-pressed={liked}
                 onClick={handleWishlist}
                 className={`absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white shadow-sm md:right-4 md:top-4 md:h-11 md:w-11 ${
-                  liked ? "text-[#e61951]" : "text-[#1f2221] hover:text-[#e61951]"
+                  liked ? "text-[#e63946]" : "text-[#1f2221] hover:text-[#e63946]"
                 }`}
               >
                 <Heart size={21} fill={liked ? "currentColor" : "none"} />
@@ -568,7 +568,7 @@ function ProductDetail() {
                 [Clock, "Freshly Prepared"]
               ].map(([Icon, title]) => (
                 <div key={title} className="flex  bg-[#ffffff] p-3 text-center md:rounded-lg">
-                  <Icon className="my-auto text-[#e61951]" size={16} />
+                  <Icon className="my-auto text-[#e63946]" size={16} />
                   <p className="ml-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
                 </div>
               ))}
@@ -588,7 +588,7 @@ function ProductDetail() {
               {Number(product.discountPercent || 0) > 0 && (
                 <>
                   <span className="pb-1 text-sm font-bold text-[#9a9f9d] line-through">{formatOriginalPrice(effectivePrice, product.discountPercent)}</span>
-                  <span className="mb-1 rounded bg-[#fff2e9] px-2 py-1 text-xs font-black text-[#e61951]">{product.discountPercent}% OFF</span>
+                  <span className="mb-1 rounded bg-[#fff2e9] px-2 py-1 text-xs font-black text-[#e63946]">{product.discountPercent}% OFF</span>
                 </>
               )}
             </div>
@@ -602,7 +602,7 @@ function ProductDetail() {
                   <select
                     value={baseFlavour}
                     onChange={(e) => setBaseFlavour(e.target.value)}
-                    className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e63946] focus:border-[#e63946]"
                   >
                     <option value="Chocolate base">Chocolate base</option>
                     <option value="Vanilla base">Vanilla base</option>
@@ -616,19 +616,19 @@ function ProductDetail() {
                   <select
                     value={creamFlavour}
                     onChange={(e) => setCreamFlavour(e.target.value)}
-                    className="w-full rounded-lg border border-[#36363670] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e61951] focus:border-[#e61951]"
+                    className="w-full rounded-lg border border-[#92929270] bg-transparent p-3 text-sm text-[#1f2221] outline-none hover:border-[#e63946] focus:border-[#e63946]"
                   >
                     <option value="Chocolate cream">Chocolate cream</option>
                     <option value="Vanilla cream">Vanilla cream</option>
                     <option value="Chocolate cream with chocolate chips">Chocolate cream with chocolate chips</option>
                     <option value="Vanilla cream with chocolate chips">Vanilla cream with chocolate chips</option>
                     <option value="Strawberry cream">Strawberry cream</option>
-                    <option value="Strawberry cream">Chocolate Truffle</option>
+                    <option value="Chocolate Truffle">Chocolate Truffle</option>
                   </select>
                 </div>
 
                 <div className="mt-3 text-xs text-[#6f7573]">
-                  <Link to="/contact" className="text-[#e61951] hover:underline font-semibold">Contact us</Link> for any other type of customization
+                  <Link to="/contact" className="text-[#e63946] hover:underline font-semibold">Contact us</Link> for any other type of customization
                 </div>
               </div>
             )}
@@ -659,13 +659,13 @@ function ProductDetail() {
                     onClick={() => setSelectedWeight(option)}
                     className={`rounded-sm border p-1 text-left transition ${
                       selectedWeight.label === option.label
-                        ? "border-[#e61951]/50 font-semibold bg-[#ffeadc]"
-                        : "border-[#ebebeb] font-normal bg-transparent hover:border-[#e61951]"
+                        ? "border-[#e63946]/50 font-semibold bg-[#ffeadc]"
+                        : "border-[#ebebeb] font-normal bg-transparent hover:border-[#e63946]"
                     }`}
                   >
                     <span className="block text-[14px]  text-[#1f2221] text-center items-center">{option.label=='Half Kg'?'0.5 Kg':option.label}</span>
                     {/* <span className="mt-1 block text-xs font-bold text-[#6f7573]">Freshly baked</span> */}
-                    {/* <span className="mt-1 block text-sm font-black text-[#e61951]">{formatPrice(option.price)}</span> */}
+                    {/* <span className="mt-1 block text-sm font-black text-[#e63946]">{formatPrice(option.price)}</span> */}
                   </button>
                 ))}
               </div>
@@ -691,7 +691,7 @@ function ProductDetail() {
     <button
       type="button"
       onClick={() => handleQuantityChange(quantity - 1)}
-      className="grid h-12 w-10 place-items-center text-[#1f2221] hover:text-[#e61951]"
+      className="grid h-12 w-10 place-items-center text-[#1f2221] hover:text-[#e63946]"
     >
       <Minus size={15} />
     </button>
@@ -703,7 +703,7 @@ function ProductDetail() {
     <button
       type="button"
       onClick={() => handleQuantityChange(quantity + 1)}
-      className="grid h-12 w-10 place-items-center text-[#1f2221] hover:text-[#e61951]"
+      className="grid h-12 w-10 place-items-center text-[#1f2221] hover:text-[#e63946]"
     >
       <Plus size={15} />
     </button>
@@ -737,7 +737,7 @@ function ProductDetail() {
                 aria-pressed={liked}
                 onClick={handleWishlist}
                 className={`hidden h-12 w-full place-items-center rounded-lg border border-[#ebebeb] hover:bg-[#fff2e9] sm:grid sm:w-12 ${
-                  liked ? "text-[#e61951]" : "text-[#1f2221] hover:text-[#e61951]"
+                  liked ? "text-[#e63946]" : "text-[#1f2221] hover:text-[#e63946]"
                 }`}
               >
                 <Heart size={20} fill={liked ? "currentColor" : "none"} />
@@ -752,7 +752,7 @@ function ProductDetail() {
                 [Clock, "Freshly Prepared"]
               ].map(([Icon, title]) => (
                 <div key={title} className="flex  bg-[#ffffff] p-3 text-center md:rounded-lg">
-                  <Icon className="my-auto text-[#e61951]" size={16} />
+                  <Icon className="my-auto text-[#e63946]" size={16} />
                   <p className="ml-2 text-[10px] font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-[11px] md:tracking-[0.05em]">{title}</p>
                 </div>
               ))}
@@ -763,7 +763,7 @@ function ProductDetail() {
           <section className="mt-8 px-4 md:px-0">
             <div className="mb-4 flex items-end justify-between gap-3">
               <div>
-                <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951]">reviews</p>
+                <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e63946]">reviews</p>
                 <h2 className="text-xl font-black text-[#1f2221] md:text-2xl">Customer Reviews</h2>
               </div>
               <span className="shrink-0 rounded-full bg-white px-3 py-1 text-xs font-black text-[#6f7573] shadow-sm">
@@ -782,7 +782,7 @@ function ProductDetail() {
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex min-w-0 items-center gap-3">
-                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#fff2e9] text-sm font-black text-[#e61951]">
+                      <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-[#fff2e9] text-sm font-black text-[#e63946]">
                         {(activeReview.userName || "C").slice(0, 1).toUpperCase()}
                       </span>
                       <div className="min-w-0">
@@ -790,7 +790,7 @@ function ProductDetail() {
                         {activeReviewDate && <p className="text-xs font-bold text-[#8a908e]">{activeReviewDate}</p>}
                       </div>
                     </div>
-                    <div className="flex shrink-0 items-center gap-1 text-[#e61951]">
+                    <div className="flex shrink-0 items-center gap-1 text-[#e63946]">
                       {Array.from({ length: 5 }).map((_, i) => (
                         <Star key={i} size={15} fill={i < Number(activeReview.rating || 0) ? "currentColor" : "none"} className={i < Number(activeReview.rating || 0) ? "" : "text-[#ebebeb]"} />
                       ))}
@@ -808,7 +808,7 @@ function ProductDetail() {
                     type="button"
                     aria-label={`Show review ${index + 1}`}
                     onClick={() => setActiveReviewIndex(index)}
-                    className={`h-1.5 rounded-full transition-all ${index === activeReviewIndex ? "w-6 bg-[#e61951]" : "w-1.5 bg-[#d8dcda]"}`}
+                    className={`h-1.5 rounded-full transition-all ${index === activeReviewIndex ? "w-6 bg-[#e63946]" : "w-1.5 bg-[#d8dcda]"}`}
                   />
                 ))}
               </div>

@@ -60,7 +60,7 @@ function ProductCard({ product, compact = false, oneLineTitleOnMobile = false, m
             aria-pressed={liked}
             onClick={handleWishlist}
             className={`absolute right-2.5 top-2.5 grid h-8 w-8 place-items-center rounded-full bg-white/95 shadow-sm transition md:right-3 md:top-3 md:h-9 md:w-9 ${
-              liked ? "text-[#e61951]" : "text-[#1f2221] hover:text-[#e61951]"
+              liked ? "text-[#e63946]" : "text-[#1f2221] hover:text-[#e63946]"
             }`}
           >
             <Heart size={17} fill={liked ? "currentColor" : "none"} />

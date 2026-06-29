@@ -614,7 +614,7 @@ function Admin() {
       <div className="grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-6">
         <Toaster position="top-center" />
         <form onSubmit={handleLogin} className="w-full max-w-md rounded-xl border border-[#ebebeb] bg-white p-5 shadow-xl shadow-black/5 sm:p-8">
-          <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e61951]">
+          <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e63946]">
             <Lock size={26} />
           </span>
           <h1 className="text-2xl font-black text-[#1f2221] sm:text-3xl">ChocoRiches Admin</h1>
@@ -635,7 +635,7 @@ function Admin() {
       <header className="border-b border-[#ebebeb] bg-white">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
-            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#e61951]">Admin Control</p>
+            <p className="text-xs font-black uppercase tracking-[0.2em] text-[#e63946]">Admin Control</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">ChocoRiches Operations</h1>
           </div>
           <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
@@ -662,7 +662,7 @@ function Admin() {
               type="button"
               onClick={() => setActiveTab(key)}
               className={`flex h-11 shrink-0 items-center gap-2 rounded-lg px-3 text-sm font-black transition lg:w-full lg:gap-3 lg:px-4 ${
-                activeTab === key ? "bg-[#e61951] text-white" : "text-[#5f6663] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                activeTab === key ? "bg-[#e63946] text-white" : "text-[#5f6663] hover:bg-[#fff2e9] hover:text-[#e63946]"
               }`}
             >
               <Icon size={17} />
@@ -677,16 +677,16 @@ function Admin() {
               <p className="text-sm font-bold text-[#6f7573]">Active area</p>
               <h2 className="flex items-center gap-3 text-xl font-black sm:text-2xl">
                 {activeTabMeta?.[1]}
-                {isFetchingTab && <RefreshCw size={20} className="animate-spin text-[#e61951]" />}
+                {isFetchingTab && <RefreshCw size={20} className="animate-spin text-[#e63946]" />}
               </h2>
             </div>
-            {loading && <p className="text-sm font-black text-[#e61951]">Loading...</p>}
+            {loading && <p className="text-sm font-black text-[#e63946]">Loading...</p>}
           </div>
 
           {isFetchingTab ? (
             <div className="grid h-64 place-items-center rounded-xl border border-[#ebebeb] bg-white text-[#6f7573]">
               <div className="flex flex-col items-center gap-3">
-                <RefreshCw size={28} className="animate-spin text-[#e61951]" />
+                <RefreshCw size={28} className="animate-spin text-[#e63946]" />
                 <p className="text-sm font-bold">Loading {activeTabMeta?.[1]}...</p>
               </div>
             </div>
@@ -839,9 +839,9 @@ function Admin() {
                             reorderProducts(draggedProductIndex, index);
                           }
                         }}
-                        className={`grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[auto_72px_1fr_auto] sm:items-center transition-all cursor-move hover:shadow-md ${draggedProductIndex === index ? "bg-[#f9f9f9] border-[#e61951]/50" : "bg-white"}`}
+                        className={`grid gap-3 rounded-lg border border-[#ebebeb] p-3 sm:grid-cols-[auto_72px_1fr_auto] sm:items-center transition-all cursor-move hover:shadow-md ${draggedProductIndex === index ? "bg-[#f9f9f9] border-[#e63946]/50" : "bg-white"}`}
                       >
-                        <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1] text-[#9a9f9d] hover:text-[#e61951] cursor-grab active:cursor-grabbing">
+                        <div className="flex flex-col gap-1 pr-2 border-r border-[#f1f1f1] text-[#9a9f9d] hover:text-[#e63946] cursor-grab active:cursor-grabbing">
                           <GripVertical size={20} />
                         </div>
                         <img src={optimizeImage(product.image, 100)} alt={product.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
@@ -871,7 +871,7 @@ function Admin() {
                   </div>
                   {isLoadingMoreProducts && (
                     <div className="flex justify-center py-4">
-                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#ebebeb] border-t-[#e61951]" />
+                      <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#ebebeb] border-t-[#e63946]" />
                     </div>
                   )}
                   <div ref={sentinelRef} className="h-2" />
@@ -901,7 +901,7 @@ function Admin() {
                             title="Move up"
                             disabled={index === 0}
                             onClick={() => moveCategoryOrder(index, -1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
                           >
                             <ChevronUp size={14} />
                           </button>
@@ -910,7 +910,7 @@ function Admin() {
                             title="Move down"
                             disabled={index === categories.length - 1}
                             onClick={() => moveCategoryOrder(index, 1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
                           >
                             <ChevronDown size={14} />
                           </button>
@@ -953,7 +953,7 @@ function Admin() {
                             title="Move up"
                             disabled={index === 0}
                             onClick={() => moveSubcategoryOrder(index, -1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
                           >
                             <ChevronUp size={14} />
                           </button>
@@ -962,7 +962,7 @@ function Admin() {
                             title="Move down"
                             disabled={index === subcategories.length - 1}
                             onClick={() => moveSubcategoryOrder(index, 1)}
-                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
+                            className="grid h-7 w-7 place-items-center rounded border border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946] disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-[#1f2221]"
                           >
                             <ChevronDown size={14} />
                           </button>
@@ -992,7 +992,7 @@ function Admin() {
                     <div>
                       <h3 className="font-black">{user.name}</h3>
                       <p className="text-sm font-bold text-[#6f7573]">{user.email}</p>
-                      {user.isBlocked && <p className="mt-1 text-xs font-black text-[#e61951]">Blocked: {user.blockedReason || "No reason added"}</p>}
+                      {user.isBlocked && <p className="mt-1 text-xs font-black text-[#e63946]">Blocked: {user.blockedReason || "No reason added"}</p>}
                     </div>
                     <button
                       type="button"
@@ -1022,7 +1022,7 @@ function Admin() {
                     <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
                       <div>
                         <h3 className="font-black">{order.customerName || order.customerEmail || "Guest User"}</h3>
-                        <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e61951]">{order.status === "Packed" ? "Making" : order.status}</span></p>
+                        <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e63946]">{order.status === "Packed" ? "Making" : order.status}</span></p>
                       </div>
                       <div className="flex flex-wrap gap-4 items-center">
                         {["Processing", "Packed", "Out For Delivery", "Delivered"].map((status) => {
@@ -1037,7 +1037,7 @@ function Admin() {
                                 checked={isChecked}
                                 onChange={() => !isChecked && handleStatusChange(order, status)}
                                 disabled={isChecked || statusIndex > currentIndex + 1}
-                                className="h-4 w-4 accent-[#e61951] disabled:opacity-50"
+                                className="h-4 w-4 accent-[#e63946] disabled:opacity-50"
                               />
                               {status === "Packed" ? "Making" : status}
                             </label>
@@ -1074,7 +1074,7 @@ function Admin() {
                               <p>
                                 <strong className="font-black">Delivery Option:</strong>{" "}
                                 {order.deliveryOption === "delivery" ? (
-                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-[11px] font-black text-[#e61951]">
+                                  <span className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-[11px] font-black text-[#e63946]">
                                     <Truck size={12} /> Chocoriches Will Deliver
                                   </span>
                                 ) : (
@@ -1102,7 +1102,7 @@ function Admin() {
                                           </span>
                                         )}
                                         {item.messageOnCake && (
-                                          <span className="ml-1 inline-block rounded bg-[#fff2e9] px-1.5 py-0.5 text-[10px] font-black text-[#e61951]">
+                                          <span className="ml-1 inline-block rounded bg-[#fff2e9] px-1.5 py-0.5 text-[10px] font-black text-[#e63946]">
                                             Msg: {item.messageOnCake}
                                           </span>
                                         )}
@@ -1158,7 +1158,7 @@ function Admin() {
           {activeTab === "settings" && (
             <Panel title="Maintenance Mode">
               <div className="grid gap-4">
-                <div className={`rounded-xl p-5 ${settings.maintenanceMode ? "bg-[#fff2e9] text-[#e61951]" : "bg-[#f7f7f7] text-[#1f2221]"}`}>
+                <div className={`rounded-xl p-5 ${settings.maintenanceMode ? "bg-[#fff2e9] text-[#e63946]" : "bg-[#f7f7f7] text-[#1f2221]"}`}>
                   <p className="text-sm font-black uppercase tracking-[0.12em]">{settings.maintenanceMode ? "Active" : "Inactive"}</p>
                   <h3 className="mt-2 text-2xl font-black">Customer storefront maintenance</h3>
                   <p className="mt-2 text-sm font-bold leading-6">{settings.maintenanceMessage}</p>
@@ -1254,7 +1254,7 @@ function Panel({ title, action, children, className = "" }) {
 function Stat({ label, value, icon: Icon }) {
   return (
     <div className="rounded-xl border border-[#ebebeb] bg-white p-5 shadow-sm">
-      <Icon className="text-[#e61951]" size={24} />
+      <Icon className="text-[#e63946]" size={24} />
       <p className="mt-5 text-3xl font-black">{value}</p>
       <p className="mt-1 text-sm font-bold text-[#6f7573]">{label}</p>
     </div>
@@ -1278,7 +1278,7 @@ function ImageField({ value, onUrlChange, onFileChange }) {
         <div className="aspect-square overflow-hidden rounded-lg border border-[#ebebeb] bg-[#f7f7f7]">
           {value ? <img src={optimizeImage(value, 300)} alt="Product preview" className="h-full w-full object-cover" /> : null}
         </div>
-        <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[#e61951]/40 bg-[#fff2e9] px-4 py-5 text-center text-sm font-bold text-[#e61951]">
+        <label className="flex min-h-24 cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-[#e63946]/40 bg-[#fff2e9] px-4 py-5 text-center text-sm font-bold text-[#e63946]">
           <Upload size={20} />
           <span className="mt-2">Upload Image</span>
           <input type="file" accept="image/*" onChange={(event) => onFileChange(event.target.files?.[0])} className="sr-only" />
@@ -1299,7 +1299,7 @@ function WeightEditor({ weights, defaultWeight, onToggle, onPriceChange, onDefau
           const weight = weights.find((item) => item.label === label);
           const selected = Boolean(weight);
           return (
-            <div key={label} className={`grid gap-3 rounded-lg border p-3 sm:grid-cols-[110px_1fr_auto] sm:items-center ${selected ? "border-[#e61951]/35 bg-[#fff2e9]" : "border-[#ebebeb] bg-white"}`}>
+            <div key={label} className={`grid gap-3 rounded-lg border p-3 sm:grid-cols-[110px_1fr_auto] sm:items-center ${selected ? "border-[#e63946]/35 bg-[#fff2e9]" : "border-[#ebebeb] bg-white"}`}>
               <Check label={label} checked={selected} onChange={() => onToggle(label)} />
               <input
                 type="number"
@@ -1317,7 +1317,7 @@ function WeightEditor({ weights, defaultWeight, onToggle, onPriceChange, onDefau
                   checked={defaultWeight === label}
                   disabled={!selected}
                   onChange={() => onDefaultChange(label)}
-                  className="h-4 w-4 accent-[#e61951]"
+                  className="h-4 w-4 accent-[#e63946]"
                 />
                 Default
               </label>
@@ -1376,7 +1376,7 @@ function MultiSelectField({ label, values, options, onToggle }) {
               type="checkbox"
               checked={values.includes(option)}
               onChange={() => onToggle(option)}
-              className="h-4 w-4 accent-[#e61951]"
+              className="h-4 w-4 accent-[#e63946]"
             />
           </label>
         ))}
@@ -1397,7 +1397,7 @@ function SingleSelectCheckboxField({ label, value, options, onChange, required }
               type="checkbox"
               checked={value === option}
               onChange={() => onChange(value === option ? "" : option)}
-              className="h-4 w-4 accent-[#e61951]"
+              className="h-4 w-4 accent-[#e63946]"
             />
           </label>
         ))}
@@ -1419,10 +1419,10 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
             return (
               <span
                 key={sub}
-                className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-xs font-bold text-[#e61951]"
+                className="inline-flex items-center gap-1 rounded-full bg-[#fff2e9] px-2.5 py-1 text-xs font-bold text-[#e63946]"
               >
                 {display}
-                <button type="button" onClick={() => onToggle(sub.includes("::") ? sub.split("::")[0] : null, sub.includes("::") ? sub.split("::")[1] : sub)} className="ml-0.5 text-[#e61951]/60 hover:text-[#e61951]">&times;</button>
+                <button type="button" onClick={() => onToggle(sub.includes("::") ? sub.split("::")[0] : null, sub.includes("::") ? sub.split("::")[1] : sub)} className="ml-0.5 text-[#e63946]/60 hover:text-[#e63946]">&times;</button>
               </span>
             );
           })}
@@ -1432,7 +1432,7 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
         {allEmpty && <p className="text-xs text-[#6f7573] p-2">Select a category first to see subcategories</p>}
         {groups.map((group) => (
           <div key={group.category}>
-            <p className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#e61951]">{group.category}</p>
+            <p className="px-3 pt-2 pb-1 text-[10px] font-black uppercase tracking-[0.12em] text-[#e63946]">{group.category}</p>
             {group.subcategories.map((subName) => {
               const specificName = `${group.category}::${subName}`;
               const isSelected = values.includes(specificName) || values.includes(subName);
@@ -1441,7 +1441,7 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
                   key={specificName}
                   className={`flex cursor-pointer items-center justify-between rounded-md px-3 py-2 text-sm font-bold transition ${
                     isSelected
-                      ? "bg-[#fff2e9] text-[#e61951]"
+                      ? "bg-[#fff2e9] text-[#e63946]"
                       : "text-[#5f6663] hover:bg-[#fff2e9]"
                   }`}
                 >
@@ -1450,7 +1450,7 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
                     type="checkbox"
                     checked={isSelected}
                     onChange={() => onToggle(group.category, subName)}
-                    className="h-4 w-4 accent-[#e61951]"
+                    className="h-4 w-4 accent-[#e63946]"
                   />
                 </label>
               );
@@ -1461,7 +1461,7 @@ function GroupedSubcategoryField({ label, values = [], groups, onToggle, onClear
           <button
             type="button"
             onClick={onClear}
-            className="mt-1 w-full rounded-md px-3 py-1.5 text-xs font-bold text-[#6f7573] hover:bg-[#f7f7f7] hover:text-[#e61951] transition"
+            className="mt-1 w-full rounded-md px-3 py-1.5 text-xs font-bold text-[#6f7573] hover:bg-[#f7f7f7] hover:text-[#e63946] transition"
           >
             Clear all
           </button>
@@ -1500,7 +1500,7 @@ function Check({ label, checked, onChange }) {
   return (
     <label className="flex items-center justify-between rounded-lg border border-[#ebebeb] px-3 py-2 text-sm font-black text-[#5f6663]">
       {label}
-      <input type="checkbox" checked={Boolean(checked)} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#e61951]" />
+      <input type="checkbox" checked={Boolean(checked)} onChange={(event) => onChange(event.target.checked)} className="h-4 w-4 accent-[#e63946]" />
     </label>
   );
 }
@@ -1512,7 +1512,7 @@ function IconButton({ label, icon: Icon, onClick, danger = false }) {
       title={label}
       aria-label={label}
       onClick={onClick}
-      className={`grid h-10 w-10 place-items-center rounded-lg border ${danger ? "border-red-100 text-red-500 hover:bg-red-50" : "border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"}`}
+      className={`grid h-10 w-10 place-items-center rounded-lg border ${danger ? "border-red-100 text-red-500 hover:bg-red-50" : "border-[#ebebeb] text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946]"}`}
     >
       <Icon size={16} />
     </button>

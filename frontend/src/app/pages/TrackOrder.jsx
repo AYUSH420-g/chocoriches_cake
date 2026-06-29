@@ -80,12 +80,12 @@ function TrackOrder() {
                   value={orderId} 
                   onChange={(event) => setOrderId(event.target.value)} 
                   placeholder="e.g. CR-1234" 
-                  className="bk-input h-12 w-full rounded-xl border border-gray-300 bg-[#f9f9f9] px-4 text-sm font-bold text-[#1f2221] outline-none transition focus:border-[#e61951] focus:bg-white focus:ring-4 focus:ring-[#e61951]/10" 
+                  className="bk-input h-12 w-full rounded-xl border border-gray-300 bg-[#f9f9f9] px-4 text-sm font-bold text-[#1f2221] outline-none transition focus:border-[#e63946] focus:bg-white focus:ring-4 focus:ring-[#e63946]/10" 
                   required 
                 />
               </label>
 
-              <button disabled={loading} className="bk-btn h-12 w-full text-sm font-black shadow-lg shadow-[#e61951]/25 hover:scale-[1.01] hover:bg-[#d61448] disabled:scale-100 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
+              <button disabled={loading} className="bk-btn h-12 w-full text-sm font-black shadow-lg shadow-[#e63946]/25 hover:scale-[1.01] hover:bg-[#d61448] disabled:scale-100 disabled:opacity-60 transition-all flex items-center justify-center gap-2">
                 {loading ? (
                   <>
                     <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
@@ -121,7 +121,7 @@ function TrackOrder() {
                       <p className="text-xs font-black uppercase tracking-wider text-[#6f7573]">Order {order.orderId || order.id}</p>
                       <h2 className="mt-0.5 text-base font-black text-[#1f2221] md:text-2xl line-clamp-1">{order.items?.map(i => typeof i === "string" ? i : i.name).join(", ") || "Cake order"}</h2>
                     </div>
-                    <span className="w-fit rounded-full bg-[#fff2e9] px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#e61951] ring-1 ring-[#e61951]/20 shadow-sm">{order.status === "Packed" ? "Making" : order.status}</span>
+                    <span className="w-fit rounded-full bg-[#fff2e9] px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#e63946] ring-1 ring-[#e63946]/20 shadow-sm">{order.status === "Packed" ? "Making" : order.status}</span>
                   </div>
                 </div>
 
@@ -157,14 +157,14 @@ function TrackOrder() {
                           <div key={step.id} className="relative z-10 flex flex-col items-center text-center flex-1">
                             {index < statusSteps.length - 1 && (
                               <div className={`absolute left-[50%] top-[16px] sm:top-[24px] -z-10 h-[2px] w-full transition-colors duration-500 ${
-                                index < activeIndex && order.status !== "Cancelled" ? "bg-[#e61951]" : "bg-[#f1f1f1]"
+                                index < activeIndex && order.status !== "Cancelled" ? "bg-[#e63946]" : "bg-[#f1f1f1]"
                               }`} />
                             )}
                             <motion.span 
                               initial={false}
                               animate={active ? { scale: [1, 1.1, 1] } : {}}
                               transition={{ duration: 0.3 }}
-                              className={`grid h-8 w-8 sm:h-12 sm:w-12 place-items-center rounded-full shadow-sm transition-colors duration-500 ${active ? "bg-[#e61951] text-white ring-2 sm:ring-4 ring-[#fff2e9]" : "bg-[#f7f7f7] text-[#a0a5a3] border border-gray-100"}`}
+                              className={`grid h-8 w-8 sm:h-12 sm:w-12 place-items-center rounded-full shadow-sm transition-colors duration-500 ${active ? "bg-[#e63946] text-white ring-2 sm:ring-4 ring-[#fff2e9]" : "bg-[#f7f7f7] text-[#a0a5a3] border border-gray-100"}`}
                             >
                               <Icon size={14} className="sm:w-5 sm:h-5" />
                             </motion.span>
@@ -195,7 +195,7 @@ function TrackOrder() {
                   <motion.div
                     animate={{ y: [0, -10, 0] }}
                     transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
-                    className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff2e9] text-[#e61951] mb-5 shadow-sm"
+                    className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#fff2e9] text-[#e63946] mb-5 shadow-sm"
                   >
                     <Truck size={36} />
                   </motion.div>
@@ -216,7 +216,7 @@ function Info({ icon: Icon, label, value }) {
   return (
     <div className="rounded-lg sm:rounded-xl border border-gray-100 bg-[#fbfbfb] p-2 sm:p-3 shadow-sm transition-colors hover:bg-white hover:shadow-md flex flex-col justify-between min-w-0">
       <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
-        <div className="grid h-6 w-6 sm:h-7 sm:w-7 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] shrink-0">
+        <div className="grid h-6 w-6 sm:h-7 sm:w-7 place-items-center rounded-full bg-[#fff2e9] text-[#e63946] shrink-0">
           <Icon size={12} className="sm:w-3.5 sm:h-3.5" />
         </div>
         <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-[#6f7573] truncate">{label}</p>

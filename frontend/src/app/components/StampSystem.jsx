@@ -96,7 +96,7 @@ function StampSystem() {
     <>
       <button
         onClick={() => setIsModalOpen(true)}
-        className="relative flex h-10 w-8 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e61951] md:h-11 md:w-11"
+        className="relative flex h-10 w-8 items-center justify-center rounded-lg text-[#1f2221] transition hover:bg-[#fff2e9] hover:text-[#e63946] md:h-11 md:w-11"
       >
         <CreditCard size={22} />
       </button>
@@ -120,15 +120,15 @@ function StampSystem() {
               <div className="bg-gradient-to-r from-[#ffe4d6] to-[#ffc9b3] p-6 text-center">
                 <button
                   onClick={() => setIsModalOpen(false)}
-                  className="absolute right-4 top-4 text-[#e61951] hover:text-[#c41544]"
+                  className="absolute right-4 top-4 text-[#e63946] hover:text-[#c41544]"
                 >
                   <X size={20} />
                 </button>
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#e61951] shadow-sm">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-white text-[#e63946] shadow-sm">
                   <Gift size={28} />
                 </div>
                 <h3 className="text-xl font-black text-[#1f2221]">Loyalty Card</h3>
-                <p className="mt-2 text-sm font-bold text-[#e61951]">
+                <p className="mt-2 text-sm font-bold text-[#e63946]">
               Fill this card with your orders and grab any Bento or Trending item for only ₹1!  </p>
               </div>
 
@@ -139,7 +139,7 @@ function StampSystem() {
                       key={i}
                       className={`flex h-[52px] w-[52px] items-center justify-center rounded-full border-2 border-dashed ${
                         i < stampCount
-                          ? "border-[#e61951] bg-[#fff2e9] text-[#e61951]"
+                          ? "border-[#e63946] bg-[#fff2e9] text-[#e63946]"
                           : "border-[#ebebeb] bg-[#f7f7f7] text-[#c2c2c2]"
                       }`}
                     >

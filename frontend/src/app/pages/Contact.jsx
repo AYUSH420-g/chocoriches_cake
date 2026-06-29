@@ -5,7 +5,7 @@ export default function Contact() {
     <div className="bk-page min-h-screen bg-[#f7f7f7] py-6 md:py-16">
       <div className="bk-shell max-w-4xl mx-auto">
         <div className="mb-6 text-center md:mb-10">
-          <h1 className="text-2xl font-black tracking-tight text-[#e61951] sm:text-4xl">
+          <h1 className="text-2xl font-black tracking-tight text-[#e63946] sm:text-4xl">
             Contact Us
           </h1>
         </div>
@@ -25,11 +25,11 @@ export default function Contact() {
           {/* Email */}
           <a
             href="mailto:chocoriches.help@gmail.com"
-            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e61951] hover:shadow-md md:px-5 md:py-4"
+            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e63946] hover:shadow-md md:px-5 md:py-4"
           >
             <Mail size={22} className="shrink-0 text-[#1f2221]" />
             <span className="text-base text-[#6f7573]">
-              Email: <span className="font-bold text-[#1f2221] underline decoration-[#ebebeb] underline-offset-4 transition-colors hover:decoration-[#e61951]">chocoriches.help@gmail.com</span>
+              Email: <span className="font-bold text-[#1f2221] underline decoration-[#ebebeb] underline-offset-4 transition-colors hover:decoration-[#e63946]">chocoriches.help@gmail.com</span>
             </span>
           </a>
 
@@ -43,7 +43,7 @@ export default function Contact() {
           {/* Call us */}
           <a
             href="tel:+919429304484"
-            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e61951] hover:shadow-md md:px-5 md:py-4"
+            className="flex min-h-12 items-center gap-3 rounded-md border border-[#ebebeb] bg-white px-4 py-3 shadow-sm transition hover:border-[#e63946] hover:shadow-md md:px-5 md:py-4"
           >
             <Phone size={22} className="shrink-0 text-[#1f2221]" />
             <span className="text-base text-[#6f7573]">

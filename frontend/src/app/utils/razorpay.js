@@ -49,7 +49,7 @@ async function openRazorpayCheckout({ amount, customer, order, onSuccess, onDism
       contact: customer?.phone || "",
     },
     theme: {
-      color: "#e61951",
+      color: "#e63946",
     },
     handler(response) {
       onSuccess?.(response);

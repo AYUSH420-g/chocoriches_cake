@@ -110,10 +110,10 @@ function CartCalendarModal({ minDate, blockedDates, selectedDate, onSelect, onCl
                 onClick={() => { onSelect(iso); onClose(); }}
                 className={`mx-auto grid h-9 w-9 place-items-center rounded-full text-sm font-bold transition ${
                   isSelected
-                    ? "bg-[#e61951] text-white shadow-md shadow-[#e61951]/30"
+                    ? "bg-[#e63946] text-white shadow-md shadow-[#e63946]/30"
                     : isDisabled
                       ? "cursor-not-allowed text-[#d5d8d6] opacity-40"
-                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e61951]"
+                      : "text-[#1f2221] hover:bg-[#fff2e9] hover:text-[#e63946]"
                 }`}
               >
                 {day}
@@ -173,15 +173,15 @@ function RewardDeliveryDatePicker({ selectedDate, onSelect, blockedDates }) {
                   opt.isDisabled
                     ? "cursor-not-allowed border-[#ebebeb] bg-[#f7f7f7] opacity-40 grayscale"
                     : isActive
-                      ? "border-[#e61951]/50 bg-[#ffeadc] font-semibold"
-                      : "border-[#ebebeb] bg-transparent hover:border-[#e61951]"
+                      ? "border-[#e63946]/50 bg-[#ffeadc] font-semibold"
+                      : "border-[#ebebeb] bg-transparent hover:border-[#e63946]"
                 }`}
               >
                 <span className="text-xs font-semibold text-[#1f2221]">{opt.label}</span>
                 {opt.sub ? (
                   <span className="text-[10px] text-[#6f7573]">{opt.sub}</span>
                 ) : isLaterSelected ? (
-                  <span className="text-[10px] text-[#e61951] font-bold">
+                  <span className="text-[10px] text-[#e63946] font-bold">
                     {new Date(selectedDate + "T00:00:00").toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}
                   </span>
                 ) : (
@@ -359,7 +359,7 @@ function Cart() {
                             <button
                               type="button"
                               onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                              className="grid h-8 w-6 place-items-center hover:text-[#e61951]"
+                              className="grid h-8 w-6 place-items-center hover:text-[#e63946]"
                             >
                               <Minus size={10} />
                             </button>
@@ -370,7 +370,7 @@ function Cart() {
                               type="button"
                               disabled={item.quantity >= 9}
                               onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                              className="grid h-8 w-6 place-items-center hover:text-[#e61951] disabled:opacity-50 disabled:hover:text-inherit"
+                              className="grid h-8 w-6 place-items-center hover:text-[#e63946] disabled:opacity-50 disabled:hover:text-inherit"
                             >
                               <Plus size={10} />
                             </button>
@@ -379,7 +379,7 @@ function Cart() {
                         <button
                           type="button"
                           onClick={() => handleRemove(item.id)}
-                          className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[12px] font-black text-[#e61951] hover:bg-[#fff2e9] sm:px-3"
+                          className="inline-flex h-8 items-center gap-1 rounded-lg px-2 text-[12px] font-black text-[#e63946] hover:bg-[#fff2e9] sm:px-3"
                         >
                           <Trash2 size={12} />
                           Remove
@@ -405,7 +405,7 @@ function Cart() {
               ))
             ) : (
               <div className="bk-card px-5 py-10 text-center md:py-20">
-                <ShoppingCart className="mx-auto text-[#e61951]" size={44} />
+                <ShoppingCart className="mx-auto text-[#e63946]" size={44} />
                 <h2 className="mt-5 text-xl font-black text-[#1f2221] md:text-2xl">
                   Your cart is empty
                 </h2>
@@ -473,11 +473,11 @@ function Cart() {
 
                 <div className="flex justify-between gap-3 border-t border-[#ebebeb] pt-4">
                   <div className="flex items-center gap-3 text-xs font-bold text-[#6f7573]">
-                    <Truck size={17} className="text-[#e61951]" />
+                    <Truck size={17} className="text-[#e63946]" />
                     Safe delivery
                   </div>
                   <div className="flex items-center gap-3 text-xs font-bold text-[#6f7573]">
-                    <ShieldCheck size={17} className="text-[#e61951]" />
+                    <ShieldCheck size={17} className="text-[#e63946]" />
                     Secure checkout
                   </div>
                 </div>

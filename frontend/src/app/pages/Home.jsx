@@ -191,7 +191,7 @@ function Home() {
               type="button"
               aria-label={`Go to banner ${i + 1}`}
               onClick={() => setHeroIndex(i)}
-              className={`h-1.5 rounded-full transition-all duration-300 ${i === heroIndex ? "w-5 bg-[#e61951]" : "w-1.5 bg-[#1f2221]/25 hover:bg-[#1f2221]/50"} md:h-2 ${i === heroIndex ? "md:w-6" : "md:w-2"}`}
+              className={`h-1.5 rounded-full transition-all duration-300 ${i === heroIndex ? "w-5 bg-[#e63946]" : "w-1.5 bg-[#1f2221]/25 hover:bg-[#1f2221]/50"} md:h-2 ${i === heroIndex ? "md:w-6" : "md:w-2"}`}
             />
           ))}
         </div>
@@ -204,7 +204,7 @@ function Home() {
             <p className="text-sm font-black lowercase tracking-[0.08em] text-[#DC184D]">popular</p>
             <h2 className="bk-section-title">Trending 🔥</h2>
           </div>
-          <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
+          <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="hidden items-center gap-2 text-sm font-black text-[#e63946] md:flex">
             View All
             <ArrowRight size={16} />
           </Link>
@@ -227,7 +227,7 @@ function Home() {
         )}
         {!isLoading && trendingCakes.length > 0 && (
           <div className="mt-4 flex justify-end md:hidden">
-            <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="flex items-center gap-2 text-sm font-black text-[#e61951]">
+            <Link to="/shop?cat=Trending%20%F0%9F%94%A5" className="flex items-center gap-2 text-sm font-black text-[#e63946]">
               View All
               <ArrowRight size={16} />
             </Link>
@@ -241,7 +241,7 @@ function Home() {
             <p className="text-sm font-black lowercase tracking-[0.08em] text-[#DC184D]">explore</p>
             <h2 className="bk-section-title">Our Collection</h2>
           </div>
-          <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e61951] md:flex">
+          <Link to="/shop" className="hidden items-center gap-2 text-sm font-black text-[#e63946] md:flex">
             View All
             <ArrowRight size={16} />
           </Link>
@@ -265,7 +265,7 @@ function Home() {
         )}
         {loadingMore && (
           <div className="flex justify-center py-6">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e61951]" />
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e63946]" />
           </div>
         )}
         <div ref={sentinelRef} className="h-1" />
@@ -275,14 +275,14 @@ function Home() {
         <div className="bk-shell">
           <div className="mb-4 flex items-end justify-between gap-4 md:mb-5">
             <div>
-              <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e61951] md:text-base">our promise</p>
+              <p className="text-sm font-black lowercase tracking-[0.08em] text-[#e63946] md:text-base">our promise</p>
               <h2 className="bk-section-title">Fresh bakes, On Time delivery</h2>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-[8px] md:gap-4 lg:grid-cols-4">
             {promiseItems.map(({ icon: Icon, title, copy }) => (
               <div key={title} className="rounded-lg border border-[#ebebeb] bg-[#f7f7f7] p-4 md:p-5">
-                <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-[#fff2e9] text-[#e61951] md:mb-4 md:h-12 md:w-12">
+                <span className="mb-3 grid h-11 w-11 place-items-center rounded-full bg-[#fff2e9] text-[#e63946] md:mb-4 md:h-12 md:w-12">
                   <Icon size={22} />
                 </span>
                 <h3 className="text-sm font-black uppercase tracking-[0.04em] text-[#1f2221] md:text-base md:tracking-[0.06em]">{title}</h3>
@@ -312,16 +312,16 @@ function Home() {
           </div>
         </Link>
 
-        <Link to="/shop?cat=Wedding" className="group relative min-h-[220px] overflow-hidden rounded-lg bg-[#e61951] p-5 text-white md:min-h-[260px] md:rounded-xl md:p-8">
+        <Link to="/shop?cat=Wedding" className="group relative min-h-[220px] overflow-hidden rounded-lg bg-[#e63946] p-5 text-white md:min-h-[260px] md:rounded-xl md:p-8">
           <img
             src="https://images.unsplash.com/photo-1535141192574-5d4897c12636?auto=format&fit=crop&q=80&w=1200"
             alt="Designer wedding cake"
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover opacity-45 transition duration-700 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#e61951]/90 to-[#e61951]/10" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#e63946]/90 to-[#e63946]/10" />
           <div className="relative">
-            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-[#e61951]">
+            <span className="inline-flex items-center gap-2 rounded-full bg-white px-3 py-1 text-xs font-black text-[#e63946]">
               <Gift size={13} />
               Designer Picks
             </span>

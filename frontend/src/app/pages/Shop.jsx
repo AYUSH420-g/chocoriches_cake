@@ -207,11 +207,11 @@ function Shop() {
       <div className="border-b border-[#ebebeb] bg-white">
         <div className="bk-shell md:pb-6 pt-0">
           {/* <nav className="flex gap-2 text-xs font-bold text-[#6f7573] md:mb-4">
-            <Link to="/" className="hover:text-[#e61951]">Home</Link>
+            <Link to="/" className="hover:text-[#e63946]">Home</Link>
             <span>/</span>
             {activeCategory !== "All" && (
               <>
-                <Link to={`/shop?cat=${encodeURIComponent(activeCategory)}`} className="hover:text-[#e61951]">{activeCategory}</Link>
+                <Link to={`/shop?cat=${encodeURIComponent(activeCategory)}`} className="hover:text-[#e63946]">{activeCategory}</Link>
                 {activeSubcategory && <span>/</span>}
               </>
             )}
@@ -231,18 +231,18 @@ function Shop() {
             <button
               type="button"
               onClick={() => setIsFilterOpen(true)}
-              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#ebebeb] bg-white px-3 text-sm font-bold text-[#1f2221] shadow-sm transition-colors hover:border-[#e61951] hover:text-[#e61951] lg:hidden md:w-auto md:px-4"
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-full border border-[#ebebeb] bg-white px-3 text-sm font-bold text-[#1f2221] shadow-sm transition-colors hover:border-[#e63946] hover:text-[#e63946] lg:hidden md:w-auto md:px-4"
             >
               <Filter size={17} />
               Filter
             </button>
           </div>
-          <label className="inline-flex h-10 w-full min-w-0 items-center justify-center gap-1 rounded-full border border-[#ebebeb] bg-white pl-4 pr-3 text-xs font-bold text-[#6f7573] shadow-sm transition-colors hover:border-[#e61951] hover:text-[#e61951] md:w-auto md:text-sm">
+          <label className="inline-flex h-10 w-full min-w-0 items-center justify-center gap-1 rounded-full border border-[#ebebeb] bg-white pl-4 pr-3 text-xs font-bold text-[#6f7573] shadow-sm transition-colors hover:border-[#e63946] hover:text-[#e63946] md:w-auto md:text-sm">
             <span className="shrink-0 whitespace-nowrap">Sort by:</span>
             <select
               value={sortBy}
               onChange={(event) => setSortBy(event.target.value)}
-              className="min-w-0 max-w-[88px] appearance-none truncate bg-transparent px-1 font-semibold text-[#1f2221] outline-none md:max-w-none group-hover:text-[#e61951]"
+              className="min-w-0 max-w-[88px] appearance-none truncate bg-transparent px-1 font-semibold text-[#1f2221] outline-none md:max-w-none group-hover:text-[#e63946]"
             >
               {sortOptions.map((option) => <option key={option}>{option}</option>)}
             </select>
@@ -255,18 +255,18 @@ function Shop() {
         <aside className="hidden lg:block">
           <div className="bk-card sticky top-[190px] p-5">
             <div className="mb-5 flex items-center gap-2">
-              <SlidersHorizontal size={18} className="text-[#e61951]" />
+              <SlidersHorizontal size={18} className="text-[#e63946]" />
               <h2 className="text-base font-black">Filters</h2>
             </div>
             <div className="space-y-3">
               {filters.map((filter) => (
-                <label key={filter} className="flex cursor-pointer items-center justify-between rounded-lg border border-[#ebebeb] px-3 py-3 text-sm font-bold text-[#5f6663] hover:border-[#e61951]">
+                <label key={filter} className="flex cursor-pointer items-center justify-between rounded-lg border border-[#ebebeb] px-3 py-3 text-sm font-bold text-[#5f6663] hover:border-[#e63946]">
                   {filter}
                   <input
                     type="checkbox"
                     checked={activeFilters.includes(filter)}
                     onChange={() => toggleFilter(filter)}
-                    className="h-4 w-4 accent-[#e61951]"
+                    className="h-4 w-4 accent-[#e63946]"
                   />
                 </label>
               ))}
@@ -328,7 +328,7 @@ function Shop() {
           )}
           {loadingMore && (
             <div className="flex justify-center py-6">
-              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e61951]" />
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#ebebeb] border-t-[#e63946]" />
             </div>
           )}
           <div ref={sentinelRef} className="h-1" />
@@ -368,7 +368,7 @@ function Shop() {
                       type="checkbox"
                       checked={activeFilters.includes(filter)}
                       onChange={() => toggleFilter(filter)}
-                      className="h-4 w-4 accent-[#e61951]"
+                      className="h-4 w-4 accent-[#e63946]"
                     />
                   </label>
                 ))}

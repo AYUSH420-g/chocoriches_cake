@@ -19,7 +19,7 @@ export default function FullScreenLoader({ visible = false }) {
             className="flex flex-col items-center gap-3"
           >
             <div className="relative grid h-10 w-10 place-items-center">
-              <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e61951]" />
+              <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e63946]" />
             </div>
             <p className="text-sm font-bold text-[#6f7573]">Please wait...</p>
           </motion.div>

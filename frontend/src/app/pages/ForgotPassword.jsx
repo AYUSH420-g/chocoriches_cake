@@ -59,7 +59,7 @@ export default function ForgotPassword() {
             )}
             
             {error && (
-              <div className="rounded-md bg-[#e61951]/10 p-3 text-sm font-bold text-[#e61951]">
+              <div className="rounded-md bg-[#e63946]/10 p-3 text-sm font-bold text-[#e63946]">
                 {error}
               </div>
             )}
@@ -72,7 +72,7 @@ export default function ForgotPassword() {
 
           <div className="mt-6 text-center text-sm font-bold text-[#6f7573]">
             Remember your password?{" "}
-            <Link to="/auth" className="text-[#e61951] hover:underline">
+            <Link to="/auth" className="text-[#e63946] hover:underline">
               Back to Login
             </Link>
           </div>

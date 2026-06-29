@@ -42,7 +42,7 @@ export default function About() {
                 "Careful packaging and delivery so your celebration stays special"
               ].map((point, index) => (
                 <li key={index} className="flex items-start gap-3">
-                  <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-[#e61951]"></span>
+                  <span className="mt-1 flex h-2 w-2 shrink-0 rounded-full bg-[#e63946]"></span>
                   <span className="font-bold text-[#6f7573]">{point}</span>
                 </li>
               ))}
@@ -56,7 +56,7 @@ export default function About() {
               At ChocoRiches, we don’t just bake cakes — we become a part of your happiest moments. Every cake is prepared with patience, creativity, and love so you can celebrate your occasion with sweetness, happiness, and unforgettable memories.
             </p>
             <div className="inline-block rounded-xl bg-[#fff2e9] px-6 py-4">
-              <p className="text-base font-black italic text-[#e61951]">
+              <p className="text-base font-black italic text-[#e63946]">
                 “Made at home, served with love, and crafted for your special moments.”
               </p>
             </div>

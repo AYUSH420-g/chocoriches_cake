@@ -55,7 +55,7 @@ export default function ResetPassword() {
           </div>
 
           {!token ? (
-            <div className="rounded-md bg-[#e61951]/10 p-3 text-sm font-bold text-[#e61951]">
+            <div className="rounded-md bg-[#e63946]/10 p-3 text-sm font-bold text-[#e63946]">
               {error}
             </div>
           ) : success ? (
@@ -97,7 +97,7 @@ export default function ResetPassword() {
               </label>
 
               {error && (
-                <div className="rounded-md bg-[#e61951]/10 p-3 text-sm font-bold text-[#e61951]">
+                <div className="rounded-md bg-[#e63946]/10 p-3 text-sm font-bold text-[#e63946]">
                   {error}
                 </div>
               )}

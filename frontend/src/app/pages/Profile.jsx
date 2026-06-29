@@ -15,7 +15,7 @@ function SectionLoader({ label }) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 py-16">
       <div className="relative grid h-12 w-12 place-items-center">
-        <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e61951]" />
+        <div className="absolute inset-0 animate-spin rounded-full border-[3px] border-[#ebebeb] border-t-[#e63946]" />
       </div>
       <p className="text-sm font-bold text-[#6f7573]">{label || "Loading..."}</p>
     </div>
@@ -213,7 +213,7 @@ function Profile() {
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
-            border-bottom: 2px solid #e61951;
+            border-bottom: 2px solid #e63946;
             padding-bottom: 24px;
             margin-bottom: 40px;
           }
@@ -226,7 +226,7 @@ function Profile() {
             width: 44px;
             height: 44px;
             border-radius: 50%;
-            background-color: #e61951;
+            background-color: #e63946;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -249,7 +249,7 @@ function Profile() {
             margin: 0;
             font-size: 32px;
             font-weight: 900;
-            color: #e61951;
+            color: #e63946;
             text-transform: uppercase;
             letter-spacing: 0.5px;
           }
@@ -289,7 +289,7 @@ function Profile() {
           }
           .items-table th {
             background-color: #fff2e9;
-            color: #e61951;
+            color: #e63946;
             padding: 12px;
             font-size: 12px;
             font-weight: 800;
@@ -317,10 +317,10 @@ function Profile() {
             font-size: 14px;
           }
           .totals-table tr.total-row td {
-            border-top: 2px solid #e61951;
+            border-top: 2px solid #e63946;
             font-size: 18px;
             font-weight: 900;
-            color: #e61951;
+            color: #e63946;
             padding-top: 12px;
           }
           .footer {
@@ -363,7 +363,7 @@ function Profile() {
               <h3>Invoice Details:</h3>
               <p><span style="color: #6f7573; font-weight: 600;">Date:</span> ${date}</p>
               <p><span style="color: #6f7573; font-weight: 600;">Pincode:</span> ${order.deliveryPincode || "N/A"}</p>
-              <p><span style="color: #6f7573; font-weight: 600;">Status:</span> <span style="color: #e61951; font-weight: 800;">${order.status}</span></p>
+              <p><span style="color: #6f7573; font-weight: 600;">Status:</span> <span style="color: #e63946; font-weight: 800;">${order.status}</span></p>
             </div>
           </div>
 
@@ -455,7 +455,7 @@ function Profile() {
     return (
       <div className="bk-page">
         <div className="bk-shell grid min-h-[420px] place-items-center py-6">
-          <p className="text-sm font-black text-[#e61951]">Login to view your profile</p>
+          <p className="text-sm font-black text-[#e63946]">Login to view your profile</p>
         </div>
       </div>
     );
@@ -468,7 +468,7 @@ function Profile() {
           {activeSection === "main" ? (
             <div className="space-y-4">
               <div className="bk-card flex items-center gap-5 p-5 md:p-6 shadow-sm border border-[#ebebeb]">
-                <span className="grid h-16 w-16 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e61951] text-2xl font-black uppercase text-white md:h-20 md:w-20 md:text-3xl shrink-0">
+                <span className="grid h-16 w-16 place-items-center rounded-full border-4 border-[#fff2e9] bg-[#e63946] text-2xl font-black uppercase text-white md:h-20 md:w-20 md:text-3xl shrink-0">
                   {(profile.name || profile.email || "U").slice(0, 1)}
                 </span>
                 <div className="min-w-0 flex-1">
@@ -485,7 +485,7 @@ function Profile() {
                 <ProfileNavItem icon={Settings} label="Account Settings" onClick={() => setActiveSection("settings")} />
               </div>
 
-              <button type="button" onClick={logout} className="bk-card flex h-[60px] w-full items-center justify-center gap-2 text-sm font-black text-[#e61951] shadow-sm hover:bg-[#fff2e9] transition border border-[#ebebeb]">
+              <button type="button" onClick={logout} className="bk-card flex h-[60px] w-full items-center justify-center gap-2 text-sm font-black text-[#e63946] shadow-sm hover:bg-[#fff2e9] transition border border-[#ebebeb]">
                 <LogOut size={18} />
                 Logout
               </button>
@@ -622,7 +622,7 @@ function Profile() {
                   ))
                 ) : (
                   <div className="p-8 text-center">
-                    <Package className="mx-auto text-[#e61951]" size={40} />
+                    <Package className="mx-auto text-[#e63946]" size={40} />
                     <h3 className="mt-4 text-lg font-black text-[#1f2221] md:text-xl">No orders yet</h3>
                     <p className="mt-2 text-sm text-[#6f7573]">Your cake orders will appear here after checkout.</p>
                     <Link to="/shop" className="bk-btn mt-5 h-11 px-5 text-sm">Shop Cakes</Link>
@@ -647,10 +647,10 @@ function Profile() {
                               <p className="text-[10px] font-bold text-[#6f7573] mt-0.5">{new Date(review.createdAt).toLocaleDateString()}</p>
                             </div>
                             {product && (
-                              <Link to={`/product/${product.id}`} className="text-xs font-bold text-[#e61951] hover:underline">View Product</Link>
+                              <Link to={`/product/${product.id}`} className="text-xs font-bold text-[#e63946] hover:underline">View Product</Link>
                             )}
                           </div>
-                          <div className="flex items-center gap-1 mb-2 text-[#e61951]">
+                          <div className="flex items-center gap-1 mb-2 text-[#e63946]">
                             {Array.from({ length: 5 }).map((_, i) => (
                               <Star key={i} size={12} fill={i < review.rating ? "currentColor" : "none"} className={i < review.rating ? "" : "text-[#ebebeb]"} />
                             ))}
@@ -676,7 +676,7 @@ function Profile() {
               <section className="bk-card p-4 md:p-5 shadow-sm">
                 <div className="grid gap-3 sm:grid-cols-2">
                   {favouriteProducts.length ? favouriteProducts.map((product) => (
-                    <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e61951]">
+                    <Link key={product.id} to={`/product/${product.id}`} className="flex gap-3 rounded-lg border border-[#ebebeb] p-3 hover:border-[#e63946]">
                       <img src={optimizeImage(product.image, 200)} alt={product.name} loading="lazy" className="h-16 w-16 rounded-lg object-cover" />
                       <div>
                         <h3 className="text-sm font-black text-[#1f2221]">{product.name}</h3>
@@ -735,21 +735,21 @@ function Profile() {
                       <div className="flex gap-3">
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Home" defaultChecked className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <Home size={20} />
                             <span className="text-xs font-bold">Home</span>
                           </div>
                         </label>
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Office" className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <Briefcase size={20} />
                             <span className="text-xs font-bold">Office</span>
                           </div>
                         </label>
                         <label className="flex-1 cursor-pointer">
                           <input type="radio" name="addressLabel" value="Other" className="peer sr-only" />
-                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e61951] peer-checked:bg-[#fff2e9] peer-checked:text-[#e61951]">
+                          <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-gray-200 bg-white p-3 text-[#6f7573] transition-all peer-checked:border-[#e63946] peer-checked:bg-[#fff2e9] peer-checked:text-[#e63946]">
                             <MapPin size={20} />
                             <span className="text-xs font-bold">Other</span>
                           </div>
@@ -769,7 +769,7 @@ function Profile() {
                         <p className="mt-0.5 text-xs font-bold text-[#6f7573]">{addr.phone}</p>
                         <p className="mt-2 text-xs text-[#6f7573] leading-relaxed">{addr.address}, {addr.landmark ? `${addr.landmark}, ` : ""}{addr.city} - {addr.pincode}</p>
                       </div>
-                      <button type="button" onClick={() => handleDeleteAddress(addr.id)} className="mt-3 text-xs font-bold text-[#e61951] hover:underline self-start">Remove</button>
+                      <button type="button" onClick={() => handleDeleteAddress(addr.id)} className="mt-3 text-xs font-bold text-[#e63946] hover:underline self-start">Remove</button>
                     </div>
                   )) : !showAddAddress && <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">No saved addresses yet.</p>}
                 </div>
@@ -839,7 +839,7 @@ function Profile() {
             <form onSubmit={handleReviewSubmit} className="p-5">
               <div className="mb-4">
                 <label className="mb-2 block text-sm font-black text-[#1f2221]">Rating</label>
-                <div className="flex gap-2 text-[#e61951]">
+                <div className="flex gap-2 text-[#e63946]">
                   {Array.from({ length: 5 }).map((_, i) => (
                     <button
                       key={i}
@@ -934,9 +934,9 @@ function Field({ label, name, type = "text", placeholder, required = false, defa
             font-bold
             outline-none
             transition
-            focus:border-[#e61951]
+            focus:border-[#e63946]
             focus:ring-4
-            focus:ring-[#e61951]/10
+            focus:ring-[#e63946]/10
             "
       />
     </label>

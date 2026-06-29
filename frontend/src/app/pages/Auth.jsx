@@ -194,7 +194,7 @@ function Auth() {
 
           <p className="mt-5 text-center text-sm font-bold text-[#555b58]">
             {isLogin ? "New to ChocoRiches?" : "Already have an account?"}
-            <button type="button" onClick={() => setIsLogin(!isLogin)} className="ml-1 font-black text-[#e61951]">
+            <button type="button" onClick={() => setIsLogin(!isLogin)} className="ml-1 font-black text-[#e63946]">
               {isLogin ? "Sign up" : "Login"}
             </button>
           </p>
@@ -220,7 +220,7 @@ function Auth() {
                 ChocoRiches
               </Link>
               <div>
-                <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-black text-[#e61951]">Fresh Rewards</span>
+                <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-black text-[#e63946]">Fresh Rewards</span>
                 <h1 className="mt-5 text-4xl font-black leading-tight">Login to track orders, favourites, and cake occasions.</h1>
                 <p className="mt-4 max-w-sm text-sm font-bold leading-6 text-white/85">A clean account area for repeat cake shopping and saved delivery details.</p>
               </div>
@@ -236,14 +236,14 @@ function Auth() {
               <button
                 type="button"
                 onClick={() => setIsLogin(true)}
-                className={`h-11 rounded-md text-sm font-black transition ${isLogin ? "bg-white text-[#e61951] shadow-sm" : "text-[#6f7573]"}`}
+                className={`h-11 rounded-md text-sm font-black transition ${isLogin ? "bg-white text-[#e63946] shadow-sm" : "text-[#6f7573]"}`}
               >
                 Login
               </button>
               <button
                 type="button"
                 onClick={() => setIsLogin(false)}
-                className={`h-11 rounded-md text-sm font-black transition ${!isLogin ? "bg-white text-[#e61951] shadow-sm" : "text-[#6f7573]"}`}
+                className={`h-11 rounded-md text-sm font-black transition ${!isLogin ? "bg-white text-[#e63946] shadow-sm" : "text-[#6f7573]"}`}
               >
                 Register
               </button>
@@ -268,7 +268,7 @@ function Auth() {
                 {isLogin && (
                   <div className="flex items-center justify-between text-sm">
                     <label className="flex items-center gap-2 font-bold text-[#6f7573]">
-                      <input type="checkbox" className="h-4 w-4 accent-[#e61951]" />
+                      <input type="checkbox" className="h-4 w-4 accent-[#e63946]" />
                       Remember me
                     </label>
 
@@ -339,7 +339,7 @@ function MobileField({ icon: Icon, label, name, type = "text", placeholder, requ
           placeholder={placeholder}
           required={required}
           maxLength={maxLength}
-          className="h-[48px] w-full rounded-[10px] border border-[#dfe3e1] bg-white px-4 pl-14 text-base font-bold text-[#1f2221] outline-none transition focus:border-[#e61951] focus:ring-4 focus:ring-[#e61951]/10"
+          className="h-[48px] w-full rounded-[10px] border border-[#dfe3e1] bg-white px-4 pl-14 text-base font-bold text-[#1f2221] outline-none transition focus:border-[#e63946] focus:ring-4 focus:ring-[#e63946]/10"
         />
       </span>
     </label>
