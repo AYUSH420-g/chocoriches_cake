@@ -97,6 +97,8 @@ function Checkout() {
 
   const handleNext = async (event) => {
     event.preventDefault();
+    setLoading(true);
+
     const currentStepData = Object.fromEntries(new FormData(event.currentTarget).entries());
     const nextCheckoutData = { ...checkoutData, ...currentStepData };
     if (nextCheckoutData.pincode) {
@@ -108,6 +110,7 @@ function Checkout() {
     if (!cart.length) {
       toast.error("Your cart is empty");
       navigate("/cart");
+      setLoading(false);
       return;
     }
 
@@ -115,17 +118,18 @@ function Checkout() {
       if (step === 1) {
         if (normalizePincode(nextCheckoutData.pincode).length !== 6) {
           toast.error("Please enter a valid 6-digit pincode");
+          setLoading(false);
           return;
         }
         const pincodeResult = await checkPincode(nextCheckoutData.pincode).catch(() => null);
         if (!pincodeResult?.serviceable) {
           toast.error("currently we are not serving at your location coming soon");
+          setLoading(false);
           return;
         }
         setDynamicDeliveryFee(pincodeResult.deliveryCharge || 0);
       }
 
-      setLoading(true);
       setStep(step + 1);
       setLoading(false);
       window.scrollTo(0, 0);
@@ -579,7 +583,10 @@ function Checkout() {
                         sm:w-auto
                         ">
                   {loading ? (
-                    <div className="h-4 w-24 animate-pulse rounded bg-white/30" />
+                    <>
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      {step === 2 ? "Processing.." : "Processing.."}
+                    </>
                   ) : (
                     <>
                       {step === 2 ? "Proceed to Pay" : "Continue"}
