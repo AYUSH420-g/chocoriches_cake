@@ -213,7 +213,6 @@ export function settingView(setting = memory.setting) {
     maintenanceMode: Boolean(setting?.maintenanceMode),
     maintenanceMessage: setting?.maintenanceMessage || memory.setting.maintenanceMessage,
     dailyCakeLimit: Number(setting?.dailyCakeLimit || 0),
-    deliveryFee: Number(setting?.deliveryFee || 0),
   };
 }
 
@@ -221,9 +220,6 @@ export function pincodeView(pincode) {
   return {
     id: String(pincode._id || pincode.pincode),
     pincode: pincode.pincode,
-    city: pincode.city,
-    state: pincode.state || "",
-    deliveryFee: Number(pincode.deliveryFee || 0),
     isActive: Boolean(pincode.isActive),
   };
 }

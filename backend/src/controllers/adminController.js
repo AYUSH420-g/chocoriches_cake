@@ -479,9 +479,6 @@ export async function pincodes(_req, res) {
 export async function createPincode(req, res) {
   const payload = {
     pincode: String(req.body.pincode || "").trim(),
-    city: req.body.city || "Bangalore",
-    state: req.body.state || "",
-    deliveryFee: Number(req.body.deliveryFee || 0),
     isActive: req.body.isActive !== false,
   };
 
@@ -498,7 +495,6 @@ export async function createPincode(req, res) {
 export async function updatePincode(req, res) {
   const updates = {
     ...req.body,
-    deliveryFee: Number(req.body.deliveryFee || 0),
     pincode: String(req.body.pincode || req.params.id).trim(),
   };
 

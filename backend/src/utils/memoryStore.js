@@ -22,7 +22,6 @@ export const memory = {
     maintenanceMode: false,
     maintenanceMessage: "We are under maintenance. Please check back shortly.",
     dailyCakeLimit: 0,
-    deliveryFee: 0,
   },
 };
 

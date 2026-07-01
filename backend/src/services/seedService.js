@@ -60,9 +60,6 @@ export async function seedDatabase() {
   if (memory.pincodes.length === 0) {
     memory.pincodes.push({
       pincode: "560001",
-      city: "Bangalore",
-      state: "Karnataka",
-      deliveryFee: 80,
       isActive: true,
     });
   }

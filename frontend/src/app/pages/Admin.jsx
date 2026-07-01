@@ -72,8 +72,7 @@ const tabs = [
   ["subcategories", "Subcategories", Layers],
   ["users", "Users", Users],
   ["orders", "Orders", ShoppingBag],
-  ["pincodes", "Pincodes", MapPin],
-  ["dates", "Blocked Dates", CalendarOff],
+  ["availability", "Locations & Dates", MapPin],
   ["settings", "Settings", AlertTriangle]
 ];
 
@@ -104,7 +103,7 @@ const emptyProduct = {
 
 const emptyCategory = { name: "", isActive: true };
 const emptySubcategory = { name: "", category: "", isActive: true, sortOrder: 0 };
-const emptyPincode = { pincode: "", city: "", state: "", deliveryFee: 0, isActive: true };
+const emptyPincode = { pincode: "", isActive: true };
 const emptyDate = { date: "", reason: "", isActive: true };
 
 function normalizePincode(value) {
@@ -758,16 +757,12 @@ function Admin() {
             <p className="text-xs font-black uppercase tracking-[0.2em] text-[#e63946]">Admin Control</p>
             <h1 className="mt-1 text-2xl font-black tracking-tight sm:text-3xl">ChocoRiches Operations</h1>
           </div>
-          <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:gap-3">
+          <div className="flex flex-wrap gap-2 sm:gap-3">
             <button type="button" onClick={loadAdmin} className="bk-outline-btn h-11 px-3 text-xs sm:px-4 sm:text-sm">
               <RefreshCw size={16} />
               Refresh
             </button>
-            <button type="button" onClick={toggleMaintenance} className={settings.maintenanceMode ? "bk-btn h-11 px-3 text-xs sm:px-4 sm:text-sm" : "bk-outline-btn h-11 px-3 text-xs sm:px-4 sm:text-sm"}>
-              <AlertTriangle size={16} />
-              Maintenance Mode
-            </button>
-            <button type="button" onClick={logout} className="col-span-2 h-11 rounded-lg border border-[#ebebeb] bg-white px-4 text-sm font-black text-[#5f6663] sm:col-span-1">
+            <button type="button" onClick={logout} className="h-11 rounded-lg border border-[#ebebeb] bg-white px-4 text-sm font-black text-[#5f6663]">
               Logout
             </button>
           </div>
@@ -1390,36 +1385,32 @@ function Admin() {
             </div>
           )}
 
-          {activeTab === "pincodes" && (
-            <CrudPanel
-              title={editingPincodeId ? "Edit Pincode" : "Add Pincode"}
-              onSubmit={savePincode}
-              form={pincodeForm}
-              setForm={setPincodeForm}
-              fields={["pincode", "city", "state", "deliveryFee"]}
-              checkboxLabel="Active"
-              rows={pincodes}
-              rowMain="pincode"
-              rowSub="city"
-              onEdit={(item) => { setEditingPincodeId(item.id); setPincodeForm(item); }}
-              onDelete={async (item) => { await deleteAdminPincode(item.id); await loadAdmin(); }}
-            />
-          )}
-
-          {activeTab === "dates" && (
-            <CrudPanel
-              title={editingDateId ? "Edit Blocked Date" : "Block Delivery Date"}
-              onSubmit={saveBlockedDate}
-              form={dateForm}
-              setForm={setDateForm}
-              fields={["date", "reason"]}
-              checkboxLabel="Active"
-              rows={blockedDates}
-              rowMain="date"
-              rowSub="reason"
-              onEdit={(item) => { setEditingDateId(item.id); setDateForm(item); }}
-              onDelete={async (item) => { await deleteAdminBlockedDate(item.id); await loadAdmin(); }}
-            />
+          {activeTab === "availability" && (
+            <div className="grid gap-5 xl:grid-cols-2">
+              <CrudPanel
+                title={editingPincodeId ? "Edit Pincode" : "Add Pincode"}
+                onSubmit={savePincode}
+                form={pincodeForm}
+                setForm={setPincodeForm}
+                fields={["pincode"]}
+                rows={pincodes}
+                rowMain="pincode"
+                onEdit={(item) => { setEditingPincodeId(item.id); setPincodeForm(item); }}
+                onDelete={async (item) => { await deleteAdminPincode(item.id); await loadAdmin(); }}
+              />
+              <CrudPanel
+                title={editingDateId ? "Edit Blocked Date" : "Block Delivery Date"}
+                onSubmit={saveBlockedDate}
+                form={dateForm}
+                setForm={setDateForm}
+                fields={["date", "reason"]}
+                rows={blockedDates}
+                rowMain="date"
+                rowSub="reason"
+                onEdit={(item) => { setEditingDateId(item.id); setDateForm(item); }}
+                onDelete={async (item) => { await deleteAdminBlockedDate(item.id); await loadAdmin(); }}
+              />
+            </div>
           )}
 
           {activeTab === "settings" && (
@@ -1437,12 +1428,7 @@ function Admin() {
                   value={settings.dailyCakeLimit || ""}
                   onChange={(value) => setSettings({ ...settings, dailyCakeLimit: Number(value || 0) })}
                 />
-                <Field
-                  label="Global Delivery Fee"
-                  type="number"
-                  value={settings.deliveryFee ?? ""}
-                  onChange={(value) => setSettings({ ...settings, deliveryFee: Number(value || 0) })}
-                />
+
                 <div className="flex flex-wrap gap-3">
                   <button type="button" onClick={toggleMaintenance} className={settings.maintenanceMode ? "bk-btn h-11 px-5 text-sm" : "bk-outline-btn h-11 px-5 text-sm"}>
                     <AlertTriangle size={16} />
@@ -1811,10 +1797,10 @@ function Rows({ data, columns }) {
   );
 }
 
-function CrudPanel({ title, onSubmit, form, setForm, fields, checkboxLabel, rows, rowMain, rowSub, onEdit, onDelete }) {
+function CrudPanel({ title, onSubmit, form, setForm, fields, rows, rowMain, rowSub, onEdit, onDelete }) {
   return (
-    <div className="grid gap-5 xl:grid-cols-[360px_1fr]">
-      <Panel title={title} className="xl:sticky xl:top-4 self-start">
+    <div className="grid gap-5">
+      <Panel title={title} className="self-start">
         <form onSubmit={onSubmit} className="grid gap-4">
           {fields.map((field) => (
             <Field
@@ -1828,7 +1814,6 @@ function CrudPanel({ title, onSubmit, form, setForm, fields, checkboxLabel, rows
               inputMode={field === "pincode" ? "numeric" : undefined}
             />
           ))}
-          <Check label={checkboxLabel} checked={form.isActive} onChange={(checked) => setForm({ ...form, isActive: checked })} />
           <button className="bk-btn h-11 text-sm"><Plus size={16} /> Save</button>
         </form>
       </Panel>
@@ -1838,7 +1823,7 @@ function CrudPanel({ title, onSubmit, form, setForm, fields, checkboxLabel, rows
             <div key={item.id || item[rowMain]} className="flex flex-col justify-between gap-3 rounded-lg border border-[#ebebeb] p-4 md:flex-row md:items-center">
               <div>
                 <h3 className="font-black">{item[rowMain]}</h3>
-                <p className="text-sm font-bold text-[#6f7573]">{item[rowSub] || "No details"} | {item.isActive ? "Active" : "Inactive"}</p>
+                {rowSub && <p className="text-sm font-bold text-[#6f7573]">{item[rowSub]}</p>}
               </div>
               <div className="flex gap-2">
                 <IconButton label="Edit" icon={Edit3} onClick={() => onEdit(item)} />

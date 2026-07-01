@@ -139,7 +139,7 @@ export async function createOrder(req, res) {
     res.status(422).json({ message: "Delivery is not available for this pincode." });
     return;
   }
-  const deliveryFee = deliveryOption === "pickup" ? 0 : (pStatus.deliveryCharge || 0);
+  const deliveryFee = 0;
   serverTotal += deliveryFee;
 
   if (!customerEmail) {
