@@ -42,9 +42,12 @@ export default function DeliveryTimeSlotSelector() {
 
       setAvailableSlots(validSlots);
       
-      if (selectedSlot && !validSlots.includes(selectedSlot)) {
-         setSelectedSlot("");
-         sessionStorage.removeItem("chocoriches_time_slot");
+      if (validSlots.length > 0 && (!selectedSlot || !validSlots.includes(selectedSlot))) {
+        setSelectedSlot(validSlots[0]);
+        sessionStorage.setItem("chocoriches_time_slot", validSlots[0]);
+      } else if (validSlots.length === 0) {
+        setSelectedSlot("");
+        sessionStorage.removeItem("chocoriches_time_slot");
       }
     };
     

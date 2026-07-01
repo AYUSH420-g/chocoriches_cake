@@ -415,6 +415,12 @@ function ProductDetail() {
 
 
   const handleAddToCart = async (showLoader = true, isBuyNow = false) => {
+    const selectedSlot = sessionStorage.getItem("chocoriches_time_slot");
+    if (!selectedSlot) {
+      toast.error("Please select a delivery time slot");
+      return false;
+    }
+
     if (!isUserLoggedIn()) {
       toast.error("Please log in to add items to your cart");
       sessionStorage.setItem("post_login_redirect", window.location.pathname);
@@ -679,7 +685,7 @@ function ProductDetail() {
             />
 
             <div className="mt-4 md:mt-5">
-              <DeliveryTimeSlotSelector />
+              <DeliveryTimeSlotSelector key={deliveryDate} />
             </div>
 
             <div className="mt-5 grid grid-cols-2 gap-2 border-t border-[#ebebeb] bg-white p-3 max-md:fixed max-md:inset-x-0 max-md:bottom-0 max-md:z-40 max-md:pb-[calc(12px+env(safe-area-inset-bottom))] max-md:shadow-[0_-6px_20px_rgba(0,0,0,0.1)] sm:grid-cols-[1fr_1fr_auto] md:mt-6 md:border-0 md:bg-transparent md:p-0 md:shadow-none">
