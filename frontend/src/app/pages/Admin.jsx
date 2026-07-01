@@ -397,12 +397,9 @@ function Admin() {
         } else if (activeTab === "orders") {
           const nextOrders = await getAdminOrders();
           if (mounted) setOrders(nextOrders);
-        } else if (activeTab === "pincodes") {
-          const nextPincodes = await getAdminPincodes();
-          if (mounted) setPincodes(nextPincodes);
-        } else if (activeTab === "dates") {
-          const nextDates = await getAdminBlockedDates();
-          if (mounted) setBlockedDates(nextDates);
+        } else if (activeTab === "availability") {
+          const [nextPincodes, nextDates] = await Promise.all([getAdminPincodes(), getAdminBlockedDates()]);
+          if (mounted) { setPincodes(nextPincodes); setBlockedDates(nextDates); }
         } else if (activeTab === "overview") {
           const [nextOrders, nextInquiries] = await Promise.all([getAdminOrders(), getAdminInquiries()]);
           if (mounted) { setOrders(nextOrders); setInquiries(nextInquiries); }

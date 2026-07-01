@@ -51,8 +51,8 @@ function Checkout() {
 
 
   const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
-  const rawDeliveryFee = 0;
-  const deliveryFee = 0;
+  const rawDeliveryFee = cart.length ? (dynamicDeliveryFee !== null ? dynamicDeliveryFee : 0) : 0;
+  const deliveryFee = deliveryOption === "pickup" ? 0 : rawDeliveryFee;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
   const amountInPaise = priceToRupees(total) * 100;
