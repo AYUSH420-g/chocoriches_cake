@@ -177,8 +177,8 @@ function TrackOrder() {
 
                   {order.status === "Cancelled" && (
                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="rounded-xl border border-red-100 bg-red-50 p-4 text-sm font-black text-red-600 flex items-center justify-center gap-2">
-                      <span className="grid h-6 w-6 place-items-center rounded-full bg-red-600 text-white text-xs">!</span>
-                      This order has been cancelled by admin.
+                      <span className="grid h-6 w-6 place-items-center rounded-full bg-red-600 text-white text-xs shrink-0">!</span>
+                      <span>This order has been cancelled by admin. {order.cancelReason ? `Reason: ${order.cancelReason}` : ""}</span>
                     </motion.div>
                   )}
                 </div>

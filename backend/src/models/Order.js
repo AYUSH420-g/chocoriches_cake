@@ -18,6 +18,7 @@ const orderSchema = new mongoose.Schema(
     deliveryOption: { type: String, default: "pickup" },
     payment: { type: mongoose.Schema.Types.Mixed },
     isStampRewardOrder: { type: Boolean, default: false },
+    cancelReason: { type: String },
   },
   { timestamps: true }
 );

@@ -533,6 +533,12 @@ function Profile() {
                         <p className="text-[11px] font-bold text-[#6f7573]">{order.date || new Date().toLocaleDateString()}</p>
                       </div>
 
+                      {order.status === "Cancelled" && (
+                        <div className="mb-3 rounded bg-red-50 px-3 py-2 text-[11px] font-bold text-red-600">
+                          {order.cancelReason ? `Cancelled: ${order.cancelReason}` : "This order has been cancelled by admin."}
+                        </div>
+                      )}
+
                       {/* Body & Buttons Row */}
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div className="flex items-center gap-3 min-w-0 flex-1">

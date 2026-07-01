@@ -280,6 +280,7 @@ export function publicOrderView(order = {}) {
     deliveryOption: order.deliveryOption || "pickup",
     payment: order.payment || {},
     isStampRewardOrder: Boolean(order.isStampRewardOrder),
+    cancelReason: order.cancelReason || "",
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   };

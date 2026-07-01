@@ -21,7 +21,10 @@ import {
   Trash2,
   Truck,
   Upload,
-  Users
+  Users,
+  Clock,
+  ChefHat,
+  XCircle
 } from "lucide-react";
 import { toast } from "sonner";
 import { Toaster } from "../components/ui/sonner";
@@ -136,15 +139,25 @@ function Admin() {
   const [dateForm, setDateForm] = useState(emptyDate);
   const [editingDateId, setEditingDateId] = useState("");
   const [expandedOrderId, setExpandedOrderId] = useState(null);
+  const [expandedUserId, setExpandedUserId] = useState(null);
+  const [userSortOrder, setUserSortOrder] = useState("default");
+  const [orderSortOrder, setOrderSortOrder] = useState("desc");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("All");
   const [productsPage, setProductsPage] = useState(1);
   const [hasMoreProducts, setHasMoreProducts] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
   const [isLoadingMoreProducts, setIsLoadingMoreProducts] = useState(false);
   const [draggedProductIndex, setDraggedProductIndex] = useState(null);
-  const [overviewOrderStatusFilter, setOverviewOrderStatusFilter] = useState("All");
+  const [overviewSelectedYear, setOverviewSelectedYear] = useState(new Date().getFullYear());
+  const [overviewSelectedMonth, setOverviewSelectedMonth] = useState(null);
   const sentinelRef = useRef(null);
 
   const handleStatusChange = async (order, targetStatus) => {
+    if (order.status === "Cancelled") {
+      toast.error("Cancelled orders cannot be changed.");
+      return;
+    }
+
     const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
     const statusLabels = { "Processing": "Processing", "Packed": "Making", "Out For Delivery": "Out For Delivery", "Delivered": "Delivered" };
     const currentIndex = statuses.indexOf(order.status || "Processing");
@@ -157,6 +170,22 @@ function Admin() {
 
     if (window.confirm(`Are you sure you want to mark this order as ${statusLabels[targetStatus] || targetStatus}?`)) {
       await updateAdminOrder(order.id, { status: targetStatus });
+      await loadAdmin();
+    }
+  };
+
+  const handleCancelOrder = async (order) => {
+    if (order.status === "Out For Delivery" || order.status === "Delivered") {
+      toast.error("Cannot cancel an order that is out for delivery or delivered.");
+      return;
+    }
+    const reason = window.prompt("Are you sure you want to cancel this order? Please enter a reason:");
+    if (reason !== null) {
+      if (!reason.trim()) {
+        toast.error("A reason is required to cancel an order.");
+        return;
+      }
+      await updateAdminOrder(order.id, { status: "Cancelled", cancelReason: reason });
       await loadAdmin();
     }
   };
@@ -196,6 +225,15 @@ function Admin() {
     return groups;
   }, [subcategories, selectedCategories]);
 
+  const sortedUsers = useMemo(() => {
+    let sorted = [...users];
+    if (userSortOrder === "name-asc") {
+      sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    } else if (userSortOrder === "name-desc") {
+      sorted.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+    }
+    return sorted;
+  }, [users, userSortOrder]);
 
   const toggleProductCategory = (categoryName) => {
     setProductForm((current) => {
@@ -619,8 +657,8 @@ function Admin() {
           </span>
           <h1 className="text-2xl font-black text-[#1f2221] sm:text-3xl">ChocoRiches Admin</h1>
           <p className="mt-2 text-sm font-bold leading-6 text-[#6f7573]">Login to manage products, users, orders, service areas, and maintenance mode.</p>
-          <Field label="Admin Email" value={loginForm.email} onChange={(value) => setLoginForm({ ...loginForm, email: value })} className="mt-6" />
-          <Field label="Password" type="password" value={loginForm.password} onChange={(value) => setLoginForm({ ...loginForm, password: value })} className="mt-4" />
+          <Field label="AGE" value={loginForm.email} onChange={(value) => setLoginForm({ ...loginForm, email: value })} className="mt-6" />
+          <Field label="DOB" type="password" value={loginForm.password} onChange={(value) => setLoginForm({ ...loginForm, password: value })} className="mt-4" />
           <button disabled={loading} className="bk-btn mt-6 h-12 w-full text-sm disabled:opacity-60">
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -628,6 +666,88 @@ function Admin() {
       </div>
     );
   }
+
+  const orderKPIs = useMemo(() => {
+    return {
+      total: orders.length,
+      processing: orders.filter(o => o.status === "Processing" || !o.status).length,
+      making: orders.filter(o => o.status === "Packed").length,
+      outForDelivery: orders.filter(o => o.status === "Out For Delivery").length,
+      delivered: orders.filter(o => o.status === "Delivered").length,
+      cancelled: orders.filter(o => o.status === "Cancelled").length,
+    };
+  }, [orders]);
+
+  const filteredAndSortedOrders = useMemo(() => {
+    let result = [...orders];
+    if (orderStatusFilter !== "All") {
+      if (orderStatusFilter === "Making") {
+         result = result.filter(o => o.status === "Packed");
+      } else {
+         result = result.filter(o => o.status === orderStatusFilter);
+      }
+    }
+    
+    result.sort((a, b) => {
+      const dateA = new Date(a.deliveryDate || a.createdAt || 0).getTime();
+      const dateB = new Date(b.deliveryDate || b.createdAt || 0).getTime();
+      return orderSortOrder === "asc" ? dateA - dateB : dateB - dateA;
+    });
+    
+    return result;
+  }, [orders, orderStatusFilter, orderSortOrder]);
+
+  const topLevelKPIs = useMemo(() => {
+    const totalRevenue = orders
+      .filter((o) => o.status !== "Cancelled")
+      .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
+    return {
+      revenue: totalRevenue,
+      products: summary?.products || products.length || 0,
+      subproducts: subcategories.length || 0,
+      users: summary?.users || users.length || 0,
+      orders: summary?.orders || orders.length || 0,
+      pincodes: summary?.pincodes || pincodes.length || 0,
+    };
+  }, [summary, orders, products.length, subcategories.length, users.length, pincodes.length]);
+
+  const overviewRevenueData = useMemo(() => {
+    const yearsList = [];
+    const currentYear = new Date().getFullYear();
+    for (let i = 0; i < 5; i++) {
+      yearsList.push(currentYear - i);
+    }
+
+    const yearToUse = overviewSelectedYear || currentYear;
+    
+    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
+      monthIndex: i,
+      monthName: new Date(yearToUse, i).toLocaleString("default", { month: "long" }),
+      revenue: 0,
+    }));
+
+    orders.forEach((o) => {
+      if (o.status === "Cancelled") return;
+      const date = new Date(o.createdAt || o.deliveryDate || 0);
+      if (date.getFullYear() === yearToUse) {
+        monthlyData[date.getMonth()].revenue += (Number(o.total) || 0);
+      }
+    });
+
+    const selectedMonthOrders = overviewSelectedMonth !== null 
+      ? orders.filter((o) => {
+          if (o.status === "Cancelled") return false;
+          const d = new Date(o.createdAt || o.deliveryDate || 0);
+          return d.getFullYear() === yearToUse && d.getMonth() === overviewSelectedMonth;
+        })
+      : [];
+
+    return {
+      yearsList,
+      monthlyData,
+      selectedMonthOrders,
+    };
+  }, [orders, overviewSelectedYear, overviewSelectedMonth]);
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">
@@ -695,33 +815,64 @@ function Admin() {
 
           {activeTab === "overview" && (
             <div className="grid gap-5">
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Stat label="Products" value={summary?.products || 0} icon={Package} />
-                <Stat label="Users" value={summary?.users || 0} icon={Users} />
-                <Stat label="Orders" value={summary?.orders || 0} icon={ShoppingBag} />
-                <Stat label="Service Pincodes" value={summary?.pincodes || 0} icon={MapPin} />
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <Stat label="Total Revenue" value={formatPrice(topLevelKPIs.revenue)} icon={Tags} />
+                <Stat label="Total Products" value={topLevelKPIs.products} icon={Package} />
+                <Stat label="Subcategories" value={topLevelKPIs.subproducts} icon={Layers} />
+                <Stat label="Total Users" value={topLevelKPIs.users} icon={Users} />
+                <Stat label="Total Orders" value={topLevelKPIs.orders} icon={ShoppingBag} />
+                <Stat label="Service Pincodes" value={topLevelKPIs.pincodes} icon={MapPin} />
               </div>
               <div className="grid gap-5 xl:grid-cols-1">
                 <Panel 
-                  title="Latest Orders"
+                  title="Revenue by Date"
                   action={
-                    <select
-                      value={overviewOrderStatusFilter}
-                      onChange={(e) => setOverviewOrderStatusFilter(e.target.value)}
-                      className="bk-input h-8 px-2 py-0 text-xs w-[140px]"
-                    >
-                      <option value="All">All Statuses</option>
-                      <option value="Processing">Processing</option>
-                      <option value="Packed">Making</option>
-                      <option value="Out For Delivery">Out For Delivery</option>
-                      <option value="Delivered">Delivered</option>
-                    </select>
+                    overviewSelectedMonth === null ? (
+                      <select
+                        value={overviewSelectedYear}
+                        onChange={(e) => setOverviewSelectedYear(Number(e.target.value))}
+                        className="bk-input h-8 px-2 py-0 text-xs w-[140px]"
+                      >
+                        {overviewRevenueData.yearsList.map((yr) => (
+                          <option key={yr} value={yr}>{yr}</option>
+                        ))}
+                      </select>
+                    ) : (
+                      <button 
+                        onClick={() => setOverviewSelectedMonth(null)}
+                        className="bk-btn h-8 px-3 py-0 text-xs flex items-center gap-1"
+                      >
+                        <ChevronUp size={14} className="-rotate-90" /> Back to Months
+                      </button>
+                    )
                   }
                 >
-                  <Rows 
-                    data={orders.filter(o => overviewOrderStatusFilter === "All" || o.status === overviewOrderStatusFilter).slice(0, 10)} 
-                    columns={["orderId", "customerEmail", "status", "total"]} 
-                  />
+                  {overviewSelectedMonth === null ? (
+                    <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+                      {overviewRevenueData.monthlyData.map((data) => (
+                        <div 
+                          key={data.monthIndex} 
+                          onClick={() => setOverviewSelectedMonth(data.monthIndex)}
+                          className="cursor-pointer rounded-lg border border-[#ebebeb] bg-white p-4 transition-shadow hover:shadow-md"
+                        >
+                          <h4 className="text-sm font-bold text-[#6f7573]">{data.monthName}</h4>
+                          <p className="mt-2 text-xl font-black text-[#1f2221]">{formatPrice(data.revenue)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div>
+                      <h3 className="mb-4 text-lg font-black">{new Date(overviewSelectedYear, overviewSelectedMonth).toLocaleString("default", { month: "long" })} {overviewSelectedYear} Orders</h3>
+                      {overviewRevenueData.selectedMonthOrders.length > 0 ? (
+                        <Rows 
+                          data={overviewRevenueData.selectedMonthOrders} 
+                          columns={["orderId", "customerEmail", "status", "total"]} 
+                        />
+                      ) : (
+                        <p className="text-sm font-bold text-[#6f7573]">No orders for this month.</p>
+                      )}
+                    </div>
+                  )}
                 </Panel>
               </div>
             </div>
@@ -985,29 +1136,91 @@ function Admin() {
 
 
           {activeTab === "users" && (
-            <Panel title="Users">
+            <Panel title="Users" action={
+              <select
+                value={userSortOrder}
+                onChange={(e) => setUserSortOrder(e.target.value)}
+                className="bk-input h-8 px-2 py-0 text-xs w-[140px]"
+              >
+                <option value="default">Default Sort</option>
+                <option value="name-asc">Name (A-Z)</option>
+                <option value="name-desc">Name (Z-A)</option>
+              </select>
+            }>
               <div className="grid gap-3">
-                {users.map((user) => (
-                  <div key={user.id} className="flex flex-col justify-between gap-3 rounded-lg border border-[#ebebeb] p-4 md:flex-row md:items-center">
-                    <div>
-                      <h3 className="font-black">{user.name}</h3>
-                      <p className="text-sm font-bold text-[#6f7573]">{user.email}</p>
-                      {user.isBlocked && <p className="mt-1 text-xs font-black text-[#e63946]">Blocked: {user.blockedReason || "No reason added"}</p>}
+                {sortedUsers.map((user) => (
+                  <div key={user.id} className="rounded-lg border border-[#ebebeb] bg-white overflow-hidden">
+                    <div className="flex flex-col justify-between gap-3 p-4 md:flex-row md:items-center">
+                      <div>
+                        <h3 className="font-black">{user.name}</h3>
+                        <p className="text-sm font-bold text-[#6f7573]">{user.email}</p>
+                        {user.isBlocked && <p className="mt-1 text-xs font-black text-[#e63946]">Blocked: {user.blockedReason || "No reason added"}</p>}
+                      </div>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => setExpandedUserId(expandedUserId === user.id ? null : user.id)}
+                          className="bk-outline-btn h-10 px-4 text-sm whitespace-nowrap"
+                        >
+                          {expandedUserId === user.id ? <><ChevronUp size={16}/> Hide</> : <><ChevronDown size={16}/> View</>}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            await blockAdminUser(user.id || user.email, {
+                              isBlocked: !user.isBlocked,
+                              blockedReason: !user.isBlocked ? "Blocked by admin" : "",
+                            });
+                            await loadAdmin();
+                          }}
+                          className={user.isBlocked ? "bk-outline-btn h-10 px-4 text-sm" : "bk-btn h-10 px-4 text-sm"}
+                        >
+                          <Ban size={16} />
+                          {user.isBlocked ? "Unblock" : "Block"}
+                        </button>
+                      </div>
                     </div>
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        await blockAdminUser(user.id || user.email, {
-                          isBlocked: !user.isBlocked,
-                          blockedReason: !user.isBlocked ? "Blocked by admin" : "",
-                        });
-                        await loadAdmin();
-                      }}
-                      className={user.isBlocked ? "bk-outline-btn h-10 px-4 text-sm" : "bk-btn h-10 px-4 text-sm"}
-                    >
-                      <Ban size={16} />
-                      {user.isBlocked ? "Unblock" : "Block"}
-                    </button>
+                    {expandedUserId === user.id && (
+                      <div className="border-t border-[#ebebeb] bg-[#f7f7f7] p-5 text-sm text-[#1f2221]">
+                        <div className="grid gap-6 sm:grid-cols-2">
+                          <div>
+                            <h4 className="font-black mb-3 text-[#6f7573] uppercase tracking-wider text-xs">User Details</h4>
+                            <div className="grid gap-2">
+                              <p><strong className="font-black">Name:</strong> {user.name || "N/A"}</p>
+                              <p><strong className="font-black">Email:</strong> {user.email || "N/A"}</p>
+                              <p><strong className="font-black">Phone:</strong> {user.phone || "N/A"}</p>
+                              <p><strong className="font-black">Account Created:</strong> {user.createdAt ? new Date(user.createdAt).toLocaleString() : "N/A"}</p>
+                              <p><strong className="font-black">Addresses:</strong></p>
+                              {user.addresses && user.addresses.length > 0 ? (
+                                <ul className="list-disc list-inside">
+                                  {user.addresses.map((addr, idx) => (
+                                    <li key={idx}>{addr.street}, {addr.city} - {addr.pincode}</li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-[#6f7573] italic">No addresses saved</p>
+                              )}
+                            </div>
+                          </div>
+                          <div>
+                            <h4 className="font-black mb-3 text-[#6f7573] uppercase tracking-wider text-xs">Orders</h4>
+                            <div className="grid gap-2">
+                              {orders.filter(o => o.customerEmail === user.email).length > 0 ? (
+                                <ul className="list-disc list-inside">
+                                  {orders.filter(o => o.customerEmail === user.email).map((order) => (
+                                    <li key={order.id}>
+                                      <span className="font-black">{order.orderId || order.id}</span>
+                                      <span className="text-[#6f7573]"> - {order.status} ({formatPrice(order.total)})</span>
+                                    </li>
+                                  ))}
+                                </ul>
+                              ) : (
+                                <p className="text-[#6f7573] italic">No orders found for this user.</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -1015,34 +1228,86 @@ function Admin() {
           )}
 
           {activeTab === "orders" && (
-            <Panel title="Orders">
-              <div className="grid gap-3">
-                {orders.map((order) => (
-                  <div key={order.id} className={`rounded-lg border overflow-hidden ${order.isStampRewardOrder ? "bg-[#eefbf3] border-[#0f8b57]" : "bg-white border-[#ebebeb]"}`}>
+            <div className="grid gap-6">
+              <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
+                <Stat label="Total Orders" value={orderKPIs.total} icon={ShoppingBag} />
+                <Stat label="Processing" value={orderKPIs.processing} icon={Clock} />
+                <Stat label="Making" value={orderKPIs.making} icon={ChefHat} />
+                <Stat label="Out For Delivery" value={orderKPIs.outForDelivery} icon={Truck} />
+                <Stat label="Delivered" value={orderKPIs.delivered} icon={Package} />
+                <Stat label="Cancelled" value={orderKPIs.cancelled} icon={XCircle} />
+              </div>
+              <Panel title="Orders">
+                <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-bold text-[#6f7573]">Filter:</span>
+                    {["All", "Processing", "Making", "Out For Delivery", "Delivered", "Cancelled"].map((status) => (
+                      <button
+                        key={status}
+                        onClick={() => setOrderStatusFilter(status)}
+                        className={`rounded-full px-3 py-1 text-xs font-black transition-colors ${orderStatusFilter === status ? "bg-[#e63946] text-white" : "bg-[#f7f7f7] text-[#1f2221] hover:bg-[#ebebeb]"}`}
+                      >
+                        {status}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-[#6f7573]">Sort by Delivery:</span>
+                    <select
+                      value={orderSortOrder}
+                      onChange={(e) => setOrderSortOrder(e.target.value)}
+                      className="rounded-lg border border-[#ebebeb] bg-white px-3 py-1.5 text-sm font-bold text-[#1f2221] focus:border-[#e63946] focus:outline-none"
+                    >
+                      <option value="desc">Newest First</option>
+                      <option value="asc">Oldest First</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid gap-3">
+                  {filteredAndSortedOrders.map((order) => {
+                    let bgClass = "bg-white border-[#ebebeb]";
+                    if (order.status === "Delivered") {
+                      bgClass = "bg-[#f0fdf4] border-[#bbf7d0]";
+                    } else if (order.status === "Cancelled") {
+                      bgClass = "bg-[#fef2f2] border-[#fecaca]";
+                    } else if (order.isStampRewardOrder) {
+                      bgClass = "bg-[#eefbf3] border-[#0f8b57]";
+                    }
+                    return (
+                      <div key={order.id} className={`rounded-lg border overflow-hidden ${bgClass}`}>
                     <div className="grid gap-4 p-4 lg:grid-cols-[1fr_auto_auto] lg:items-center">
                       <div>
                         <h3 className="font-black">{order.customerName || order.customerEmail || "Guest User"}</h3>
                         <p className="text-sm font-bold text-[#6f7573]">Status: <span className="text-[#e63946]">{order.status === "Packed" ? "Making" : order.status}</span></p>
                       </div>
                       <div className="flex flex-wrap gap-4 items-center">
-                        {["Processing", "Packed", "Out For Delivery", "Delivered"].map((status) => {
-                          const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
-                          const currentIndex = statuses.indexOf(order.status || "Processing");
-                          const statusIndex = statuses.indexOf(status);
-                          const isChecked = statusIndex <= currentIndex;
-                          return (
-                            <label key={status} className={`flex items-center gap-2 text-sm font-bold cursor-pointer ${isChecked ? "text-[#0f8b57]" : "text-[#1f2221]"}`}>
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => !isChecked && handleStatusChange(order, status)}
-                                disabled={isChecked || statusIndex > currentIndex + 1}
-                                className="h-4 w-4 accent-[#e63946] disabled:opacity-50"
-                              />
-                              {status === "Packed" ? "Making" : status}
-                            </label>
-                          );
-                        })}
+                        {order.status === "Cancelled" ? (
+                          <div className="text-sm font-black text-[#e63946]">
+                            Cancelled: {order.cancelReason || "No reason provided"}
+                          </div>
+                        ) : (
+                          ["Processing", "Packed", "Out For Delivery", "Delivered"].map((status) => {
+                            const statuses = ["Processing", "Packed", "Out For Delivery", "Delivered"];
+                            const currentIndex = statuses.indexOf(order.status || "Processing");
+                            const statusIndex = statuses.indexOf(status);
+                            const isChecked = statusIndex <= currentIndex;
+                            return (
+                              <label key={status} className={`flex items-center gap-2 text-sm font-bold cursor-pointer ${isChecked ? "text-[#0f8b57]" : "text-[#1f2221]"}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => !isChecked && handleStatusChange(order, status)}
+                                  disabled={isChecked || statusIndex > currentIndex + 1}
+                                  className="h-4 w-4 accent-[#e63946] disabled:opacity-50"
+                                />
+                                {status === "Packed" ? "Making" : status}
+                              </label>
+                            );
+                          })
+                        )}
+                        {order.status !== "Cancelled" && order.status !== "Out For Delivery" && order.status !== "Delivered" && (
+                           <button onClick={() => handleCancelOrder(order)} className="bk-outline-btn h-8 px-3 py-0 text-xs text-[#e63946] border-[#e63946]/30 hover:bg-[#fff2e9]">Cancel Order</button>
+                        )}
                       </div>
                       <button 
                         onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
@@ -1118,9 +1383,10 @@ function Admin() {
                       </div>
                     )}
                   </div>
-                ))}
-              </div>
-            </Panel>
+                  })}
+                </div>
+              </Panel>
+            </div>
           )}
 
           {activeTab === "pincodes" && (
