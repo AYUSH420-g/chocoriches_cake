@@ -208,7 +208,44 @@ function RootLayout() {
   return (
     <div className="flex min-h-screen flex-col bg-[#f7f7f7] text-[#1f2221] w-full">
       <TopLoader />
-      <Toaster position="top-center" />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          duration: 3000,
+          style: {
+            padding: '12px 16px',
+            color: '#1f2221',
+            fontWeight: '700',
+            fontSize: '14px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #ebebeb',
+            background: '#ffffff',
+          },
+          success: {
+            style: {
+              background: '#eefbf3',
+              color: '#0f8b57',
+              border: '1px solid #0f8b57',
+            },
+            iconTheme: {
+              primary: '#0f8b57',
+              secondary: '#eefbf3',
+            },
+          },
+          error: {
+            style: {
+              background: '#fff2e9',
+              color: '#e63946',
+              border: '1px solid #e63946',
+            },
+            iconTheme: {
+              primary: '#e63946',
+              secondary: '#fff2e9',
+            },
+          },
+        }}
+      />
 
       {!isAuthPage && (
         <>

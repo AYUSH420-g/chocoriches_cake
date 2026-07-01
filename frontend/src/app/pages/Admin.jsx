@@ -646,7 +646,44 @@ function Admin() {
     
     return (
       <div className="grid min-h-screen place-items-center bg-[#f7f7f7] px-4 py-6">
-        <Toaster position="top-center" />
+        <Toaster 
+          position="top-center" 
+          toastOptions={{
+            duration: 3000,
+            style: {
+              padding: '12px 16px',
+              color: '#1f2221',
+              fontWeight: '700',
+              fontSize: '14px',
+              borderRadius: '12px',
+              boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+              border: '1px solid #ebebeb',
+              background: '#ffffff',
+            },
+            success: {
+              style: {
+                background: '#eefbf3',
+                color: '#0f8b57',
+                border: '1px solid #0f8b57',
+              },
+              iconTheme: {
+                primary: '#0f8b57',
+                secondary: '#eefbf3',
+              },
+            },
+            error: {
+              style: {
+                background: '#fff2e9',
+                color: '#e63946',
+                border: '1px solid #e63946',
+              },
+              iconTheme: {
+                primary: '#e63946',
+                secondary: '#fff2e9',
+              },
+            },
+          }}
+        />
         <form onSubmit={handleLogin} className="w-full max-w-md rounded-xl border border-[#ebebeb] bg-white p-5 shadow-xl shadow-black/5 sm:p-8">
           <span className="mb-5 grid h-14 w-14 place-items-center rounded-full bg-[#fff2e9] text-[#e63946]">
             <Lock size={26} />
@@ -747,7 +784,44 @@ function Admin() {
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">
-      <Toaster position="top-center" />
+      <Toaster 
+        position="top-center" 
+        toastOptions={{
+          duration: 3000,
+          style: {
+            padding: '12px 16px',
+            color: '#1f2221',
+            fontWeight: '700',
+            fontSize: '14px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            border: '1px solid #ebebeb',
+            background: '#ffffff',
+          },
+          success: {
+            style: {
+              background: '#eefbf3',
+              color: '#0f8b57',
+              border: '1px solid #0f8b57',
+            },
+            iconTheme: {
+              primary: '#0f8b57',
+              secondary: '#eefbf3',
+            },
+          },
+          error: {
+            style: {
+              background: '#fff2e9',
+              color: '#e63946',
+              border: '1px solid #e63946',
+            },
+            iconTheme: {
+              primary: '#e63946',
+              secondary: '#fff2e9',
+            },
+          },
+        }}
+      />
       <header className="border-b border-[#ebebeb] bg-white">
         <div className="mx-auto flex max-w-[1500px] flex-col gap-4 px-3 py-4 sm:px-4 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
           <div className="min-w-0">
