@@ -578,8 +578,14 @@ function Checkout() {
                         sm:h-12
                         sm:w-auto
                         ">
-                  {loading ? "Processing..." : step === 2 ? "Proceed to Pay" : "Continue"}
-                  {!loading && <ChevronRight size={18} />}
+                  {loading ? (
+                    <div className="h-4 w-24 animate-pulse rounded bg-white/30" />
+                  ) : (
+                    <>
+                      {step === 2 ? "Proceed to Pay" : "Continue"}
+                      <ChevronRight size={18} />
+                    </>
+                  )}
                 </button>
               </div>
             </form>

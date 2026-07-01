@@ -255,6 +255,7 @@ function ProductDetail() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isBuying, setIsBuying] = useState(false);
+  const [isAdding, setIsAdding] = useState(false);
   const [liked, setLiked] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [activeReviewIndex, setActiveReviewIndex] = useState(0);
@@ -436,7 +437,10 @@ function ProductDetail() {
       return false;
     }
 
-    if (showLoader) setIsBuying(true);
+    if (showLoader) {
+      if (isBuyNow) setIsBuying(true);
+      else setIsAdding(true);
+    }
 
     try {
       const nextQuantity = cartItem ? quantity : 1;
@@ -448,12 +452,15 @@ function ProductDetail() {
       if (!isBuyNow) {
         window.dispatchEvent(new Event("open-cart"));
       }
-      if (showLoader) setIsBuying(false);
       return true;
     } catch (error) {
-      toast.error(error.message || "Could not add item to cart");
-      if (showLoader) setIsBuying(false);
+      toast.error("Failed to update cart");
       return false;
+    } finally {
+      if (showLoader) {
+        if (isBuyNow) setIsBuying(false);
+        else setIsAdding(false);
+      }
     }
   };
 
@@ -716,9 +723,15 @@ function ProductDetail() {
   </div>
 </div>
               ) : (
-                <button type="button" onClick={handleAddToCart} className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#2d2d2d] bg-white text-[#2d2d2d] font-semibold transition-all duration-200 hover:bg-[#2d2d2d] hover:text-white active:scale-[0.96] h-12 px-3 text-sm md:px-5">
-                  <ShoppingCart size={18} />
-                  Add To Cart
+                <button type="button" onClick={() => handleAddToCart(true, false)} disabled={isAdding} className="inline-flex items-center justify-center gap-2 rounded-lg border border-[#2d2d2d] bg-white text-[#2d2d2d] font-semibold transition-all duration-200 hover:bg-[#2d2d2d] hover:text-white active:scale-[0.96] h-12 px-3 text-sm md:px-5">
+                  {isAdding ? (
+                    <div className="h-4 w-24 animate-pulse rounded bg-[#e0e0e0]" />
+                  ) : (
+                    <>
+                      <ShoppingCart size={18} />
+                      Add To Cart
+                    </>
+                  )}
                 </button>
               )}
               <button
@@ -728,10 +741,7 @@ function ProductDetail() {
                 className="flex h-12 items-center justify-center gap-2 rounded-lg bg-[#3e3e3e] text-white font-semibold transition-all duration-200 hover:bg-[#3a3a3a] hover:shadow-[0_8px_18px_rgba(45,45,45,0.2)] active:scale-[0.96] px-3 text-sm md:px-5"
               >
                 {isBuying ? (
-                  <>
-                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Processing...
-                  </>
+                  <div className="h-4 w-20 animate-pulse rounded bg-white/30" />
                 ) : (
                   "Buy Now"
                 )}
