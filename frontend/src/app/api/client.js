@@ -1,6 +1,10 @@
 import { getCartSessionId } from "../utils/session";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
+// Keep production API traffic on the storefront origin. Vercel proxies /api
+// to the backend, so secure HttpOnly session cookies remain first-party.
+const API_BASE_URL = import.meta.env.DEV
+  ? (import.meta.env.VITE_API_URL || "/api/v1")
+  : "/api/v1";
 const API_BASE_URLS = apiBaseUrls(API_BASE_URL);
 let publicSettingsRequest = null;
 let categoriesRequest = null;
@@ -80,6 +84,7 @@ async function request(path, options = {}) {
       const errorBody = await response.json().catch(() => null);
       const error = new Error(errorBody?.message || `API request failed: ${response.status}`);
       error.fromApi = Boolean(errorBody);
+      error.status = response.status;
       throw error;
     }
 

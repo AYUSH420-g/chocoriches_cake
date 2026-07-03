@@ -315,10 +315,14 @@ function Admin() {
 
       setSummary(nextSummary);
       setSettings(nextSettings);
-    } catch {
-      toast.error("Admin session expired. Please login again.");
-      sessionStorage.removeItem("chocoriches_admin_session");
-      setToken("");
+    } catch (error) {
+      if ([401, 403, 404].includes(error?.status)) {
+        toast.error("Admin session expired. Please login again.");
+        sessionStorage.removeItem("chocoriches_admin_session");
+        setToken("");
+      } else {
+        toast.error(error?.message || "Could not load admin data. Please retry.");
+      }
     } finally {
       setLoading(false);
       setRefreshKey((k) => k + 1);
