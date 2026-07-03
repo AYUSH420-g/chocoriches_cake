@@ -19,6 +19,12 @@ function validPassword(password) {
   return typeof password === "string" && password.length >= 8 && password.length <= 128;
 }
 
+function secureTextEqual(left = "", right = "") {
+  const leftDigest = crypto.createHash("sha256").update(String(left)).digest();
+  const rightDigest = crypto.createHash("sha256").update(String(right)).digest();
+  return crypto.timingSafeEqual(leftDigest, rightDigest);
+}
+
 function authResponse(user, res, role = user.role === "admin" ? "admin" : "user") {
   const safeUser = publicUser(user);
   const token = signToken({
@@ -236,8 +242,47 @@ export async function adminLogin(req, res) {
   const password = String(req.body.password || "");
   const user = await findUserByEmail(email);
 
-  if (!user || user.role !== "admin" || !(await verifyPassword(password, user))) {
+  if (!user || user.role !== "admin") {
     res.status(401).json({ message: "Invalid admin credentials." });
+    return;
+  }
+
+  let passwordMatches = await verifyPassword(password, user);
+
+  // Keep the persisted admin hash synchronized with the protected environment
+  // credential. This also repairs databases created before ADMIN_PASSWORD was
+  // rotated, without accepting any password other than the configured one.
+  const matchesConfiguredAdmin = (
+    email === normalizeEmail(config.adminSeed.email)
+    && secureTextEqual(password, config.adminSeed.password)
+  );
+  if (!passwordMatches && matchesConfiguredAdmin) {
+    const passwordFields = await hashPassword(password);
+    const nextTokenVersion = Number(user.tokenVersion || 0) + 1;
+
+    if (isDatabaseConnected()) {
+      await User.updateOne(
+        { _id: user._id },
+        { $set: passwordFields, $inc: { tokenVersion: 1 } }
+      );
+    } else {
+      const memoryAdmin = memory.users.find((item) => normalizeEmail(item.email) === email);
+      if (memoryAdmin) {
+        Object.assign(memoryAdmin, passwordFields, { tokenVersion: nextTokenVersion });
+      }
+    }
+
+    Object.assign(user, passwordFields, { tokenVersion: nextTokenVersion });
+    passwordMatches = true;
+  }
+
+  if (!passwordMatches) {
+    res.status(401).json({ message: "Invalid admin credentials." });
+    return;
+  }
+
+  if (user.isBlocked) {
+    res.status(403).json({ message: "This admin account is blocked." });
     return;
   }
 
@@ -265,11 +310,6 @@ export async function adminLogin(req, res) {
       memoryAdmin.lastAdminTotpCounter = counter;
       user.lastAdminTotpCounter = counter;
     }
-  }
-
-  if (user.isBlocked) {
-    res.status(403).json({ message: "This admin account is blocked." });
-    return;
   }
 
   authResponse(user, res, "admin");
