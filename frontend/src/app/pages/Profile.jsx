@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { motion } from "motion/react";
 import { ArrowLeft, ChevronRight, CreditCard, Gift, Heart, LogOut, MapPin, Package, Settings, ShoppingCart, Star, Wallet, FileText, Home, Briefcase } from "lucide-react";
 import { toast } from "sonner";
-import { checkPincode, getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview } from "../api/client";
+import { checkPincode, getOrders, getProducts, getProfile, addAddress, deleteAddress, updateProfile, getUserReviews, addReview, logoutUser } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice } from "../utils/format";
 import { clearUserSession, getStoredUser, isUserLoggedIn, saveUserSession } from "../utils/session";
@@ -25,6 +25,12 @@ function SectionLoader({ label }) {
 
 function normalizePincode(value) {
   return String(value || "").replace(/\D/g, "").slice(0, 6);
+}
+
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>'"]/g, (character) => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", "'": "&#39;", '"': "&quot;",
+  })[character]);
 }
 
 function Profile() {
@@ -70,7 +76,8 @@ function Profile() {
     };
   }, [navigate]);
 
-  const logout = () => {
+  const logout = async () => {
+    await logoutUser().catch(() => void 0);
     clearUserSession();
     navigate("/auth");
   };
@@ -172,22 +179,28 @@ function Profile() {
       return;
     }
 
-    const price = formatPrice(order.total);
-    const date = order.date || new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
+    const price = escapeHtml(formatPrice(order.total));
+    const orderId = escapeHtml(order.orderId || order.id);
+    const date = escapeHtml(order.date || new Date(order.createdAt || Date.now()).toLocaleDateString("en-IN", {
       day: "2-digit",
       month: "long",
       year: "numeric"
-    });
+    }));
     
     const itemsHtml = (order.items || ["Cake order"])
       .map(
-        (item) => `
+        (item) => {
+          const itemName = escapeHtml(typeof item === "string" ? item : item?.name || "Cake order");
+          const quantity = escapeHtml(typeof item === "object" ? item?.quantity || 1 : 1);
+          const itemPrice = escapeHtml(formatPrice(typeof item === "object" ? Number(item?.price || 0) * Number(item?.quantity || 1) : order.total));
+          return `
       <tr>
-        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; font-weight: 600;">${item}</td>
-        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: center;">1</td>
-        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: right; font-weight: 600;">${price}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; font-weight: 600;">${itemName}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: center;">${quantity}</td>
+        <td style="padding: 12px; border-bottom: 1px solid #ebebeb; font-size: 14px; color: #1f2221; text-align: right; font-weight: 600;">${itemPrice}</td>
       </tr>
-    `
+    `;
+        }
       )
       .join("");
 
@@ -195,7 +208,7 @@ function Profile() {
       <!DOCTYPE html>
       <html>
       <head>
-        <title>Invoice - ${order.orderId || order.id}</title>
+        <title>Invoice - ${orderId}</title>
         <style>
           @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
           body {
@@ -349,22 +362,22 @@ function Profile() {
             </div>
             <div class="invoice-title">
               <h1>Invoice</h1>
-              <p>ID: ${order.orderId || order.id}</p>
+              <p>ID: ${orderId}</p>
             </div>
           </div>
 
           <div class="details-grid">
             <div class="details-block">
               <h3>Billed To:</h3>
-              <p class="highlight">${profile.name}</p>
-              <p>${profile.email}</p>
-              ${profile.phone ? `<p>${profile.phone}</p>` : ""}
+              <p class="highlight">${escapeHtml(profile.name)}</p>
+              <p>${escapeHtml(profile.email)}</p>
+              ${profile.phone ? `<p>${escapeHtml(profile.phone)}</p>` : ""}
             </div>
             <div class="details-block" style="text-align: right;">
               <h3>Invoice Details:</h3>
               <p><span style="color: #6f7573; font-weight: 600;">Date:</span> ${date}</p>
-              <p><span style="color: #6f7573; font-weight: 600;">Pincode:</span> ${order.deliveryPincode || "N/A"}</p>
-              <p><span style="color: #6f7573; font-weight: 600;">Status:</span> <span style="color: #e63946; font-weight: 800;">${order.status}</span></p>
+              <p><span style="color: #6f7573; font-weight: 600;">Pincode:</span> ${escapeHtml(order.deliveryPincode || "N/A")}</p>
+              <p><span style="color: #6f7573; font-weight: 600;">Status:</span> <span style="color: #e63946; font-weight: 800;">${escapeHtml(order.status)}</span></p>
             </div>
           </div>
 

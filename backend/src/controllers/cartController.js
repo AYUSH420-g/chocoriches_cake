@@ -1,7 +1,9 @@
+import crypto from "node:crypto";
 import { isDatabaseConnected } from "../db.js";
 import { CartItem } from "../models/CartItem.js";
+import { User } from "../models/User.js";
 import { cakeCapacityStatus } from "../services/availabilityService.js";
-import { productId } from "../utils/formatters.js";
+import { productId, todayIso } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
 import { findProductForCart, productCartSnapshot } from "./productController.js";
 
@@ -12,7 +14,13 @@ function cartOwner(req) {
   }
 
   const sessionId = String(req.get("x-cart-session") || "").trim();
-  return { sessionId: sessionId || "guest" };
+  return /^[A-Za-z0-9-]{16,100}$/.test(sessionId) ? { sessionId } : null;
+}
+
+function cartOwnerOrError(req, res) {
+  const owner = cartOwner(req);
+  if (!owner) res.status(400).json({ message: "A valid cart session is required." });
+  return owner;
 }
 
 function ownerMatches(item, owner) {
@@ -25,7 +33,7 @@ async function ownerCartQuantity(owner, requestedDate) {
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
 
   return cartItems.reduce((count, item) => {
-    const itemDate = item.deliveryDate || String(new Date().toISOString().slice(0, 10));
+    const itemDate = item.deliveryDate || todayIso();
     if (requestedDate && itemDate !== requestedDate) return count;
     return count + Number(item.quantity || 0);
   }, 0);
@@ -33,6 +41,10 @@ async function ownerCartQuantity(owner, requestedDate) {
 
 export async function getCart(req, res) {
   const owner = cartOwner(req);
+  if (!owner) {
+    res.status(400).json({ message: "A valid cart session is required." });
+    return;
+  }
   const cartItems = isDatabaseConnected()
     ? await CartItem.find(owner).sort({ createdAt: 1 }).lean()
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
@@ -49,13 +61,47 @@ export async function addCartItem(req, res) {
   }
 
   const requestedProductId = productId(product);
-  const requestedSize = String(size || "Half Kg");
-  const nextQuantity = isStampReward ? 1 : Math.max(1, Number(quantity) || 1);
-  const owner = cartOwner(req);
-  const requestedDate = String(deliveryDate || new Date().toISOString().slice(0, 10));
+  const requestedSize = String(size || "Half Kg").trim().slice(0, 50);
+  const normalizedBaseFlavour = String(baseFlavour || "").slice(0, 80);
+  const normalizedCreamFlavour = String(creamFlavour || "").slice(0, 80);
+  const rewardRequested = isStampReward === true;
+  const parsedQuantity = Number(quantity);
+  if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 9) {
+    res.status(400).json({ message: "Quantity must be between 1 and 9." });
+    return;
+  }
+  const nextQuantity = rewardRequested ? 1 : parsedQuantity;
+  const owner = cartOwnerOrError(req, res);
+  if (!owner) return;
+  const requestedDate = String(deliveryDate || "").slice(0, 10);
+  const today = todayIso();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(requestedDate) || requestedDate < today) {
+    res.status(422).json({ message: "Please select a valid delivery date." });
+    return;
+  }
+  if (requestedDate === today && !product.sameDayDelivery) {
+    res.status(422).json({ message: "This product is available from tomorrow." });
+    return;
+  }
+  const currentIndiaHour = Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
+  if (requestedDate === today && (currentIndiaHour < 6 || currentIndiaHour >= 18)) {
+    res.status(422).json({ message: "Same-day ordering is available between 6:00 AM and 6:00 PM." });
+    return;
+  }
 
   // Prevent adding more than 1 stamp reward item
-  if (isStampReward) {
+  if (rewardRequested) {
+    if (!req.user) {
+      res.status(401).json({ message: "Please login to redeem a loyalty reward." });
+      return;
+    }
+    const rewardUser = isDatabaseConnected()
+      ? await User.findOne({ email: req.user.email }).lean()
+      : memory.users.find((item) => item.email === req.user.email);
+    if (Number(rewardUser?.stampCount || 0) < 5) {
+      res.status(403).json({ message: "Five stamps are required to redeem this reward." });
+      return;
+    }
     const existingCartItems = isDatabaseConnected()
       ? await CartItem.find(owner).lean()
       : memory.cartItems.filter((item) => ownerMatches(item, owner));
@@ -73,10 +119,14 @@ export async function addCartItem(req, res) {
   }
 
   if (isDatabaseConnected()) {
-    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour, creamFlavour, isStampReward });
+    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour: normalizedBaseFlavour, creamFlavour: normalizedCreamFlavour, deliveryDate: requestedDate, isStampReward: rewardRequested });
     if (existingItem) {
-      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
-      if (isStampReward) {
+      if (!rewardRequested && existingItem.quantity + nextQuantity > 9) {
+        res.status(400).json({ message: "Quantity must be between 1 and 9." });
+        return;
+      }
+      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour: normalizedBaseFlavour, creamFlavour: normalizedCreamFlavour });
+      if (rewardRequested) {
         existingItem.quantity = 1;
         existingItem.price = 1;
       } else {
@@ -88,11 +138,15 @@ export async function addCartItem(req, res) {
     }
   } else {
     const existingItem = memory.cartItems.find(
-      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize && item.baseFlavour === baseFlavour && item.creamFlavour === creamFlavour && item.isStampReward === isStampReward
+      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize && item.baseFlavour === normalizedBaseFlavour && item.creamFlavour === normalizedCreamFlavour && item.deliveryDate === requestedDate && item.isStampReward === rewardRequested
     );
     if (existingItem) {
-      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour, creamFlavour });
-      if (isStampReward) {
+      if (!rewardRequested && existingItem.quantity + nextQuantity > 9) {
+        res.status(400).json({ message: "Quantity must be between 1 and 9." });
+        return;
+      }
+      Object.assign(existingItem, productCartSnapshot(product, requestedSize), { weight: requestedSize, baseFlavour: normalizedBaseFlavour, creamFlavour: normalizedCreamFlavour });
+      if (rewardRequested) {
         existingItem.quantity = 1;
         existingItem.price = 1;
       } else {
@@ -105,18 +159,18 @@ export async function addCartItem(req, res) {
 
   const snapshot = productCartSnapshot(product, requestedSize);
   const item = {
-    id: `${requestedProductId}-${Date.now()}`,
+    id: crypto.randomUUID(),
     productId: requestedProductId,
     ...owner,
     ...snapshot,
-    price: isStampReward ? 1 : snapshot.price,
+    price: rewardRequested ? 1 : snapshot.price,
     size: requestedSize,
     weight: requestedSize,
     quantity: nextQuantity,
-    baseFlavour,
-    creamFlavour,
+    baseFlavour: normalizedBaseFlavour,
+    creamFlavour: normalizedCreamFlavour,
     deliveryDate: requestedDate,
-    isStampReward,
+    isStampReward: rewardRequested,
   };
 
   if (isDatabaseConnected()) {
@@ -130,21 +184,45 @@ export async function addCartItem(req, res) {
 
 export async function updateCartItem(req, res) {
   const updates = {};
-  if (req.body.quantity !== undefined) updates.quantity = Math.max(1, Number(req.body.quantity) || 1);
-  if (req.body.messageOnCake !== undefined) updates.messageOnCake = String(req.body.messageOnCake);
+  if (req.body.quantity !== undefined) {
+    const quantity = Number(req.body.quantity);
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 9) {
+      res.status(400).json({ message: "Quantity must be between 1 and 9." });
+      return;
+    }
+    updates.quantity = quantity;
+  }
+  if (req.body.messageOnCake !== undefined) updates.messageOnCake = String(req.body.messageOnCake).slice(0, 30);
+  if (req.body.deliveryDate !== undefined) {
+    const deliveryDate = String(req.body.deliveryDate).slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(deliveryDate) || deliveryDate < todayIso()) {
+      res.status(422).json({ message: "Please select a valid delivery date." });
+      return;
+    }
+    updates.deliveryDate = deliveryDate;
+  }
 
-  const owner = cartOwner(req);
+  const owner = cartOwnerOrError(req, res);
+  if (!owner) return;
   const cartItems = isDatabaseConnected()
     ? await CartItem.find(owner).lean()
     : memory.cartItems.filter((item) => ownerMatches(item, owner));
   const currentItem = cartItems.find((item) => item.id === req.params.id);
+  if (!currentItem) {
+    res.status(404).json({ message: "Cart item not found." });
+    return;
+  }
+  if (updates.deliveryDate === todayIso() && !currentItem.sameDayDelivery) {
+    res.status(422).json({ message: "This product is available from tomorrow." });
+    return;
+  }
   
   if (updates.quantity && currentItem) {
     // Stamp reward items are locked at quantity 1
     if (currentItem.isStampReward) {
       updates.quantity = 1;
     }
-    const requestedDate = currentItem.deliveryDate || String(new Date().toISOString().slice(0, 10));
+    const requestedDate = updates.deliveryDate || currentItem.deliveryDate || todayIso();
     // only count reserved quantity for the same date!
     const reservedQuantity = cartItems.reduce((count, item) => count + ((item.id === req.params.id || item.deliveryDate !== requestedDate) ? 0 : Number(item.quantity || 0)), 0);
     const capacity = await cakeCapacityStatus(requestedDate, updates.quantity, reservedQuantity);
@@ -156,7 +234,11 @@ export async function updateCartItem(req, res) {
 
   if (isDatabaseConnected()) {
     const item = await CartItem.findOneAndUpdate({ ...owner, id: req.params.id }, updates, { new: true }).lean();
-    res.json(item || { id: req.params.id, ...updates });
+    if (!item) {
+      res.status(404).json({ message: "Cart item not found." });
+      return;
+    }
+    res.json(item);
     return;
   }
 
@@ -167,7 +249,8 @@ export async function updateCartItem(req, res) {
 }
 
 export async function removeCartItem(req, res) {
-  const owner = cartOwner(req);
+  const owner = cartOwnerOrError(req, res);
+  if (!owner) return;
   if (isDatabaseConnected()) {
     await CartItem.deleteOne({ ...owner, id: req.params.id });
   } else {
@@ -178,7 +261,8 @@ export async function removeCartItem(req, res) {
 }
 
 export async function clearCart(req, res) {
-  const owner = cartOwner(req);
+  const owner = cartOwnerOrError(req, res);
+  if (!owner) return;
   if (isDatabaseConnected()) {
     await CartItem.deleteMany(owner);
   } else {

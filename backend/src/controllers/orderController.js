@@ -1,154 +1,91 @@
+import crypto from "node:crypto";
+import { config } from "../config/env.js";
 import { isDatabaseConnected } from "../db.js";
 import { Order } from "../models/Order.js";
 import { User } from "../models/User.js";
-import { Product } from "../models/Product.js";
 import { CartItem } from "../models/CartItem.js";
-import { cakeCapacityStatus, isDeliveryDateBlocked, pincodeStatus } from "../services/availabilityService.js";
-import { getSiteSetting } from "../services/availabilityService.js";
-import { adminOrderView, publicOrderView, todayIso, productPriceForWeight, productId as getProductId } from "../utils/formatters.js";
+import { cakeCapacityStatus, isDeliveryDateBlocked } from "../services/availabilityService.js";
+import { calculateCheckout } from "../services/checkoutService.js";
+import { adminOrderView, publicOrderView, todayIso } from "../utils/formatters.js";
 import { memory } from "../utils/memoryStore.js";
 import { sendEmail } from "../utils/email.js";
-import { findProductForCart } from "../controllers/productController.js";
+import { verifyPaymentForCheckout } from "./paymentController.js";
 
 function formatPrice(amount) {
   return new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(amount);
 }
 
 function orderLookupFilter(id) {
-  const value = String(id || "").trim();
+  const value = String(id || "").trim().slice(0, 100);
   if (/^[0-9a-fA-F]{24}$/.test(value)) {
     return { $or: [{ _id: value }, { id: value }] };
   }
   return { id: value };
 }
 
-function orderItems(items) {
-  if (!Array.isArray(items)) {
-    return [];
-  }
+const DELIVERY_SLOTS = new Set([
+  "12:00 PM - 02:00 PM",
+  "03:00 PM - 06:00 PM",
+  "07:00 PM - 10:00 PM",
+  "11:15 PM - 11:45 PM",
+]);
 
-  return items
-    .filter(Boolean)
-    .map(item => {
-      const qty = Math.max(1, parseInt(item.quantity, 10) || 1);
-      return { ...item, quantity: qty };
-    });
+function indiaHour() {
+  return Number(new Intl.DateTimeFormat("en-GB", { timeZone: "Asia/Kolkata", hour: "2-digit", hourCycle: "h23" }).format(new Date()));
 }
 
-function orderItemCount(items) {
-  if (!Array.isArray(items)) {
-    return 0;
-  }
-
-  return items.reduce((count, item) => {
-    if (typeof item === "string") {
-      return count + 1;
-    }
-    return count + Math.max(1, Number(item?.quantity || 1));
-  }, 0);
+function createPublicOrderId() {
+  return `CR-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
 }
 
 export async function createOrder(req, res) {
-  const deliveryPincode = String(req.body.deliveryPincode || req.body.pincode || "").trim();
-  const deliveryDate = String(req.body.deliveryDate || todayIso()).slice(0, 10);
-  const customerName = String(req.body.name || req.body.customerName || req.user?.name || "").trim();
-  const customerEmail = String(req.user?.email || req.body.customerEmail || req.body.email || "").trim().toLowerCase();
-  const customerPhone = String(req.body.phone || req.body.customerPhone || req.user?.phone || "").trim();
-  const deliveryAddress = String(req.body.address || req.body.deliveryAddress || "").trim();
-  const deliveryOption = String(req.body.deliveryOption || "pickup").trim().toLowerCase();
-  const rawItems = orderItems(req.body.items);
-  const itemCount = orderItemCount(req.body.items) || rawItems.length;
+  const customerEmail = String(req.user.email || "").trim().toLowerCase();
+  const customerName = String(req.body.name || req.user.name || "").trim().slice(0, 100);
+  const customerPhone = String(req.body.phone || req.user.phone || "").replace(/\D/g, "").slice(0, 15);
+  const deliveryAddress = String(req.body.address || "").trim().slice(0, 500);
+  const deliveryDate = String(req.body.deliveryDate || "").slice(0, 10);
+  const deliveryTimeSlot = String(req.body.deliveryTimeSlot || "").trim();
 
-  // ── SERVER-SIDE PRICE CALCULATION ──
-  // Never trust req.body.total. Recalculate from actual DB prices.
-  const owner = customerEmail
-    ? { userEmail: customerEmail }
-    : { sessionId: String(req.get("x-cart-session") || "guest") };
-
-  // Fetch the user's actual cart from the database
-  const cartItems = isDatabaseConnected()
-    ? await CartItem.find(owner).lean()
-    : memory.cartItems.filter((ci) => Object.entries(owner).every(([k, v]) => String(ci[k] || "") === String(v)));
-
-  // For each cart item, verify price against the Product DB
-  let serverTotal = 0;
-  const items = [];
-  let isStampRewardOrder = false;
-  let userRecord = null;
-  if (isDatabaseConnected() && customerEmail) {
-    userRecord = await User.findOne({ email: customerEmail });
+  if (!customerName || customerPhone.length < 7 || !deliveryAddress) {
+    res.status(400).json({ message: "Valid customer name, phone, and address are required." });
+    return;
+  }
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(deliveryDate) || deliveryDate < todayIso()) {
+    res.status(422).json({ message: "Please select a valid future delivery date." });
+    return;
+  }
+  if (!DELIVERY_SLOTS.has(deliveryTimeSlot)) {
+    res.status(422).json({ message: "Please select a valid delivery time slot." });
+    return;
   }
 
-  for (const ci of cartItems) {
-    const dbProduct = await findProductForCart(ci.productId);
-    let verifiedPrice = dbProduct
-      ? productPriceForWeight(dbProduct, ci.size || ci.weight || "")
-      : Number(ci.price || 0);
-
-    if (ci.isStampReward && userRecord && userRecord.stampCount >= 5) {
-      verifiedPrice = 1;
-      isStampRewardOrder = true;
-    }
-
-    const qty = Math.max(1, parseInt(ci.quantity, 10) || 1);
-    serverTotal += verifiedPrice * qty;
-    items.push({
-      name: ci.name || (dbProduct ? dbProduct.name : "Cake"),
-      quantity: qty,
-      size: ci.size || ci.weight || "",
-      price: verifiedPrice,
-      productId: ci.productId,
-      messageOnCake: ci.messageOnCake || "",
-      baseFlavour: ci.baseFlavour || "",
-      creamFlavour: ci.creamFlavour || "",
-      isStampReward: ci.isStampReward || false,
-    });
-  }
-
-  // If cart was empty in DB, fall back to raw items but still verify each
-  if (items.length === 0 && rawItems.length > 0) {
-    for (const ri of rawItems) {
-      const dbProduct = ri.productId ? await findProductForCart(ri.productId) : null;
-      let verifiedPrice = dbProduct
-        ? productPriceForWeight(dbProduct, ri.size || "")
-        : 0;
-
-      if (ri.isStampReward && userRecord && userRecord.stampCount >= 5) {
-        verifiedPrice = 1;
-        isStampRewardOrder = true;
+  // Return a customer's already-created order before reading their now-cleared
+  // cart. This makes payment callbacks safely idempotent without allowing a
+  // payment ID to be reused by another account.
+  const requestedPaymentId = String(req.body.payment?.razorpay_payment_id || "").trim().slice(0, 100);
+  if (requestedPaymentId) {
+    const existingOrder = isDatabaseConnected()
+      ? await Order.findOne({ "payment.razorpayPaymentId": requestedPaymentId }).lean()
+      : memory.orders.find((item) => item.payment?.razorpayPaymentId === requestedPaymentId);
+    if (existingOrder) {
+      if (String(existingOrder.customerEmail).toLowerCase() !== customerEmail) {
+        res.status(409).json({ message: "This payment has already been used." });
+        return;
       }
-
-      const qty = Math.max(1, parseInt(ri.quantity, 10) || 1);
-      serverTotal += verifiedPrice * qty;
-      items.push({
-        name: ri.name || (dbProduct ? dbProduct.name : "Cake"),
-        quantity: qty,
-        size: ri.size || "",
-        price: verifiedPrice,
-        productId: ri.productId || "",
-        messageOnCake: ri.messageOnCake || "",
-        baseFlavour: ri.baseFlavour || "",
-        creamFlavour: ri.creamFlavour || "",
-        isStampReward: ri.isStampReward || false,
-      });
+      res.status(200).json(publicOrderView(existingOrder));
+      return;
     }
   }
 
-  const pStatus = await pincodeStatus(deliveryPincode);
-  if (!pStatus.serviceable) {
-    res.status(422).json({ message: "Delivery is not available for this pincode." });
-    return;
-  }
-  const deliveryFee = deliveryOption === "pickup" ? 0 : (pStatus.deliveryCharge || 0);
-  serverTotal += deliveryFee;
+  const checkout = await calculateCheckout({
+    user: req.user,
+    deliveryPincode: req.body.deliveryPincode,
+    deliveryOption: req.body.deliveryOption,
+    deliveryDate,
+  });
 
-  if (!customerEmail) {
-    res.status(400).json({ message: "Customer email is required." });
-    return;
-  }
-
-  if (!items.length) {
-    res.status(400).json({ message: "Order must contain at least one product." });
+  if (deliveryDate === todayIso() && (!checkout.allSameDayEligible || indiaHour() < 6 || indiaHour() >= 18)) {
+    res.status(422).json({ message: "One or more cart items are not eligible for same-day delivery." });
     return;
   }
 
@@ -157,48 +94,81 @@ export async function createOrder(req, res) {
     return;
   }
 
-  const capacity = await cakeCapacityStatus(deliveryDate, itemCount);
+  const capacity = await cakeCapacityStatus(deliveryDate, checkout.itemCount);
   if (!capacity.allowed) {
     res.status(422).json({ message: capacity.message });
     return;
   }
 
+  const verifiedPayment = await verifyPaymentForCheckout({
+    payment: req.body.payment,
+    expectedAmountPaise: checkout.totalPaise,
+    user: req.user,
+  });
+
   const order = {
-    id: `CR-${Math.floor(1000 + Math.random() * 9000)}`,
+    id: createPublicOrderId(),
     date: new Intl.DateTimeFormat("en-US", {
       month: "long",
       day: "numeric",
       year: "numeric",
     }).format(new Date()),
-    total: serverTotal,
+    total: checkout.total,
     status: "Processing",
-    items,
-    itemCount,
+    items: checkout.items,
+    itemCount: checkout.itemCount,
     customerName,
     customerEmail,
     customerPhone,
     deliveryAddress,
-    deliveryPincode,
+    deliveryPincode: checkout.deliveryPincode,
     deliveryDate,
-    deliveryTimeSlot: String(req.body.deliveryTimeSlot || "").trim(),
-    deliveryOption,
-    payment: req.body.payment || {},
-    isStampRewardOrder,
+    deliveryTimeSlot,
+    deliveryOption: checkout.deliveryOption,
+    payment: verifiedPayment,
+    isStampRewardOrder: checkout.isStampRewardOrder,
   };
 
   if (isDatabaseConnected()) {
-    const created = await Order.create(order);
-    
-    if (userRecord) {
-      if (isStampRewardOrder) {
-        userRecord.stampCount = 0;
-      } else {
-        userRecord.stampCount = Math.min(5, (userRecord.stampCount || 0) + 1);
+    const session = await Order.startSession();
+    let created;
+    try {
+      await session.withTransaction(async () => {
+        if (checkout.isStampRewardOrder) {
+          const rewardClaim = await User.updateOne(
+            { email: customerEmail, stampCount: { $gte: 5 } },
+            { $set: { stampCount: 0 } },
+            { session }
+          );
+          if (rewardClaim.modifiedCount !== 1) {
+            const error = new Error("This loyalty reward has already been used.");
+            error.statusCode = 409;
+            throw error;
+          }
+        } else {
+          await User.updateOne(
+            { email: customerEmail },
+            [{ $set: { stampCount: { $min: [5, { $add: [{ $ifNull: ["$stampCount", 0] }, 1] }] } } }],
+            { session }
+          );
+        }
+        [created] = await Order.create([order], { session });
+        await CartItem.deleteMany({ userEmail: customerEmail }, { session });
+      });
+    } catch (error) {
+      if (error?.code === 11000 && requestedPaymentId) {
+        const duplicate = await Order.findOne({ "payment.razorpayPaymentId": requestedPaymentId }).lean();
+        if (duplicate && String(duplicate.customerEmail).toLowerCase() === customerEmail) {
+          res.status(200).json(publicOrderView(duplicate));
+          return;
+        }
       }
-      await userRecord.save();
+      throw error;
+    } finally {
+      await session.endSession();
     }
     
-    const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
+    const itemDetails = checkout.items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
     const adminEmailContent = `
 New Order Received!
 -------------------
@@ -209,15 +179,15 @@ Customer Phone: ${customerPhone}
 
 Items: ${itemDetails}
 Total Price: ${formatPrice(order.total)}
-Delivery Option: ${deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
+Delivery Option: ${checkout.deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
 Delivery Date: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
-Pincode: ${deliveryPincode}
+Pincode: ${checkout.deliveryPincode}
 `.trim();
 
     // Send to admin
     sendEmail({
-      to: "99ayushsoni@gmail.com",
+      to: config.adminSeed.email,
       subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
       text: adminEmailContent
     }).catch(console.error);
@@ -234,19 +204,13 @@ Pincode: ${deliveryPincode}
   }
 
   memory.orders.push(order);
-  
-  if (customerEmail) {
-    const memoryUser = memory.users.find((u) => String(u.email).toLowerCase() === customerEmail.toLowerCase());
-    if (memoryUser) {
-      if (isStampRewardOrder) {
-        memoryUser.stampCount = 0;
-      } else {
-        memoryUser.stampCount = Math.min(5, (memoryUser.stampCount || 0) + 1);
-      }
-    }
+  memory.cartItems = memory.cartItems.filter((item) => String(item.userEmail || "").toLowerCase() !== customerEmail);
+  const memoryUser = memory.users.find((u) => String(u.email).toLowerCase() === customerEmail);
+  if (memoryUser) {
+    memoryUser.stampCount = checkout.isStampRewardOrder ? 0 : Math.min(5, Number(memoryUser.stampCount || 0) + 1);
   }
 
-  const itemDetails = items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
+  const itemDetails = checkout.items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
   const adminEmailContent = `
 New Order Received!
 -------------------
@@ -257,15 +221,15 @@ Customer Phone: ${customerPhone}
 
 Items: ${itemDetails}
 Total Price: ${formatPrice(order.total)}
-Delivery Option: ${deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
+Delivery Option: ${checkout.deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
 Delivery Date: ${deliveryDate}
 Delivery Address: ${deliveryAddress}
-Pincode: ${deliveryPincode}
+Pincode: ${checkout.deliveryPincode}
 `.trim();
 
   // Send to admin
   sendEmail({
-    to: "99ayushsoni@gmail.com",
+    to: config.adminSeed.email,
     subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
     text: adminEmailContent
   }).catch(console.error);
@@ -308,9 +272,13 @@ export async function trackOrder(req, res) {
     return;
   }
 
-  const requestedEmail = String(req.query.email || "").trim().toLowerCase();
+  const requestedEmail = String(req.user?.email || req.query.email || "").trim().toLowerCase().slice(0, 254);
+  if (!requestedEmail) {
+    res.status(400).json({ message: "Order email is required." });
+    return;
+  }
   const safeOrder = publicOrderView(order);
-  if (requestedEmail && safeOrder.customerEmail.toLowerCase() !== requestedEmail) {
+  if (safeOrder.customerEmail.toLowerCase() !== requestedEmail) {
     res.status(404).json({ message: "Order not found for this email." });
     return;
   }
@@ -319,8 +287,23 @@ export async function trackOrder(req, res) {
 }
 
 export async function updateOrder(req, res) {
+  const allowedStatuses = ["Processing", "Packed", "Out For Delivery", "Delivered", "Cancelled"];
+  const updates = {};
+  if (req.body.status !== undefined) {
+    if (!allowedStatuses.includes(req.body.status)) {
+      res.status(400).json({ message: "Invalid order status." });
+      return;
+    }
+    updates.status = req.body.status;
+  }
+  if (req.body.cancelReason !== undefined) updates.cancelReason = String(req.body.cancelReason).trim().slice(0, 300);
+  if (!Object.keys(updates).length) {
+    res.status(400).json({ message: "No valid order updates provided." });
+    return;
+  }
+
   if (isDatabaseConnected()) {
-    const order = await Order.findOneAndUpdate(orderLookupFilter(req.params.id), req.body, { new: true }).lean();
+    const order = await Order.findOneAndUpdate(orderLookupFilter(req.params.id), updates, { new: true, runValidators: true }).lean();
     if (!order) {
       res.status(404).json({ message: "Order not found." });
       return;
@@ -334,7 +317,7 @@ export async function updateOrder(req, res) {
     if (String(order.id) !== String(req.params.id)) {
       return order;
     }
-    updatedOrder = { ...order, ...req.body };
+    updatedOrder = { ...order, ...updates };
     return updatedOrder;
   });
 

@@ -1,4 +1,4 @@
-import { getCartSessionId, getUserToken } from "../utils/session";
+import { getCartSessionId } from "../utils/session";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "/api/v1";
 const API_BASE_URLS = apiBaseUrls(API_BASE_URL);
@@ -8,15 +8,7 @@ let subcategoriesRequest = null;
 
 function apiBaseUrls(baseUrl) {
   const normalizedBase = baseUrl.replace(/\/$/, "");
-  if (!/^http:\/\/localhost:3001\/api\/v1$/i.test(normalizedBase)) {
-    return [normalizedBase];
-  }
-
-  return [
-    normalizedBase,
-    "http://localhost:3002/api/v1",
-    "http://localhost:3003/api/v1",
-  ];
+  return [normalizedBase];
 }
 
 function apiUrl(path, base = API_BASE_URLS[0]) {
@@ -75,17 +67,13 @@ async function request(path, options = {}) {
     headers["Content-Type"] = "application/json";
   }
 
-  const token = getUserToken();
-  if (token && !headers.Authorization) {
-    headers.Authorization = `Bearer ${token}`;
-  }
-
   const baseUrl = await getBaseUrl();
 
   try {
     const response = await fetch(apiUrl(path, baseUrl), {
       ...options,
-      headers
+      headers,
+      credentials: "include",
     });
 
     if (!response.ok) {
@@ -114,17 +102,9 @@ async function request(path, options = {}) {
   }
 }
 
-function adminToken() {
-  return localStorage.getItem("chocoriches_admin_token") || "";
-}
-
 function adminRequest(path, options = {}) {
   return request(`/admin${path}`, {
     ...options,
-    headers: {
-      Authorization: `Bearer ${adminToken()}`,
-      ...options.headers,
-    },
   });
 }
 
@@ -200,6 +180,12 @@ function googleLogin(payload) {
     method: "POST",
     body: JSON.stringify(payload)
   });
+}
+function logoutUser() {
+  return request("/auth/logout", { method: "POST" });
+}
+function logoutAdmin() {
+  return adminRequest("/logout", { method: "POST" });
 }
 function forgotPassword(payload) {
   return request("/auth/forgot-password", {
@@ -461,7 +447,7 @@ function updateAdminSettings(payload) {
 function uploadImage(file) {
   const formData = new FormData();
   formData.append("image", file);
-  return adminRequest("/upload", {
+  return request("/upload", {
     method: "POST",
     body: formData,
   });
@@ -503,6 +489,8 @@ export {
   getRazorpayConfig,
   trackOrder,
   login,
+  logoutAdmin,
+  logoutUser,
   googleLogin,
   register,
   removeCartItem,

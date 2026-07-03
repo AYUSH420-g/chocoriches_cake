@@ -32,7 +32,8 @@ const updates = {
 };
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://admin:admin123@cluster0.abc.mongodb.net/test?retryWrites=true&w=majority");
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required.");
+  await mongoose.connect(process.env.MONGODB_URI);
   
   for (const [id, data] of Object.entries(updates)) {
     const p = await Product.findById(id);

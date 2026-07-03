@@ -18,7 +18,7 @@ export const uploadImage = async (req, res, next) => {
     const streamUpload = (req) => {
       return new Promise((resolve, reject) => {
         const stream = cloudinary.uploader.upload_stream(
-          { folder: "chocoriches_products" },
+          { folder: "chocoriches_products", resource_type: "image", type: "upload" },
           (error, result) => {
             if (result) {
               resolve(result);

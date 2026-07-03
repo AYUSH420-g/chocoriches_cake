@@ -10,20 +10,52 @@ import { apiRouter } from "./routes/apiRoutes.js";
 import { seedDatabase } from "./services/seedService.js";
 import helmet from "helmet";
 import mongoSanitize from "express-mongo-sanitize";
-import xss from "xss-clean";
 import { globalLimiter } from "./middleware/rateLimiter.js";
+import { RateLimitEntry } from "./models/RateLimitEntry.js";
 
 const app = express();
+app.disable("x-powered-by");
+app.set("query parser", "simple");
+
+if (config.trustProxy) {
+  app.set("trust proxy", 1);
+}
 
 app.use(corsMiddleware());
-app.use(helmet());
-app.use(express.json({ limit: "8mb" }));
+app.use(helmet({
+  frameguard: { action: "deny" },
+  crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
+  strictTransportSecurity: config.isProduction ? undefined : false,
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      baseUri: ["'self'"],
+      connectSrc: ["'self'", "https://accounts.google.com", "https://www.googleapis.com", "https://api.razorpay.com", "https://vitals.vercel-insights.com"],
+      fontSrc: ["'self'", "https:", "data:"],
+      formAction: ["'self'"],
+      frameAncestors: ["'none'"],
+      frameSrc: ["'self'", "https://accounts.google.com", "https://api.razorpay.com", "https://*.razorpay.com"],
+      imgSrc: ["'self'", "data:", "https:"],
+      objectSrc: ["'none'"],
+      scriptSrc: ["'self'", "https://accounts.google.com", "https://checkout.razorpay.com", "https://va.vercel-scripts.com"],
+      scriptSrcAttr: ["'none'"],
+      styleSrc: ["'self'", "https:", "'unsafe-inline'"],
+      upgradeInsecureRequests: config.isProduction ? [] : null,
+    },
+  },
+}));
+app.use(express.json({
+  limit: "1mb",
+  verify(req, _res, buffer) {
+    if (req.originalUrl.includes("/payments/razorpay/webhook")) {
+      req.rawBody = Buffer.from(buffer);
+    }
+  },
+}));
 
 // Data sanitization against NoSQL query injection
 app.use(mongoSanitize());
 
-// Data sanitization against XSS
-app.use(xss());
 app.use(apiPrefixRewrite(config.apiPrefix));
 app.use("/api", globalLimiter, apiRouter);
 app.use("/api", notFound);
@@ -46,7 +78,11 @@ app.get("*", (_req, res, next) => {
 
 app.use(errorHandler);
 
-await connectDatabase(process.env.MONGODB_URI);
+const databaseConnected = await connectDatabase(process.env.MONGODB_URI);
+if (config.isProduction && !databaseConnected) {
+  throw new Error("Production startup aborted because MongoDB is unavailable.");
+}
+if (databaseConnected) await RateLimitEntry.init();
 await seedDatabase();
 warmProductListCache().catch((error) => {
   console.warn("Product list cache warmup failed.");

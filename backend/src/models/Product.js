@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const productSchema = new mongoose.Schema(
   {
-    id: { type: String, required: true, unique: true, index: true },
-    name: { type: String, required: true },
-    price: { type: Number, required: true },
+    id: { type: String, required: true, unique: true, index: true, maxlength: 100 },
+    name: { type: String, required: true, trim: true, maxlength: 150 },
+    price: { type: Number, required: true, min: 0 },
     discountPrice: { type: Number },
     discountPercent: { type: Number, default: 0 },
-    image: { type: String, required: true },
+    image: { type: String, required: true, maxlength: 2000 },
     images: [
       {
         url: { type: String },
@@ -19,7 +19,7 @@ const productSchema = new mongoose.Schema(
     categories: [{ type: String, index: true }],
     subcategory: { type: String, index: true },
     subcategories: [{ type: String, index: true }],
-    description: { type: String, required: true },
+    description: { type: String, required: true, maxlength: 2000 },
     longDescription: { type: String },
     ingredients: { type: String },
     allergens: { type: String },

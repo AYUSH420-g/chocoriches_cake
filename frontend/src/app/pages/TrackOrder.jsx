@@ -5,6 +5,7 @@ import { CakeSlice, CheckCircle2, ClipboardList, MapPin, PackageCheck, Search, T
 import { toast } from "sonner";
 import { trackOrder } from "../api/client";
 import { formatPrice } from "../utils/format";
+import { getStoredUser } from "../utils/session";
 
 const statusSteps = [
   { id: "Processing", label: "Processing" },
@@ -16,13 +17,13 @@ const statusSteps = [
 function TrackOrder() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [orderId, setOrderId] = useState(searchParams.get("orderId") || "");
-  const [email, setEmail] = useState(searchParams.get("email") || "");
+  const [email, setEmail] = useState(() => getStoredUser()?.email || "");
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(false);
   const activeIndex = useMemo(() => Math.max(0, statusSteps.findIndex(s => s.id === (order?.status || "Processing"))), [order]);
 
   const fetchOrder = async (silent = false) => {
-    if (!orderId.trim()) {
+    if (!orderId.trim() || !email.trim()) {
       return;
     }
 
@@ -33,7 +34,7 @@ function TrackOrder() {
     try {
       const data = await trackOrder(orderId.trim(), email.trim());
       setOrder(data);
-      setSearchParams(email.trim() ? { orderId: orderId.trim(), email: email.trim() } : { orderId: orderId.trim() });
+      setSearchParams({ orderId: orderId.trim() });
     } catch (error) {
       if (!silent) {
         setOrder(null);
@@ -82,6 +83,19 @@ function TrackOrder() {
                   placeholder="e.g. CR-1234" 
                   className="bk-input h-12 w-full rounded-xl border border-gray-300 bg-[#f9f9f9] px-4 text-sm font-bold text-[#1f2221] outline-none transition focus:border-[#e63946] focus:bg-white focus:ring-4 focus:ring-[#e63946]/10" 
                   required 
+                />
+              </label>
+
+              <label className="block">
+                <span className="mb-2 block text-xs font-bold uppercase tracking-wider text-[#6f7573]">Order Email</span>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(event) => setEmail(event.target.value)}
+                  placeholder="Email used for this order"
+                  autoComplete="email"
+                  className="bk-input h-12 w-full rounded-xl border border-gray-300 bg-[#f9f9f9] px-4 text-sm font-bold text-[#1f2221] outline-none transition focus:border-[#e63946] focus:bg-white focus:ring-4 focus:ring-[#e63946]/10"
+                  required
                 />
               </label>
 

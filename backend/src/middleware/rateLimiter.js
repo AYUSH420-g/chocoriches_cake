@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit";
+import { SharedRateLimitStore } from "../services/rateLimitStore.js";
 
 // Global rate limiter applied to all API endpoints
 export const globalLimiter = rateLimit({
@@ -9,15 +10,20 @@ export const globalLimiter = rateLimit({
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  store: new SharedRateLimitStore("global"),
 });
 
-// Strict rate limiter for sensitive endpoints (auth, checkout, contact)
-export const strictLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per `window`
-  message: {
-    message: "Too many attempts from this IP, please try again after 15 minutes.",
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+// Use a separate store per sensitive action so login attempts do not consume a
+// customer's checkout, tracking, or contact allowance.
+export function createStrictLimiter(max = 10, prefix = `sensitive-${max}`) {
+  return rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max,
+    message: {
+      message: "Too many attempts from this IP, please try again after 15 minutes.",
+    },
+    standardHeaders: true,
+    legacyHeaders: false,
+    store: new SharedRateLimitStore(prefix),
+  });
+}

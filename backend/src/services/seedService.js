@@ -9,9 +9,10 @@ import { ServicePincode } from "../models/ServicePincode.js";
 import { SiteSetting } from "../models/SiteSetting.js";
 import { User } from "../models/User.js";
 import { config } from "../config/env.js";
-import { hashPassword } from "../utils/auth.js";
+import { hashPassword, verifyPassword } from "../utils/auth.js";
 import { slugify } from "../utils/formatters.js";
 import { initialOrders, memory, products, profileUser } from "../utils/memoryStore.js";
+import crypto from "node:crypto";
 
 async function removeStaleUserIndexes() {
   const indexes = await User.collection.indexes();
@@ -26,11 +27,11 @@ async function removeStaleUserIndexes() {
 }
 
 export async function seedDatabase() {
-  const adminPasswordFields = hashPassword(config.adminSeed.password);
+  const adminPasswordFields = await hashPassword(config.adminSeed.password);
   const memoryProfile = memory.users.find((user) => user.email === profileUser.email);
 
-  if (memoryProfile && (!memoryProfile.passwordHash || !memoryProfile.salt)) {
-    Object.assign(memoryProfile, hashPassword("chocoriches"));
+  if (!config.isProduction && memoryProfile && (!memoryProfile.passwordHash || !memoryProfile.salt)) {
+    Object.assign(memoryProfile, await hashPassword(crypto.randomBytes(32).toString("hex")));
   }
 
   if (!memory.users.some((user) => user.email === config.adminSeed.email)) {
@@ -84,16 +85,19 @@ export async function seedDatabase() {
     ],
   });
 
-  if ((await Order.countDocuments()) === 0) {
+  if (!config.isProduction && (await Order.countDocuments()) === 0) {
     await Order.insertMany(initialOrders);
   }
 
-  if ((await User.countDocuments()) === 0) {
-    const password = hashPassword("chocoriches");
+  if (!config.isProduction && (await User.countDocuments()) === 0) {
+    const password = await hashPassword(crypto.randomBytes(32).toString("hex"));
     await User.create({ ...profileUser, email: profileUser.email.toLowerCase(), ...password });
   }
 
   const existingAdmin = await User.findOne({ email: config.adminSeed.email });
+  const adminPasswordMatches = existingAdmin
+    ? await verifyPassword(config.adminSeed.password, existingAdmin)
+    : false;
   if (!existingAdmin) {
     await User.create({
       name: config.adminSeed.name,
@@ -107,16 +111,21 @@ export async function seedDatabase() {
   } else if (
     existingAdmin.role !== "admin" ||
     !existingAdmin.passwordHash ||
-    !existingAdmin.salt
+    !existingAdmin.salt ||
+    Number(existingAdmin.passwordIterations || 100_000) < 210_000 ||
+    !adminPasswordMatches
   ) {
     await User.updateOne(
       { email: config.adminSeed.email },
       {
-        ...adminPasswordFields,
-        name: config.adminSeed.name,
-        role: "admin",
-        membership: "Administrator",
-        isBlocked: false,
+        $set: {
+          ...adminPasswordFields,
+          name: config.adminSeed.name,
+          role: "admin",
+          membership: "Administrator",
+          isBlocked: false,
+        },
+        $inc: { tokenVersion: 1 },
       }
     );
   }

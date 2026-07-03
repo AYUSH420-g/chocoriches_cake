@@ -12,7 +12,14 @@ export function slugify(value = "") {
 }
 
 export function todayIso() {
-  return new Date().toISOString().slice(0, 10);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const value = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+  return `${value.year}-${value.month}-${value.day}`;
 }
 
 export function objectIdFilter(id) {
@@ -29,6 +36,7 @@ export function publicUser(user = profileUser) {
     membership: user.membership || profileUser.membership,
     role: user.role || "user",
     isBlocked: Boolean(user.isBlocked),
+    emailVerified: Boolean(user.emailVerified),
     blockedReason: user.blockedReason || "",
     stampCount: Number(user.stampCount || 0),
     addresses: Array.isArray(user.addresses) ? user.addresses : [],
@@ -274,7 +282,6 @@ export function publicOrderView(order = {}) {
     deliveryDate: order.deliveryDate || "",
     deliveryTimeSlot: order.deliveryTimeSlot || "",
     deliveryOption: order.deliveryOption || "pickup",
-    payment: order.payment || {},
     isStampRewardOrder: Boolean(order.isStampRewardOrder),
     cancelReason: order.cancelReason || "",
     createdAt: order.createdAt,
@@ -288,6 +295,7 @@ export function adminOrderView(order = {}) {
     ...publicOrderView(order),
     id: String(order._id || publicId),
     orderId: publicId,
+    payment: order.payment || {},
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   };

@@ -1,13 +1,14 @@
 import express from "express";
-import { adminLogin } from "../controllers/authController.js";
+import { adminLogin, logout } from "../controllers/authController.js";
 import * as admin from "../controllers/adminController.js";
 import { requireAdmin } from "../middleware/authMiddleware.js";
 import { asyncRoute } from "../utils/asyncRoute.js";
-import { strictLimiter } from "../middleware/rateLimiter.js";
+import { createStrictLimiter } from "../middleware/rateLimiter.js";
 
 export const adminRouter = express.Router();
 
-adminRouter.post("/login", strictLimiter, asyncRoute(adminLogin));
+adminRouter.post("/login", createStrictLimiter(5, "admin-login"), asyncRoute(adminLogin));
+adminRouter.post("/logout", requireAdmin, asyncRoute(logout));
 
 adminRouter.use(requireAdmin);
 

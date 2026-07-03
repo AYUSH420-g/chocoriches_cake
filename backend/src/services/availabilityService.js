@@ -19,8 +19,8 @@ export async function getSiteSetting() {
 export async function updateSiteSetting(updates) {
   const payload = {
     maintenanceMode: Boolean(updates.maintenanceMode),
-    maintenanceMessage: updates.maintenanceMessage || memory.setting.maintenanceMessage,
-    dailyCakeLimit: Math.max(0, Number(updates.dailyCakeLimit || 0)),
+    maintenanceMessage: String(updates.maintenanceMessage || memory.setting.maintenanceMessage).trim().slice(0, 500),
+    dailyCakeLimit: Math.min(1_000_000, Math.max(0, Number(updates.dailyCakeLimit || 0) || 0)),
   };
 
   if (isDatabaseConnected()) {
@@ -74,18 +74,21 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 
 const STORE_COORDS = { lat: 23.0223833, lon: 72.5279559 }; // 380015 (Ambawadi center)
 const pincodeCoordsCache = new Map();
+const MAX_PINCODE_CACHE_ENTRIES = 1000;
 
 async function getPincodeCoordinates(pincode) {
   if (pincodeCoordsCache.has(pincode)) {
     return pincodeCoordsCache.get(pincode);
   }
   try {
-    const response = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${pincode}&country=India&format=json`, {
-      headers: { "User-Agent": "NChocoDeliveryApp/1.0" }
+    const response = await fetch(`https://nominatim.openstreetmap.org/search?postalcode=${encodeURIComponent(pincode)}&country=India&format=json`, {
+      headers: { "User-Agent": "NChocoDeliveryApp/1.0" },
+      signal: AbortSignal.timeout(5000),
     });
     const data = await response.json();
     if (data && data.length > 0) {
       const coords = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon) };
+      if (pincodeCoordsCache.size >= MAX_PINCODE_CACHE_ENTRIES) pincodeCoordsCache.delete(pincodeCoordsCache.keys().next().value);
       pincodeCoordsCache.set(pincode, coords);
       return coords;
     }
@@ -97,6 +100,9 @@ async function getPincodeCoordinates(pincode) {
 
 export async function pincodeStatus(pincode) {
   const requestedPincode = String(pincode || "").trim();
+  if (!/^\d{6}$/.test(requestedPincode)) {
+    return { serviceable: false, deliveryCharge: 0, pincode: null, message: "Please enter a valid 6-digit pincode." };
+  }
   const activePincodeCount = isDatabaseConnected()
     ? await ServicePincode.countDocuments({ isActive: true })
     : memory.pincodes.filter((item) => item.isActive).length;

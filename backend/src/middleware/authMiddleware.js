@@ -1,6 +1,6 @@
 import { isDatabaseConnected } from "../db.js";
 import { User } from "../models/User.js";
-import { bearerToken, verifySignedToken } from "../utils/auth.js";
+import { sessionToken, verifySignedToken } from "../utils/auth.js";
 import { memory } from "../utils/memoryStore.js";
 
 function userMatchesPayload(user, payload) {
@@ -23,15 +23,19 @@ async function findUserFromPayload(payload) {
   return memory.users.find((user) => userMatchesPayload(user, payload)) || null;
 }
 
+function tokenMatchesUser(payload, user) {
+  return Number(payload?.tokenVersion || 0) === Number(user?.tokenVersion || 0);
+}
+
 export async function authenticate(req, res, next) {
-  const payload = verifySignedToken(bearerToken(req));
+  const payload = verifySignedToken(sessionToken(req, "user"));
   if (!payload) {
     res.status(401).json({ message: "Please login to continue." });
     return;
   }
 
   const user = await findUserFromPayload(payload);
-  if (!user) {
+  if (!user || !tokenMatchesUser(payload, user)) {
     res.status(401).json({ message: "User session is no longer valid." });
     return;
   }
@@ -47,7 +51,7 @@ export async function authenticate(req, res, next) {
 }
 
 export async function optionalAuth(req, res, next) {
-  if (!bearerToken(req)) {
+  if (!sessionToken(req, "user")) {
     next();
     return;
   }
@@ -56,14 +60,14 @@ export async function optionalAuth(req, res, next) {
 }
 
 export async function requireAdmin(req, res, next) {
-  const payload = verifySignedToken(bearerToken(req));
+  const payload = verifySignedToken(sessionToken(req, "admin"));
   if (!payload || payload.role !== "admin") {
     res.status(404).json({ message: "Not Found" });
     return;
   }
 
   const admin = await findUserFromPayload(payload);
-  if (!admin || admin.role !== "admin" || admin.isBlocked) {
+  if (!admin || admin.role !== "admin" || admin.isBlocked || !tokenMatchesUser(payload, admin)) {
     res.status(404).json({ message: "Not Found" });
     return;
   }

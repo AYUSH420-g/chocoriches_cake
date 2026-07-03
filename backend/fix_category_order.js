@@ -10,7 +10,8 @@ const categorySchema = new mongoose.Schema({
 const Category = mongoose.model("Category", categorySchema);
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://admin:admin123@cluster0.abc.mongodb.net/test?retryWrites=true&w=majority");
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required.");
+  await mongoose.connect(process.env.MONGODB_URI);
   
   const cats = await Category.find({}).sort({ sortOrder: 1, name: 1 }).lean();
   console.log("Current categories and their sort order:");

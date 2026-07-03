@@ -3,9 +3,9 @@ import { Link, useNavigate } from "react-router";
 import { CheckCircle2, ChevronRight, MapPin, ShieldCheck, Truck, Wallet, Home, Briefcase, Package } from "lucide-react";
 import { motion } from "motion/react";
 import { toast } from "sonner";
-import { checkPincode, createOrder, createRazorpayOrder, verifyRazorpayPayment, getPublicSettings, getProfile } from "../api/client";
+import { checkPincode, createOrder, createRazorpayOrder, getPublicSettings, getProfile } from "../api/client";
 import { useCart } from "../context/CartContext";
-import { formatPrice, priceToRupees, optimizeImage } from "../utils/format";
+import { formatPrice, optimizeImage } from "../utils/format";
 import { openRazorpayCheckout, razorpayKeyId } from "../utils/razorpay";
 import { getStoredUser, getGuestUser, saveGuestUser, saveUserSession } from "../utils/session";
 import FullScreenLoader from "../components/FullScreenLoader";
@@ -55,7 +55,6 @@ function Checkout() {
   const deliveryFee = deliveryOption === "pickup" ? 0 : rawDeliveryFee;
   const discount = 0;
   const total = Math.max(0, subtotal + deliveryFee);
-  const amountInPaise = priceToRupees(total) * 100;
 
   const placeOrder = async (data, payment = {}) => {
     try {
@@ -137,16 +136,21 @@ function Checkout() {
     }
 
     setLoading(true);
-    const razorpayOrder = await createRazorpayOrder({
-      amount: amountInPaise,
-      notes: {
-        customerEmail: nextCheckoutData.email || "",
-        source: "checkout",
-      },
-    }).catch(() => null);
+    let razorpayOrder;
+    try {
+      razorpayOrder = await createRazorpayOrder({
+        deliveryPincode: nextCheckoutData.pincode,
+        deliveryOption,
+        deliveryDate: nextCheckoutData.deliveryDate,
+      });
+    } catch (error) {
+      setLoading(false);
+      toast.error(error.message || "Secure payment could not be started.");
+      return;
+    }
 
     const opened = await openRazorpayCheckout({
-      amount: amountInPaise,
+      amount: razorpayOrder.amount,
       order: razorpayOrder,
       customer: {
         name: nextCheckoutData.name || "",
@@ -155,11 +159,6 @@ function Checkout() {
       },
       onSuccess: async (paymentResponse) => {
         try {
-          await verifyRazorpayPayment({
-            razorpay_order_id: paymentResponse.razorpay_order_id,
-            razorpay_payment_id: paymentResponse.razorpay_payment_id,
-            razorpay_signature: paymentResponse.razorpay_signature,
-          });
           await placeOrder(nextCheckoutData, paymentResponse);
         } catch (err) {
           setLoading(false);
@@ -173,7 +172,8 @@ function Checkout() {
     });
 
     if (!opened) {
-      await placeOrder(nextCheckoutData, { mode: "offline-fallback" });
+      setLoading(false);
+      toast.error("Secure payment is temporarily unavailable. No order was created.");
     }
   };
   useEffect(() => {

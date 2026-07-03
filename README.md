@@ -9,7 +9,7 @@ ChocoRiches is now organized as a MERN stack project with a React frontend and a
 ├── frontend/        # React + Vite app, plain .jsx/.js files
 ├── backend/         # Express + Mongoose API
 ├── package.json     # Root workspace scripts
-└── .env.example     # Shared backend env example
+└── backend/.env.example # Backend environment template
 ```
 
 ## Running The Project
@@ -33,7 +33,7 @@ npm run dev:backend
 npm run dev:frontend
 ```
 
-The backend runs on `http://localhost:3001`, and the versioned API is available at `http://localhost:3001/api/v1`. The frontend reads `frontend/.env`, including `VITE_API_URL` and `VITE_RAZORPAY_KEY_ID`. MongoDB is used when `MONGODB_URI` is set; otherwise the API uses the same seeded demo data so the current UI output stays unchanged.
+The backend runs on `http://localhost:3001`, and the versioned API is available at `http://localhost:3001/api/v1`. The frontend reads `frontend/.env`, including `VITE_API_URL` and `VITE_RAZORPAY_KEY_ID`. Development can use seeded in-memory data; production fails closed if MongoDB is missing or unavailable.
 
 ## Build
 
@@ -46,11 +46,14 @@ npm run start
 
 The admin dashboard runs at `http://localhost:5173/admin` during development.
 
-Default local admin credentials are read from `backend/.env`:
+Local admin credentials are read from `backend/.env`. Production also requires a time-based authenticator secret:
 
-```txt
-ADMIN_EMAIL=admin@chocoriches.com
-ADMIN_PASSWORD=change-this-admin-password
+```bash
+npm run generate:admin-mfa --workspace backend
 ```
+
+Store the generated `ADMIN_TOTP_SECRET` only in the protected server environment and add the setup key to the administrator's authenticator app. Never commit `.env` files.
+
+For production, use HTTPS, set a 32+ character random `JWT_SECRET`, a strong `ADMIN_PASSWORD`, `ADMIN_TOTP_SECRET`, `MONGODB_URI`, Razorpay secrets (including `RAZORPAY_WEBHOOK_SECRET`), and `TRUST_PROXY=1` only when the app is behind a trusted reverse proxy.
 
 The admin can manage products, categories, users, orders, service pincodes, blocked delivery dates, and maintenance mode.

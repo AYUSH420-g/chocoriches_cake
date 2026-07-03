@@ -24,7 +24,7 @@ export default defineConfig({
       "Cross-Origin-Opener-Policy": "same-origin-allow-popups",
     },
     proxy: {
-      "/api": "http://localhost:3002",
+      "/api": "http://127.0.0.1:3001",
     },
   },
   plugins: [

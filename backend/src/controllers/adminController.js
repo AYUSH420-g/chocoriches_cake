@@ -24,6 +24,16 @@ import {
 import { memory } from "../utils/memoryStore.js";
 import { adminOrders, updateOrder } from "./orderController.js";
 import { clearProductListCache } from "./productController.js";
+import crypto from "node:crypto";
+
+function safeString(value, maxLength = 200) {
+  return typeof value === "string" ? value.trim().slice(0, maxLength) : "";
+}
+
+function safeNumber(value, { min = 0, max = 10_000_000, fallback = 0 } = {}) {
+  const number = Number(value);
+  return Number.isFinite(number) ? Math.min(max, Math.max(min, number)) : fallback;
+}
 
 function objectIdOrField(id, field) {
   return /^[0-9a-fA-F]{24}$/.test(String(id || "")) ? { _id: id } : { [field]: id };
@@ -33,59 +43,65 @@ function productWeights(body) {
   const rawWeights = Array.isArray(body.weights) ? body.weights : [];
   const weights = rawWeights
     .map((weight) => ({
-      label: String(weight.label || "").trim(),
-      price: Number(weight.price || 0),
+      label: safeString(weight?.label, 50),
+      price: safeNumber(weight?.price),
     }))
     .filter((weight) => weight.label && weight.price > 0);
 
   if (weights.length) {
-    return weights;
+    return weights.slice(0, 12);
   }
 
   return [
     {
-      label: body.weight || body.defaultWeight || "Half Kg",
-      price: Number(body.discountPrice || body.price || 0),
+      label: safeString(body.weight || body.defaultWeight, 50) || "Half Kg",
+      price: safeNumber(body.discountPrice || body.price),
     },
-  ].filter((weight) => weight.price > 0);
+  ].filter((weight) => weight.price > 0).slice(0, 12);
 }
 
 function productCategoryList(body) {
   const categories = Array.isArray(body.categories) ? body.categories : [body.category];
-  return [...new Set(categories.map((category) => String(category || "").trim()).filter(Boolean))];
+  return [...new Set(categories.map((category) => safeString(category, 80)).filter(Boolean))].slice(0, 10);
 }
 
 function productPayload(body) {
   const weights = productWeights(body);
   const categories = productCategoryList(body);
-  const requestedDefaultWeight = String(body.defaultWeight || body.weight || weights[0]?.label || "Half Kg").trim();
+  const requestedDefaultWeight = safeString(body.defaultWeight || body.weight || weights[0]?.label, 50) || "Half Kg";
   const defaultWeight = weights.some((weight) => weight.label === requestedDefaultWeight)
     ? requestedDefaultWeight
     : weights[0]?.label || "Half Kg";
-  const defaultWeightPrice = weights.find((weight) => weight.label === defaultWeight)?.price || Number(body.discountPrice || body.price || 0);
+  const defaultWeightPrice = weights.find((weight) => weight.label === defaultWeight)?.price || safeNumber(body.discountPrice || body.price);
+  const name = safeString(body.name, 150);
+  const image = safeString(body.image || body.images?.[0]?.url, 2000);
+  const safeImages = (Array.isArray(body.images) ? body.images : [])
+    .slice(0, 10)
+    .map((item) => ({ url: safeString(item?.url || item, 2000), alt: safeString(item?.alt || name, 150) }))
+    .filter((item) => item.url);
 
   const payload = {
-    id: body.id || `prod-${Date.now()}`,
-    name: body.name,
-    price: Number(defaultWeightPrice || body.price || body.originalPrice || 0),
-    discountPrice: Number(defaultWeightPrice || body.discountPrice || body.price || 0),
-    discountPercent: Math.max(0, Math.min(95, Number(body.discountPercent || 0))),
-    image: body.image || body.images?.[0]?.url,
-    images: body.images?.length ? body.images : [{ url: body.image, alt: body.name }],
+    id: safeString(body.id, 100) || `prod-${crypto.randomUUID()}`,
+    name,
+    price: safeNumber(defaultWeightPrice || body.price || body.originalPrice),
+    discountPrice: safeNumber(defaultWeightPrice || body.discountPrice || body.price),
+    discountPercent: safeNumber(body.discountPercent, { max: 95 }),
+    image,
+    images: safeImages.length ? safeImages : [{ url: image, alt: name }],
     category: categories[0] || "Cakes",
     categories: categories.length ? categories : ["Cakes"],
-    subcategory: Array.isArray(body.subcategories) && body.subcategories.length ? body.subcategories[0] : (body.subcategory || ""),
-    subcategories: Array.isArray(body.subcategories) ? body.subcategories.filter(Boolean) : (body.subcategory ? [body.subcategory] : []),
-    description: body.description || "Fresh cake baked for your celebration.",
-    longDescription: body.longDescription || body.description || "",
-    ingredients: body.ingredients || "",
-    allergens: body.allergens || "",
-    stock: Number(body.stock || 0),
+    subcategory: safeString(Array.isArray(body.subcategories) && body.subcategories.length ? body.subcategories[0] : body.subcategory, 100),
+    subcategories: (Array.isArray(body.subcategories) ? body.subcategories : (body.subcategory ? [body.subcategory] : [])).map((item) => safeString(item, 100)).filter(Boolean).slice(0, 20),
+    description: safeString(body.description, 2000) || "Fresh cake baked for your celebration.",
+    longDescription: safeString(body.longDescription || body.description, 5000),
+    ingredients: safeString(body.ingredients, 2000),
+    allergens: safeString(body.allergens, 1000),
+    stock: safeNumber(body.stock, { max: 1_000_000 }),
     weight: defaultWeight,
     defaultWeight,
     weights,
-    ratings: Number(body.ratings || 4.8),
-    numOfReviews: Number(body.numOfReviews || 0),
+    ratings: safeNumber(body.ratings || 4.8, { max: 5, fallback: 4.8 }),
+    numOfReviews: safeNumber(body.numOfReviews, { max: 10_000_000 }),
     featured: Boolean(body.featured || body.isFeatured),
     isActive: body.isActive !== false,
     isFeatured: Boolean(body.featured || body.isFeatured),
@@ -94,11 +110,11 @@ function productPayload(body) {
     customizable: Boolean(body.customizable),
     sameDayDelivery: Boolean(body.sameDayDelivery),
     hasBaseAndCream: body.hasBaseAndCream !== false,
-    tags: Array.isArray(body.tags) ? body.tags : [],
+    tags: (Array.isArray(body.tags) ? body.tags : []).map((tag) => safeString(tag, 50)).filter(Boolean).slice(0, 30),
   };
 
   if (body.sortOrder !== undefined && body.sortOrder !== null) {
-    payload.sortOrder = Number(body.sortOrder);
+    payload.sortOrder = safeNumber(body.sortOrder, { min: -10_000_000_000, max: 10_000_000_000 });
   } else if (!body.id) {
     payload.sortOrder = Date.now();
   }
@@ -141,12 +157,13 @@ export async function users(_req, res) {
 }
 
 export async function blockUser(req, res) {
-  const { isBlocked = true, blockedReason = "" } = req.body;
+  const isBlocked = req.body.isBlocked !== false;
+  const blockedReason = safeString(req.body.blockedReason, 300);
 
   if (isDatabaseConnected()) {
     const user = await User.findOneAndUpdate(
       objectIdOrField(req.params.id, "email"),
-      { isBlocked: Boolean(isBlocked), blockedReason },
+      { $set: { isBlocked, blockedReason }, $inc: { tokenVersion: 1 } },
       { new: true }
     ).lean();
 
@@ -164,7 +181,7 @@ export async function blockUser(req, res) {
     if (String(user.id || user.email) !== String(req.params.id)) {
       return user;
     }
-    updatedUser = { ...user, isBlocked: Boolean(isBlocked), blockedReason };
+    updatedUser = { ...user, isBlocked, blockedReason, tokenVersion: Number(user.tokenVersion || 0) + 1 };
     return updatedUser;
   });
 
@@ -177,9 +194,9 @@ export async function blockUser(req, res) {
 }
 
 export async function products(req, res) {
-  const page = parseInt(req.query.page, 10) || 0;
-  const limit = parseInt(req.query.limit, 10) || 0;
-  const category = req.query.category || "";
+  const page = Math.max(0, parseInt(typeof req.query.page === "string" ? req.query.page : "", 10) || 0);
+  const limit = Math.min(100, Math.max(0, parseInt(typeof req.query.limit === "string" ? req.query.limit : "", 10) || 0));
+  const category = safeString(req.query.category, 80);
 
   const query = category && category !== "All Categories" ? { $or: [{ category }, { categories: category }] } : {};
 
@@ -222,6 +239,10 @@ export async function products(req, res) {
 
 export async function createProduct(req, res) {
   const payload = productPayload(req.body);
+  if (!payload.name || !payload.image || !payload.price || !payload.weights.length) {
+    res.status(400).json({ message: "Product name, image, and valid weight prices are required." });
+    return;
+  }
 
   if (isDatabaseConnected()) {
     const product = await Product.create(payload);
@@ -237,6 +258,10 @@ export async function createProduct(req, res) {
 
 export async function updateProduct(req, res) {
   const { id: _ignoredId, ...updates } = productPayload(req.body);
+  if (!updates.name || !updates.image || !updates.price || !updates.weights.length) {
+    res.status(400).json({ message: "Product name, image, and valid weight prices are required." });
+    return;
+  }
 
   if (isDatabaseConnected()) {
     const product = await Product.findOneAndUpdate(objectIdFilter(req.params.id), updates, {
@@ -292,14 +317,16 @@ export async function categories(_req, res) {
 }
 
 export async function createCategory(req, res) {
+  const name = safeString(req.body.name, 80);
+  if (!name) return res.status(400).json({ message: "Category name is required." });
   const payload = {
-    name: req.body.name,
-    slug: req.body.slug || slugify(req.body.name),
-    description: req.body.description || "",
-    image: req.body.image || "",
+    name,
+    slug: safeString(req.body.slug, 100) || slugify(name),
+    description: safeString(req.body.description, 500),
+    image: safeString(req.body.image, 2000),
     isActive: req.body.isActive !== false,
   };
-  if (req.body.sortOrder !== undefined) payload.sortOrder = Number(req.body.sortOrder);
+  if (req.body.sortOrder !== undefined) payload.sortOrder = safeNumber(req.body.sortOrder, { min: -1_000_000, max: 1_000_000 });
 
   if (isDatabaseConnected()) {
     const category = await Category.create(payload);
@@ -312,11 +339,16 @@ export async function createCategory(req, res) {
 }
 
 export async function updateCategory(req, res) {
+  const name = safeString(req.body.name, 80);
+  if (!name) return res.status(400).json({ message: "Category name is required." });
   const updates = {
-    ...req.body,
-    slug: req.body.slug || slugify(req.body.name),
+    name,
+    slug: safeString(req.body.slug, 100) || slugify(name),
+    description: safeString(req.body.description, 500),
+    image: safeString(req.body.image, 2000),
+    isActive: req.body.isActive !== false,
   };
-  if (req.body.sortOrder !== undefined) updates.sortOrder = Number(req.body.sortOrder);
+  if (req.body.sortOrder !== undefined) updates.sortOrder = safeNumber(req.body.sortOrder, { min: -1_000_000, max: 1_000_000 });
 
   if (isDatabaseConnected()) {
     const oldCategory = await Category.findOne(objectIdOrField(req.params.id, "slug")).lean();
@@ -397,13 +429,16 @@ export async function subcategories(_req, res) {
 }
 
 export async function createSubcategory(req, res) {
+  const name = safeString(req.body.name, 80);
+  const category = safeString(req.body.category, 80);
+  if (!name || !category) return res.status(400).json({ message: "Subcategory name and category are required." });
   const payload = {
-    name: req.body.name,
-    slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
-    category: req.body.category,
+    name,
+    slug: safeString(req.body.slug, 120) || `${slugify(category)}-${slugify(name)}`,
+    category,
     isActive: req.body.isActive !== false,
   };
-  if (req.body.sortOrder !== undefined) payload.sortOrder = Number(req.body.sortOrder);
+  if (req.body.sortOrder !== undefined) payload.sortOrder = safeNumber(req.body.sortOrder, { min: -1_000_000, max: 1_000_000 });
 
   if (isDatabaseConnected()) {
     const subcategory = await Subcategory.create(payload);
@@ -417,11 +452,16 @@ export async function createSubcategory(req, res) {
 }
 
 export async function updateSubcategory(req, res) {
+  const name = safeString(req.body.name, 80);
+  const category = safeString(req.body.category, 80);
+  if (!name || !category) return res.status(400).json({ message: "Subcategory name and category are required." });
   const updates = {
-    ...req.body,
-    slug: req.body.slug || `${slugify(req.body.category)}-${slugify(req.body.name)}`,
+    name,
+    category,
+    isActive: req.body.isActive !== false,
+    slug: safeString(req.body.slug, 120) || `${slugify(category)}-${slugify(name)}`,
   };
-  if (req.body.sortOrder !== undefined) updates.sortOrder = Number(req.body.sortOrder);
+  if (req.body.sortOrder !== undefined) updates.sortOrder = safeNumber(req.body.sortOrder, { min: -1_000_000, max: 1_000_000 });
 
   if (isDatabaseConnected()) {
     const subcategory = await Subcategory.findOneAndUpdate(objectIdOrField(req.params.id, "slug"), updates, {
@@ -481,6 +521,7 @@ export async function createPincode(req, res) {
     pincode: String(req.body.pincode || "").trim(),
     isActive: req.body.isActive !== false,
   };
+  if (!/^\d{6}$/.test(payload.pincode)) return res.status(400).json({ message: "A valid 6-digit pincode is required." });
 
   if (isDatabaseConnected()) {
     const pincode = await ServicePincode.create(payload);
@@ -494,9 +535,10 @@ export async function createPincode(req, res) {
 
 export async function updatePincode(req, res) {
   const updates = {
-    ...req.body,
-    pincode: String(req.body.pincode || req.params.id).trim(),
+    pincode: safeString(req.body.pincode || req.params.id, 6),
+    isActive: req.body.isActive !== false,
   };
+  if (!/^\d{6}$/.test(updates.pincode)) return res.status(400).json({ message: "A valid 6-digit pincode is required." });
 
   if (isDatabaseConnected()) {
     const pincode = await ServicePincode.findOneAndUpdate(objectIdOrField(req.params.id, "pincode"), updates, {
@@ -550,9 +592,10 @@ export async function blockedDates(_req, res) {
 export async function createBlockedDate(req, res) {
   const payload = {
     date: String(req.body.date || todayIso()).slice(0, 10),
-    reason: req.body.reason || "",
+    reason: safeString(req.body.reason, 300),
     isActive: req.body.isActive !== false,
   };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(payload.date)) return res.status(400).json({ message: "A valid date is required." });
 
   if (isDatabaseConnected()) {
     const blockedDate = await BlockedDate.create(payload);
@@ -566,9 +609,11 @@ export async function createBlockedDate(req, res) {
 
 export async function updateBlockedDate(req, res) {
   const updates = {
-    ...req.body,
     date: String(req.body.date || req.params.id).slice(0, 10),
+    reason: safeString(req.body.reason, 300),
+    isActive: req.body.isActive !== false,
   };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(updates.date)) return res.status(400).json({ message: "A valid date is required." });
 
   if (isDatabaseConnected()) {
     const blockedDate = await BlockedDate.findOneAndUpdate(objectIdOrField(req.params.id, "date"), updates, {

@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 const reviewSchema = new mongoose.Schema(
   {
-    productId: { type: String, required: true, index: true },
-    userId: { type: String, required: true, index: true },
-    userName: { type: String, required: true },
+    productId: { type: String, required: true, index: true, maxlength: 100 },
+    userId: { type: String, required: true, index: true, maxlength: 100 },
+    userName: { type: String, required: true, maxlength: 100 },
     rating: { type: Number, required: true, min: 1, max: 5 },
-    comment: { type: String, required: true },
+    comment: { type: String, required: true, trim: true, maxlength: 1000 },
   },
   { timestamps: true }
 );

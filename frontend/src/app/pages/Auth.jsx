@@ -15,7 +15,7 @@ function Auth() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (localStorage.getItem("chocoriches_admin_token")) {
+    if (sessionStorage.getItem("chocoriches_admin_session")) {
       navigate("/admin", { replace: true });
       return;
     }
@@ -42,7 +42,7 @@ function Auth() {
       if (!payload.phone.trim()) return toast.error("Mobile Number is required");
       if (!/^\d{10}$/.test(payload.phone.replace(/\D/g, ""))) return toast.error("Please enter a valid exactly 10-digit mobile number");
       if (!payload.password) return toast.error("Password is required");
-      if (payload.password.length < 6) return toast.error("Password must be at least 6 characters long");
+      if (payload.password.length < 8) return toast.error("Password must be at least 8 characters long");
     } else {
       if (!payload.email.trim()) return toast.error("Email Address is required");
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) return toast.error("Please enter a valid email address");
@@ -57,7 +57,7 @@ function Auth() {
 
       if (data.user?.role === "admin") {
         clearUserSession();
-        localStorage.setItem("chocoriches_admin_token", data.token);
+        sessionStorage.setItem("chocoriches_admin_session", "active");
         navigate("/admin");
         return;
       }
@@ -85,7 +85,7 @@ function Auth() {
         
         if (data.user?.role === "admin") {
           clearUserSession();
-          localStorage.setItem("chocoriches_admin_token", data.token);
+          sessionStorage.setItem("chocoriches_admin_session", "active");
           navigate("/admin");
           return;
         }

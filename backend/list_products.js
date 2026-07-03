@@ -11,7 +11,8 @@ const productSchema = new mongoose.Schema({
 const Product = mongoose.model("Product", productSchema);
 
 async function run() {
-  await mongoose.connect(process.env.MONGODB_URI || "mongodb+srv://admin:admin123@cluster0.abc.mongodb.net/test?retryWrites=true&w=majority");
+  if (!process.env.MONGODB_URI) throw new Error("MONGODB_URI is required.");
+  await mongoose.connect(process.env.MONGODB_URI);
   const products = await Product.find({});
   const toFix = products.map(p => ({id: p._id, name: p.name, image: p.image}));
   console.log(JSON.stringify(toFix, null, 2));

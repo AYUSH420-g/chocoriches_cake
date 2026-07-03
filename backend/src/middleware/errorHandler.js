@@ -3,8 +3,6 @@ export function notFound(_req, res) {
 }
 
 export function errorHandler(error, _req, res, _next) {
-  console.error(error);
-
   if (error?.code === 11000) {
     const field = Object.keys(error.keyPattern || error.keyValue || {})[0] || "field";
     res.status(409).json({
@@ -13,7 +11,8 @@ export function errorHandler(error, _req, res, _next) {
     return;
   }
 
-  const status = Number(error.statusCode || error.status || 500);
+  const status = Number(error.statusCode || error.status || (error.name === "MulterError" ? 400 : 500));
+  if (status >= 500) console.error(error);
   res.status(status).json({
     message: status >= 500 ? "Something went wrong on the ChocoRiches API." : error.message,
   });

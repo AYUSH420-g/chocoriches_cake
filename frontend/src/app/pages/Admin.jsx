@@ -49,6 +49,7 @@ import {
   getAdminSettings,
   getAdminSummary,
   getAdminUsers,
+  logoutAdmin,
   updateAdminBlockedDate,
   updateAdminCategory,
   updateAdminOrder,
@@ -111,8 +112,8 @@ function normalizePincode(value) {
 }
 
 function Admin() {
-  const [token, setToken] = useState(() => localStorage.getItem("chocoriches_admin_token") || "");
-  const [loginForm, setLoginForm] = useState({ email: "", password: "" });
+  const [token, setToken] = useState(() => sessionStorage.getItem("chocoriches_admin_session") || "");
+  const [loginForm, setLoginForm] = useState({ email: "", password: "", otp: "" });
   const [activeTab, setActiveTab] = useState("overview");
   const [loading, setLoading] = useState(false);
   const [isFetchingTab, setIsFetchingTab] = useState(false);
@@ -301,7 +302,7 @@ function Admin() {
   };
 
   const loadAdmin = async () => {
-    if (!localStorage.getItem("chocoriches_admin_token")) {
+    if (!sessionStorage.getItem("chocoriches_admin_session")) {
       return;
     }
 
@@ -316,7 +317,7 @@ function Admin() {
       setSettings(nextSettings);
     } catch {
       toast.error("Admin session expired. Please login again.");
-      localStorage.removeItem("chocoriches_admin_token");
+      sessionStorage.removeItem("chocoriches_admin_session");
       setToken("");
     } finally {
       setLoading(false);
@@ -420,8 +421,8 @@ function Admin() {
     setLoading(true);
     try {
       const data = await adminLogin(loginForm);
-      localStorage.setItem("chocoriches_admin_token", data.token);
-      setToken(data.token);
+      sessionStorage.setItem("chocoriches_admin_session", "active");
+      setToken("active");
       toast.success("Admin login successful");
     } catch {
       toast.error("Invalid admin credentials");
@@ -430,8 +431,9 @@ function Admin() {
     }
   };
 
-  const logout = () => {
-    localStorage.removeItem("chocoriches_admin_token");
+  const logout = async () => {
+    await logoutAdmin().catch(() => void 0);
+    sessionStorage.removeItem("chocoriches_admin_session");
     setToken("");
   };
 
@@ -692,6 +694,7 @@ function Admin() {
           <p className="mt-2 text-sm font-bold leading-6 text-[#6f7573]">Login to manage products, users, orders, service areas, and maintenance mode.</p>
           <Field label="AGE" value={loginForm.email} onChange={(value) => setLoginForm({ ...loginForm, email: value })} className="mt-6" />
           <Field label="DOB" type="password" value={loginForm.password} onChange={(value) => setLoginForm({ ...loginForm, password: value })} className="mt-4" />
+          <Field label="Authenticator Code" value={loginForm.otp} onChange={(value) => setLoginForm({ ...loginForm, otp: value.replace(/\D/g, "").slice(0, 6) })} className="mt-4" maxLength={6} inputMode="numeric" />
           <button disabled={loading} className="bk-btn mt-6 h-12 w-full text-sm disabled:opacity-60">
             {loading ? "Logging in..." : "Login"}
           </button>
@@ -700,7 +703,7 @@ function Admin() {
     );
   }
 
-  const orderKPIs = useMemo(() => {
+  const orderKPIs = (() => {
     return {
       total: orders.length,
       processing: orders.filter(o => o.status === "Processing" || !o.status).length,
@@ -709,9 +712,9 @@ function Admin() {
       delivered: orders.filter(o => o.status === "Delivered").length,
       cancelled: orders.filter(o => o.status === "Cancelled").length,
     };
-  }, [orders]);
+  })();
 
-  const filteredAndSortedOrders = useMemo(() => {
+  const filteredAndSortedOrders = (() => {
     let result = [...orders];
     if (orderStatusFilter !== "All") {
       if (orderStatusFilter === "Making") {
@@ -728,9 +731,9 @@ function Admin() {
     });
     
     return result;
-  }, [orders, orderStatusFilter, orderSortOrder]);
+  })();
 
-  const topLevelKPIs = useMemo(() => {
+  const topLevelKPIs = (() => {
     const totalRevenue = orders
       .filter((o) => o.status !== "Cancelled")
       .reduce((sum, o) => sum + (Number(o.total) || 0), 0);
@@ -742,9 +745,9 @@ function Admin() {
       orders: summary?.orders || orders.length || 0,
       pincodes: summary?.pincodes || pincodes.length || 0,
     };
-  }, [summary, orders, products.length, subcategories.length, users.length, pincodes.length]);
+  })();
 
-  const overviewRevenueData = useMemo(() => {
+  const overviewRevenueData = (() => {
     const yearsList = [];
     const currentYear = new Date().getFullYear();
     for (let i = 0; i < 5; i++) {
@@ -780,7 +783,7 @@ function Admin() {
       monthlyData,
       selectedMonthOrders,
     };
-  }, [orders, overviewSelectedYear, overviewSelectedMonth]);
+  })();
 
   return (
     <div className="min-h-screen bg-[#f7f7f7] text-[#1f2221]">

@@ -6,7 +6,9 @@ import { memory } from "../utils/memoryStore.js";
 import crypto from "node:crypto";
 
 export async function addReview(req, res) {
-  const { productId, rating, comment } = req.body;
+  const productId = typeof req.body.productId === "string" ? req.body.productId.trim().slice(0, 100) : "";
+  const rating = req.body.rating;
+  const comment = typeof req.body.comment === "string" ? req.body.comment.trim().slice(0, 1000) : "";
   const user = req.user;
 
   if (!productId || !rating || !comment) {
@@ -32,15 +34,21 @@ export async function addReview(req, res) {
   // Check if user has ordered this product
   let hasOrdered = false;
   if (isDatabaseConnected()) {
-    const orders = await Order.find({
+    const order = await Order.findOne({
       customerEmail: user.email,
       status: "Delivered",
-      items: { $in: [product.name] }
+      $or: [
+        { items: { $elemMatch: { productId } } },
+        { items: { $elemMatch: { name: product.name } } },
+        { items: product.name },
+      ],
     }).lean();
-    hasOrdered = orders.length > 0;
+    hasOrdered = Boolean(order);
   } else {
     const orders = memory.orders.filter(
-      (o) => o.customerEmail === user.email && o.status === "Delivered" && (o.items || []).includes(product.name)
+      (o) => o.customerEmail === user.email && o.status === "Delivered" && (o.items || []).some((item) => (
+        typeof item === "string" ? item === product.name : item.productId === productId || item.name === product.name
+      ))
     );
     hasOrdered = orders.length > 0;
   }
@@ -103,7 +111,7 @@ export async function addReview(req, res) {
 }
 
 export async function getProductReviews(req, res) {
-  const { productId } = req.params;
+  const productId = String(req.params.productId || "").trim().slice(0, 100);
 
   let reviews = [];
   if (isDatabaseConnected()) {
@@ -114,7 +122,7 @@ export async function getProductReviews(req, res) {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }
 
-  res.json(reviews);
+  res.json(reviews.map(({ userId: _userId, ...review }) => review));
 }
 
 export async function getUserReviews(req, res) {
