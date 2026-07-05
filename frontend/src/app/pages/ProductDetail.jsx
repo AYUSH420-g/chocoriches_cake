@@ -16,7 +16,8 @@ import {
   ShoppingCart,
   Star,
   Truck,
-  Info
+  Info,
+  X
 } from "lucide-react";
 import { Skeleton } from "../components/ui/skeleton";
 import { toast } from "sonner";
