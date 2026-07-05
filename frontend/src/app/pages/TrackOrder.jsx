@@ -162,13 +162,13 @@ function TrackOrder() {
                     </div>
                   </div>
 
-                  <div className="rounded-xl sm:rounded-2xl border border-gray-200 bg-white px-2 py-3 sm:p-4 shadow-sm overflow-hidden">
+                  <div className="rounded-xl sm:rounded-2xl border border-gray-200 bg-white px-2 py-3 sm:p-4 shadow-sm overflow-hidden w-full">
                     <div className="flex justify-between items-start w-full relative">
                       {statusSteps.map((step, index) => {
                         const active = index <= activeIndex && order.status !== "Cancelled";
                         const Icon = index === 0 ? ClipboardList : index === 1 ? PackageCheck : index === 2 ? Truck : CheckCircle2;
                         return (
-                          <div key={step.id} className="relative z-10 flex flex-col items-center text-center flex-1">
+                          <div key={step.id} className="relative z-10 flex flex-col items-center text-center flex-1 min-w-0">
                             {index < statusSteps.length - 1 && (
                               <div className={`absolute left-[50%] top-[16px] sm:top-[24px] -z-10 h-[2px] w-full transition-colors duration-500 ${
                                 index < activeIndex && order.status !== "Cancelled" ? "bg-[#e63946]" : "bg-[#f1f1f1]"
@@ -178,11 +178,11 @@ function TrackOrder() {
                               initial={false}
                               animate={active ? { scale: [1, 1.1, 1] } : {}}
                               transition={{ duration: 0.3 }}
-                              className={`grid h-8 w-8 sm:h-12 sm:w-12 place-items-center rounded-full shadow-sm transition-colors duration-500 ${active ? "bg-[#e63946] text-white ring-2 sm:ring-4 ring-[#fff2e9]" : "bg-[#f7f7f7] text-[#a0a5a3] border border-gray-100"}`}
+                              className={`grid h-8 w-8 sm:h-12 sm:w-12 place-items-center rounded-full shadow-sm transition-colors duration-500 shrink-0 ${active ? "bg-[#e63946] text-white ring-2 sm:ring-4 ring-[#fff2e9]" : "bg-[#f7f7f7] text-[#a0a5a3] border border-gray-100"}`}
                             >
                               <Icon size={14} className="sm:w-5 sm:h-5" />
                             </motion.span>
-                            <p className={`mt-1.5 sm:mt-3 text-[8px] sm:text-xs font-black uppercase tracking-wider leading-tight transition-colors duration-500 ${active ? "text-[#1f2221]" : "text-[#a0a5a3]"}`}>{step.label}</p>
+                            <p className={`mt-1.5 sm:mt-3 text-[8px] sm:text-xs font-black uppercase tracking-wider leading-tight transition-colors duration-500 w-full break-words ${active ? "text-[#1f2221]" : "text-[#a0a5a3]"}`}>{step.label}</p>
                           </div>
                         );
                       })}

@@ -365,25 +365,12 @@ function Checkout() {
                         </div>
                       </div>
                     )}
-                    <div>
-                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Contact Details</h4>
-                      <div className="grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" value={checkoutData.name || storedUser?.name || ""} onChange={(e) => setCheckoutData({...checkoutData, name: e.target.value})} required />
-                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" value={checkoutData.phone || storedUser?.phone || ""} onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})} required />
-                      </div>
-                      <div className="mt-4">
-                        <Field label="Email Address" name="email" placeholder="ayush@example.com" type="email" value={checkoutData.email || storedUser?.email || ""} onChange={(e) => setCheckoutData({...checkoutData, email: e.target.value})} required />
-                      </div>
-                    </div>
-
-                    <div className="mt-2 border-t border-gray-100 pt-6">
-                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Address Details</h4>
+                    <div className="mt-2">
                       <div className="grid grid-cols-2 gap-4 md:gap-5">
                         <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" value={checkoutData.houseNo || ""} onChange={(e) => setCheckoutData({...checkoutData, houseNo: e.target.value})} required />
                         <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" value={checkoutData.street || checkoutData.address || ""} onChange={(e) => setCheckoutData({...checkoutData, street: e.target.value})} required />
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="City" name="city" placeholder="Bangalore" value={checkoutData.city || ""} onChange={(e) => setCheckoutData({...checkoutData, city: e.target.value})} required />
                         <Field label="Pincode" name="pincode" placeholder="560001" value={checkoutData.pincode || ""} required readOnly={isPincodeLocked} onChange={async (e) => {
                           if (isPincodeLocked) return;
                           const val = e.target.value.replace(/\D/g, "").slice(0, 6);
@@ -402,9 +389,7 @@ function Checkout() {
                             setDynamicDeliveryFee(null);
                           }
                         }} />
-                      </div>
-                      <div className="mt-4">
-                        <Field label="Landmark" name="landmark" placeholder="Near metro station" value={checkoutData.landmark || ""} onChange={(e) => setCheckoutData({...checkoutData, landmark: e.target.value})} required />
+                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" value={checkoutData.phone || storedUser?.phone || ""} onChange={(e) => setCheckoutData({...checkoutData, phone: e.target.value})} required />
                       </div>
                     </div>
 
