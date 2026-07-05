@@ -109,7 +109,7 @@ function Profile() {
     
     if (payload.houseNo || payload.street) {
       payload.address = [payload.houseNo, payload.street, payload.city, payload.landmark].filter(Boolean).join(", ");
-      payload.label = payload.addressLabel;
+      payload.label = payload.addressLabel || "Home";
     }
     
     payload.pincode = normalizePincode(payload.pincode);
