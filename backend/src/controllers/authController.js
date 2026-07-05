@@ -318,7 +318,7 @@ export async function adminLogin(req, res) {
 
 export async function addAddress(req, res) {
   const { label, name, phone, address, pincode, city, landmark } = req.body;
-  if (!label || !name || !phone || !address || !pincode || !city) {
+  if (!label || !phone || !address || !pincode) {
     res.status(400).json({ message: "Missing required address fields." });
     return;
   }
@@ -326,15 +326,15 @@ export async function addAddress(req, res) {
   const newAddress = {
     id: crypto.randomUUID(),
     label: String(label).trim().slice(0, 30),
-    name: String(name).trim().slice(0, 100),
+    name: String(name || req.user?.name || "User").trim().slice(0, 100),
     phone: String(phone).replace(/\D/g, "").slice(0, 15),
     address: String(address).trim().slice(0, 500),
     pincode: String(pincode).replace(/\D/g, "").slice(0, 6),
-    city: String(city).trim().slice(0, 100),
+    city: String(city || "").trim().slice(0, 100),
     landmark: String(landmark || "").trim().slice(0, 200),
   };
-  if (!newAddress.label || !newAddress.name || !/^\d{10}$/.test(newAddress.phone) || !newAddress.address || !/^\d{6}$/.test(newAddress.pincode) || !newAddress.city) {
-    res.status(400).json({ message: "Please enter a valid name, phone, address, city, and pincode." });
+  if (!newAddress.label || !/^\d{10}$/.test(newAddress.phone) || !newAddress.address || !/^\d{6}$/.test(newAddress.pincode)) {
+    res.status(400).json({ message: "Please enter a valid phone, address, and pincode." });
     return;
   }
 

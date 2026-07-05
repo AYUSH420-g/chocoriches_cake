@@ -710,14 +710,8 @@ function Profile() {
 
             {activeSection === "address" && (
               <section className="bk-card p-4 shadow-sm">
-                <div className="mb-4 flex items-center justify-end">
-                  <button type="button" onClick={() => setShowAddAddress(!showAddAddress)} className="bk-btn h-9 bg-[#3e3e3e] px-4 text-xs">
-                    {showAddAddress ? "Cancel" : "+ Add New"}
-                  </button>
-                </div>
-                {showAddAddress && (
-                  <form onSubmit={handleAddAddress} className="mb-6 rounded-3xl border border-gray-200 bg-white p-4 md:p-7 shadow-sm">
-                    <h3 className="mb-6 text-xl font-bold text-[#1f2221]">Add New Address</h3>
+                <form onSubmit={handleAddAddress} className="mb-8">
+                  <h3 className="mb-6 text-xl font-bold text-[#1f2221]">Add New Address</h3>
                                        <div className="mt-2">
                       <div className="grid grid-cols-2 gap-4 md:gap-5">
                         <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" required />
@@ -763,7 +757,6 @@ function Profile() {
                     
                     <button type="submit" className="bk-btn mt-6 h-12 w-full bg-[#3e3e3e] text-sm font-black shadow-lg hover:scale-[1.01]">Save Address</button>
                   </form>
-                )}
                 <div className="grid gap-4 sm:grid-cols-2">
                   {profile.addresses?.length ? profile.addresses.map((addr) => (
                     <div key={addr.id} className="relative rounded-lg border border-[#ebebeb] p-4 flex flex-col justify-between">
@@ -775,7 +768,7 @@ function Profile() {
                       </div>
                       <button type="button" onClick={() => handleDeleteAddress(addr.id)} className="mt-3 text-xs font-bold text-[#e63946] hover:underline self-start">Remove</button>
                     </div>
-                  )) : !showAddAddress && <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">No saved addresses yet.</p>}
+                  )) : <p className="rounded-lg bg-[#f7f7f7] p-4 text-sm font-bold text-[#6f7573]">No saved addresses yet.</p>}
                 </div>
               </section>
             )}
