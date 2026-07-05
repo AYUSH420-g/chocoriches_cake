@@ -718,35 +718,19 @@ function Profile() {
                 {showAddAddress && (
                   <form onSubmit={handleAddAddress} className="mb-6 rounded-3xl border border-gray-200 bg-white p-4 md:p-7 shadow-sm">
                     <h3 className="mb-6 text-xl font-bold text-[#1f2221]">Add New Address</h3>
-                    
-                    <div className="mb-6">
-                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Contact Details</h4>
-                      <div className="grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="Full Name" name="name" placeholder="Ayush Sharma" required />
-                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" required />
-                      </div>
-                    </div>
-
-                    <div className="border-t border-gray-100 pt-6">
-                      <h4 className="mb-3 text-sm font-black text-[#1f2221]">Address Details</h4>
+                                       <div className="mt-2">
                       <div className="grid grid-cols-2 gap-4 md:gap-5">
                         <Field label="House / Flat No." name="houseNo" placeholder="Flat 402" required />
                         <Field label="Street / Locality" name="street" placeholder="Main Road, Koramangala" required />
                       </div>
                       <div className="mt-4 grid grid-cols-2 gap-4 md:gap-5">
-                        <Field label="City" name="city" placeholder="Bangalore" required />
                         <Field label="Pincode" name="pincode" placeholder="560001" required onChange={async (e) => {
-                          const val = e.target.value.replace(/\\D/g, "").slice(0, 6);
+                          const val = e.target.value.replace(/\D/g, "").slice(0, 6);
                           if (val.length === 6) {
-                            const result = await checkPincode(val).catch(() => null);
-                            if (result?.pincode?.city && e.target.form?.city) {
-                              e.target.form.city.value = result.pincode.city;
-                            }
+                            await checkPincode(val).catch(() => null);
                           }
                         }} />
-                      </div>
-                      <div className="mt-4">
-                        <Field label="Landmark" name="landmark" placeholder="Near metro station" required />
+                        <Field label="Mobile Number" name="phone" placeholder="98765 43210" required />
                       </div>
                     </div>
 

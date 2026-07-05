@@ -21,7 +21,7 @@ function clearLegacySharedSession() {
 
 function readJson(key) {
   try {
-    return JSON.parse(sessionStorage.getItem(key) || "null");
+    return JSON.parse(localStorage.getItem(key) || sessionStorage.getItem(key) || "null");
   } catch {
     return null;
   }
@@ -51,8 +51,8 @@ export function saveUserSession({ token, user }) {
   
   if (user !== undefined) {
     if (user) {
-      sessionStorage.setItem(USER_KEY, JSON.stringify(user));
-      localStorage.removeItem(USER_KEY);
+      localStorage.setItem(USER_KEY, JSON.stringify(user));
+      sessionStorage.removeItem(USER_KEY);
     } else {
       localStorage.removeItem(USER_KEY);
       sessionStorage.removeItem(USER_KEY);

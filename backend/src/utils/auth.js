@@ -1,7 +1,7 @@
 import crypto from "node:crypto";
 import { config } from "../config/env.js";
 
-const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+const SESSION_MAX_AGE_SECONDS = 30 * 24 * 60 * 60;
 const ADMIN_SESSION_MAX_AGE_SECONDS = 12 * 60 * 60;
 const PASSWORD_ITERATIONS = 210_000;
 const USER_COOKIE = "chocoriches_user_session";
