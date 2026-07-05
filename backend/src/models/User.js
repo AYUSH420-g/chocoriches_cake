@@ -7,7 +7,7 @@ const addressSchema = new mongoose.Schema({
   phone: { type: String, required: true, match: /^\d{10}$/ },
   address: { type: String, required: true, maxlength: 500 },
   pincode: { type: String, required: true, match: /^\d{6}$/ },
-  city: { type: String, required: true, maxlength: 100 },
+  city: { type: String, maxlength: 100, default: "" },
   landmark: { type: String, maxlength: 200 },
 });
 
