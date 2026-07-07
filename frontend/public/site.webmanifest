@@ -1,0 +1,16 @@
+{
+  "name": "ChocoRiches Cakes",
+  "short_name": "ChocoRiches",
+  "description": "Buy the best custom cakes online at ChocoRiches.",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "start_url": "/"
+}

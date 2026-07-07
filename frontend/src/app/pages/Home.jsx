@@ -11,38 +11,39 @@ const heroBanners = [
 ];
 import ProductCard from "../components/ProductCard";
 import { ProductCardSkeleton } from "../components/ui/ProductCardSkeleton";
-const wishCategories = [
-  {
-    name: "Classic",
-    // image: "https://images.unsplash.com/photo-1602351447937-745cb720612f?auto=format&fit=crop&q=80&w=420",
-    to: "/shop?cat=Essentials"
-  },
-  {
-    name: "Gourmet",
-    // image: "https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?auto=format&fit=crop&q=80&w=420",
-    to: "/shop?cat=Signature"
-  },
-  {
-    name: "Designer",
-    // image: "https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&q=80&w=420",
-    to: "/shop?cat=Wedding"
-  },
-  {
-    name: "Photo Cakes",
-    // image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&q=80&w=420",
-    to: "/shop?cat=Celebration"
-  },
-  {
-    name: "Desserts",
-    // image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=420",
-    to: "/shop?cat=Seasonal"
-  },
-  {
-    name: "Hampers",
-    // image: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&q=80&w=420",
-    to: "/custom"
-  }
-];
+import SEO from "../components/SEO";
+// const wishCategories = [
+//   {
+//     name: "Classic",
+//     // image: "https://images.unsplash.com/photo-1602351447937-745cb720612f?auto=format&fit=crop&q=80&w=420",
+//     to: "/shop?cat=Essentials"
+//   },
+//   {
+//     name: "Gourmet",
+//     // image: "https://images.unsplash.com/photo-1614707267537-b85aaf00c4b7?auto=format&fit=crop&q=80&w=420",
+//     to: "/shop?cat=Signature"
+//   },
+//   {
+//     name: "Designer",
+//     // image: "https://images.unsplash.com/photo-1535254973040-607b474cb50d?auto=format&fit=crop&q=80&w=420",
+//     to: "/shop?cat=Wedding"
+//   },
+//   {
+//     name: "Photo Cakes",
+//     // image: "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?auto=format&fit=crop&q=80&w=420",
+//     to: "/shop?cat=Celebration"
+//   },
+//   {
+//     name: "Desserts",
+//     // image: "https://images.unsplash.com/photo-1551024601-bec78aea704b?auto=format&fit=crop&q=80&w=420",
+//     to: "/shop?cat=Seasonal"
+//   },
+//   {
+//     name: "Hampers",
+//     // image: "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&q=80&w=420",
+//     to: "/custom"
+//   }
+// ];
 
 const promiseItems = [
   { icon: Truck, title: "On-Time Delivery", copy: "Fresh cakes delivered today" },
@@ -156,12 +157,13 @@ function Home() {
   useEffect(() => {
     const timer = setInterval(() => {
       setHeroIndex((prev) => (prev + 1) % heroBanners.length);
-    }, 5000);
+    }, 3000);
     return () => clearInterval(timer);
   }, []);
 
   return (
     <div className="bk-page overflow-hidden">
+      <SEO title="Home" description="Explore our trending and custom cakes at ChocoRiches." />
       <section className="bk-shell pt-4 pb-2 md:pt-8 md:pb-4">
         <Link
           to="/custom"
