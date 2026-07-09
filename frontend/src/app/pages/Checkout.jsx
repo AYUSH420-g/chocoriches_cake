@@ -436,7 +436,11 @@ function Checkout() {
                           <div key={item.id} className="flex gap-4 rounded-xl border border-[#ebebeb] p-4">
                             <img src={optimizeImage(item.image, 200)} alt={item.name} loading="lazy" className="h-20 w-20 rounded-lg object-cover" />
                             <div className="min-w-0 flex-1 flex flex-col justify-center">
-                              <p className="line-clamp-1 text-base font-black text-[#1f2221]">{item.name}</p>
+                              <p className="line-clamp-1 text-base font-black text-[#1f2221]">
+                                {item.name}
+                                {item.isStampReward && <span className="ml-2 inline-block rounded-full bg-[#eefbf3] px-2 py-0.5 text-[9px] font-black text-[#0f8b57] align-middle">🎁 Reward</span>}
+                                {item.isFreePromo && <span className="ml-2 inline-block rounded-full bg-[#fff2e9] px-2 py-0.5 text-[9px] font-black text-[#e63946] align-middle">🎁 Free Promo</span>}
+                              </p>
                               <p className="mt-1 text-sm font-bold text-[#6f7573]">{item.size} × {item.quantity}</p>
                               {(item.baseFlavour || item.creamFlavour) && (
                                 <p className="mt-1 text-[11px] font-medium text-[#6f7573]">
@@ -445,7 +449,13 @@ function Checkout() {
                                   {item.creamFlavour && <span>{item.creamFlavour}</span>}
                                 </p>
                               )}
-                              <span className="mt-2 text-normal font-black text-[#000000]">{formatPrice(item.price * item.quantity)}</span>
+                              {item.isStampReward ? (
+                                <span className="mt-2 text-normal font-black text-[#0f8b57]">₹1</span>
+                              ) : item.isFreePromo ? (
+                                <span className="mt-2 text-normal font-black text-[#e63946]">Free</span>
+                              ) : (
+                                <span className="mt-2 text-normal font-black text-[#000000]">{formatPrice(item.price * item.quantity)}</span>
+                              )}
                             </div>
                           </div>
                         ))}

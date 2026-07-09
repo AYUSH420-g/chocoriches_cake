@@ -218,7 +218,7 @@ function RewardDeliveryDatePicker({ selectedDate, onSelect, blockedDates }) {
 }
 
 function Cart() {
-  const { cart, removeItem, setQuantity, setMessageOnCake } = useCart();
+  const { cart, addProduct, removeItem, setQuantity, setMessageOnCake } = useCart();
   const [siteSettings, setSiteSettings] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
   const [blockedDates, setBlockedDates] = useState([]);
