@@ -223,6 +223,7 @@ function Cart() {
   const [itemToRemove, setItemToRemove] = useState(null);
   const [blockedDates, setBlockedDates] = useState([]);
   const [shakes, setShakes] = useState([]);
+  const [isAddingPromo, setIsAddingPromo] = useState(false);
   const [deliveryDate, setDeliveryDate] = useState(
     () => sessionStorage.getItem("chocoriches_delivery_date") || ""
   );
@@ -282,10 +283,12 @@ function Cart() {
   };
 
   const handleAddFreeShake = (shake) => {
+    setIsAddingPromo(true);
     const size = shake.defaultWeight || shake.weight || shake.weights?.[0]?.label || "Half Kg";
     addProduct(shake, 1, size, "", "", false, true)
       .then(() => toast.success(`${shake.name} added for free!`))
-      .catch((err) => toast.error(err.message || "Failed to add free shake"));
+      .catch((err) => toast.error(err.message || "Failed to add free shake"))
+      .finally(() => setIsAddingPromo(false));
   };
 
   const handleRemove = (id) => {
@@ -471,31 +474,38 @@ function Cart() {
                   </div>
                 </div>
                 
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar w-full">
-                  {shakes.map((shake) => (
-                    <div key={shake.id} className="min-w-[140px] max-w-[140px] rounded-lg border border-[#ebebeb] bg-white p-2 snap-start flex flex-col shrink-0">
-                      <div className="aspect-square w-full overflow-hidden rounded-md bg-[#f9f9f9]">
-                        <img
-                          src={optimizeImage(shake.image, 200)}
-                          alt={shake.name}
-                          loading="lazy"
-                          className="h-full w-full object-cover"
-                        />
+                <div className="relative w-full">
+                  <div className={`flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar w-full transition-all ${isAddingPromo ? 'blur-sm pointer-events-none opacity-60' : ''}`}>
+                    {shakes.map((shake) => (
+                      <div key={shake.id} className="min-w-[140px] max-w-[140px] rounded-lg border border-[#ebebeb] bg-white p-2 snap-start flex flex-col shrink-0">
+                        <div className="aspect-square w-full overflow-hidden rounded-md bg-[#f9f9f9]">
+                          <img
+                            src={optimizeImage(shake.image, 200)}
+                            alt={shake.name}
+                            loading="lazy"
+                            className="h-full w-full object-cover"
+                          />
+                        </div>
+                        <h4 className="mt-2 text-xs font-semibold text-[#1f2221] line-clamp-2 leading-snug">
+                          {shake.name}
+                        </h4>
+                        <div className="mt-auto pt-2">
+                          <button
+                            type="button"
+                            onClick={() => handleAddFreeShake(shake)}
+                            className="w-full rounded bg-[#e63946] py-1.5 text-[11px] font-bold text-white transition hover:bg-[#c9323d] active:scale-95"
+                          >
+                            Add
+                          </button>
+                        </div>
                       </div>
-                      <h4 className="mt-2 text-xs font-semibold text-[#1f2221] line-clamp-2 leading-snug">
-                        {shake.name}
-                      </h4>
-                      <div className="mt-auto pt-2">
-                        <button
-                          type="button"
-                          onClick={() => handleAddFreeShake(shake)}
-                          className="w-full rounded bg-[#e63946] py-1.5 text-[11px] font-bold text-white transition hover:bg-[#c9323d] active:scale-95"
-                        >
-                          Add
-                        </button>
-                      </div>
+                    ))}
+                  </div>
+                  {isAddingPromo && (
+                    <div className="absolute inset-0 z-10 grid place-items-center">
+                      <div className="h-8 w-8 animate-spin rounded-full border-[3px] border-[#e63946] border-t-transparent shadow-lg" />
                     </div>
-                  ))}
+                  )}
                 </div>
               </motion.div>
             )}

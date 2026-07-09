@@ -272,8 +272,18 @@ export async function removeCartItem(req, res) {
   if (!owner) return;
   if (isDatabaseConnected()) {
     await CartItem.deleteOne({ ...owner, id: req.params.id });
+    const remainingItems = await CartItem.find(owner).lean();
+    const hasRealItems = remainingItems.some(item => !item.isStampReward && !item.isFreePromo);
+    if (!hasRealItems) {
+      await CartItem.deleteMany({ ...owner, isFreePromo: true });
+    }
   } else {
     memory.cartItems = memory.cartItems.filter((item) => !(ownerMatches(item, owner) && item.id === req.params.id));
+    const ownerItems = memory.cartItems.filter(item => ownerMatches(item, owner));
+    const hasRealItems = ownerItems.some(item => !item.isStampReward && !item.isFreePromo);
+    if (!hasRealItems) {
+      memory.cartItems = memory.cartItems.filter(item => !(ownerMatches(item, owner) && item.isFreePromo));
+    }
   }
 
   res.status(204).end();
