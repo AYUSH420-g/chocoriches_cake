@@ -130,12 +130,12 @@ function TrackOrder() {
                 exit={{ opacity: 0, y: -10 }}
               >
                 <div className="border-b border-[#ebebeb] bg-gradient-to-r from-[#fafafa] to-white px-3 py-2.5 md:p-6">
-                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p className="text-xs font-black uppercase tracking-wider text-[#6f7573]">Order {order.orderId || order.id}</p>
-                      <h2 className="mt-0.5 text-base font-black text-[#1f2221] md:text-2xl line-clamp-1">{order.items?.map(i => typeof i === "string" ? i : i.name).join(", ") || "Cake order"}</h2>
+                  <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between w-full min-w-0">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-xs font-black uppercase tracking-wider text-[#6f7573] truncate">Order {order.orderId || order.id}</p>
+                      <h2 className="mt-0.5 text-base font-black text-[#1f2221] md:text-2xl truncate">{order.items?.map(i => typeof i === "string" ? i : i.name).join(", ") || "Cake order"}</h2>
                     </div>
-                    <span className="w-fit rounded-full bg-[#fff2e9] px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#e63946] ring-1 ring-[#e63946]/20 shadow-sm">{order.status === "Packed" ? "Making" : order.status}</span>
+                    <span className="w-fit rounded-full bg-[#fff2e9] px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-wider text-[#e63946] ring-1 ring-[#e63946]/20 shadow-sm whitespace-nowrap shrink-0">{order.status === "Packed" ? "Making" : order.status}</span>
                   </div>
                 </div>
 
@@ -229,11 +229,11 @@ function TrackOrder() {
 function Info({ icon: Icon, label, value }) {
   return (
     <div className="rounded-lg sm:rounded-xl border border-gray-100 bg-[#fbfbfb] p-2 sm:p-3 shadow-sm transition-colors hover:bg-white hover:shadow-md flex flex-col justify-between min-w-0">
-      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2">
+      <div className="flex items-center gap-1.5 sm:gap-2 mb-1 sm:mb-2 min-w-0">
         <div className="grid h-6 w-6 sm:h-7 sm:w-7 place-items-center rounded-full bg-[#fff2e9] text-[#e63946] shrink-0">
           <Icon size={12} className="sm:w-3.5 sm:h-3.5" />
         </div>
-        <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-[#6f7573] truncate">{label}</p>
+        <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-[#6f7573] truncate flex-1">{label}</p>
       </div>
       <p className="text-[11px] sm:text-sm font-black text-[#1f2221] truncate" title={value}>{value}</p>
     </div>
