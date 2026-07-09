@@ -282,7 +282,8 @@ function Cart() {
   };
 
   const handleAddFreeShake = (shake) => {
-    addProduct(shake, 1, shake.weights?.[0]?.label || "Half Kg", "", "", false, true)
+    const size = shake.defaultWeight || shake.weight || shake.weights?.[0]?.label || "Half Kg";
+    addProduct(shake, 1, size, "", "", false, true)
       .then(() => toast.success(`${shake.name} added for free!`))
       .catch((err) => toast.error(err.message || "Failed to add free shake"));
   };
@@ -299,7 +300,7 @@ function Cart() {
   };
 
   return (
-    <div className={`bk-page-cart ${cart.length ? "max-md:pb-0" : ""}`}>
+    <div className={`bk-page-cart ${cart.length ? "max-md:pb-0" : ""} w-full overflow-hidden`}>
       <div className="bk-shell py-3 md:py-6 bg-[#ffffff]">
         <div className="mb-2 flex flex-col gap-3 md:mb-5 md:flex-row md:items-end md:justify-between">
           <div>
@@ -312,7 +313,7 @@ function Cart() {
         </div>
 
         <div className="grid gap-2 md:gap-5 lg:grid-cols-[1fr_380px]">
-          <section className="space-y-2">
+          <section className="space-y-2 w-full min-w-0">
             {cart.length > 0 ? (
               cart.map((item, index) => (
                 <motion.article
@@ -328,8 +329,8 @@ function Cart() {
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <div>
-                    <h2 className="text-[14px] font-[500] leading-5 text-[#1f2221] sm:text-lg">
+                  <div className="min-w-0">
+                    <h2 className="text-[14px] font-[500] leading-5 text-[#1f2221] sm:text-lg truncate">
                       {item.name}
                     </h2>
                     {item.isStampReward && (
@@ -457,7 +458,7 @@ function Cart() {
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bk-card mt-5 p-4 border-[#e63946]/30 bg-[#fffdfc]"
+                className="bk-card mt-5 p-4 border-[#e63946]/30 bg-[#fffdfc] w-full overflow-hidden"
               >
                 <div className="flex items-center justify-between mb-3">
                   <div>
@@ -470,9 +471,9 @@ function Cart() {
                   </div>
                 </div>
                 
-                <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar">
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar w-full">
                   {shakes.map((shake) => (
-                    <div key={shake.id} className="min-w-[140px] max-w-[140px] rounded-lg border border-[#ebebeb] bg-white p-2 snap-start flex flex-col">
+                    <div key={shake.id} className="min-w-[140px] max-w-[140px] rounded-lg border border-[#ebebeb] bg-white p-2 snap-start flex flex-col shrink-0">
                       <div className="aspect-square w-full overflow-hidden rounded-md bg-[#f9f9f9]">
                         <img
                           src={optimizeImage(shake.image, 200)}
@@ -490,7 +491,7 @@ function Cart() {
                           onClick={() => handleAddFreeShake(shake)}
                           className="w-full rounded bg-[#e63946] py-1.5 text-[11px] font-bold text-white transition hover:bg-[#c9323d] active:scale-95"
                         >
-                          Select Free
+                          Add
                         </button>
                       </div>
                     </div>
