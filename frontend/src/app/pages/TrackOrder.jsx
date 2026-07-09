@@ -119,7 +119,7 @@ function TrackOrder() {
           <motion.section 
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="bk-card overflow-hidden shadow-sm border border-gray-100"
+            className="bk-card overflow-hidden shadow-sm border border-gray-100 w-full min-w-0"
           >
             <AnimatePresence mode="wait">
             {order ? (
@@ -139,9 +139,9 @@ function TrackOrder() {
                   </div>
                 </div>
 
-                <div className="grid gap-3 p-3 md:gap-6 md:p-6">
-                  <div className="flex flex-col gap-2.5 sm:gap-3">
-                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                <div className="grid gap-3 p-3 md:gap-6 md:p-6 w-full min-w-0">
+                  <div className="flex flex-col gap-2.5 sm:gap-3 w-full min-w-0">
+                    <div className="grid grid-cols-2 gap-2.5 sm:gap-3 w-full min-w-0">
                       <Info icon={ClipboardList} label="Ordered Date" value={order.date} />
                       <Info icon={Truck} label="Delivery Date" value={order.deliveryDate ? new Date(order.deliveryDate).toLocaleDateString() : "Not specified"} />
                     </div>
@@ -235,7 +235,7 @@ function Info({ icon: Icon, label, value }) {
         </div>
         <p className="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-[#6f7573] truncate flex-1">{label}</p>
       </div>
-      <p className="text-[11px] sm:text-sm font-black text-[#1f2221] truncate" title={value}>{value}</p>
+      <p className="text-[11px] sm:text-sm font-black text-[#1f2221] break-words whitespace-normal leading-snug" title={value}>{value}</p>
     </div>
   );
 }
