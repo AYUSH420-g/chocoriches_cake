@@ -72,6 +72,8 @@ export async function calculateCheckout({ user, deliveryPincode, deliveryOption 
       }
       price = 1;
       isStampRewardOrder = true;
+    } else if (cartItem.isFreePromo) {
+      price = 0;
     }
 
     subtotal += price * quantity;
@@ -86,6 +88,7 @@ export async function calculateCheckout({ user, deliveryPincode, deliveryOption 
       baseFlavour: String(cartItem.baseFlavour || "").slice(0, 80),
       creamFlavour: String(cartItem.creamFlavour || "").slice(0, 80),
       isStampReward: Boolean(cartItem.isStampReward),
+      isFreePromo: Boolean(cartItem.isFreePromo),
     });
   }
 
