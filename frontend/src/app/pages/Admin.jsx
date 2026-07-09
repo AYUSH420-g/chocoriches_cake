@@ -1427,9 +1427,19 @@ function Admin() {
                                   {(order.items || []).map((item, idx) => {
                                     if (typeof item === 'string') return <li key={idx}>{item}</li>;
                                     return (
-                                      <li key={idx}>
-                                        <span className="font-bold">{item.name || "Item"}</span>
-                                        <span className="text-[#6f7573]"> (x{item.quantity || 1})</span>
+                                        <li key={idx} className="flex flex-wrap items-center gap-x-1 gap-y-0.5">
+                                          <span className="font-bold">{item.name || "Item"}</span>
+                                          {item.isStampReward && (
+                                            <span className="inline-block rounded-full bg-[#eefbf3] px-1.5 py-0.5 text-[9px] font-black text-[#0f8b57]">
+                                              Reward
+                                            </span>
+                                          )}
+                                          {item.isFreePromo && (
+                                            <span className="inline-block rounded-full bg-[#fff2e9] px-1.5 py-0.5 text-[9px] font-black text-[#e63946]">
+                                              Free Promo
+                                            </span>
+                                          )}
+                                          <span className="text-[#6f7573]"> (x{item.quantity || 1})</span>
                                         <span className="text-[#6f7573]"> - Size: {item.size || "Default"}</span>
                                         {(item.baseFlavour || item.creamFlavour) && (
                                           <span className="text-[#6f7573]">

@@ -18,6 +18,7 @@ const cartItemSchema = new mongoose.Schema(
     creamFlavour: { type: String, maxlength: 80 },
     deliveryDate: { type: String },
     isStampReward: { type: Boolean, default: false },
+    isFreePromo: { type: Boolean, default: false },
   },
   { timestamps: true }
 );

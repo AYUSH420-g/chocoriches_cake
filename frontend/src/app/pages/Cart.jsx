@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { toast } from "sonner";
 import { ArrowRight, BadgePercent, Calendar, ChevronLeft, ChevronRight, Minus, Plus, ShieldCheck, ShoppingCart, Trash2, Truck, X } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
-import { getBlockedDates, getPublicSettings } from "../api/client";
+import { getBlockedDates, getPublicSettings, getProducts } from "../api/client";
 import { useCart } from "../context/CartContext";
 import { formatPrice, optimizeImage } from "../utils/format";
 import {
@@ -222,12 +222,23 @@ function Cart() {
   const [siteSettings, setSiteSettings] = useState(null);
   const [itemToRemove, setItemToRemove] = useState(null);
   const [blockedDates, setBlockedDates] = useState([]);
+  const [shakes, setShakes] = useState([]);
   const [deliveryDate, setDeliveryDate] = useState(
     () => sessionStorage.getItem("chocoriches_delivery_date") || ""
   );
   const navigate = useNavigate();
 
+  const isPromoActive = () => {
+    const now = new Date();
+    const start = new Date("2026-07-13T00:00:00+05:30");
+    const end = new Date("2026-07-19T23:59:59+05:30");
+    return now >= start && now <= end;
+  };
+
   const hasRewardInCart = cart.some((item) => item.isStampReward);
+  const hasFreePromoInCart = cart.some((item) => item.isFreePromo);
+  const hasRealItems = cart.some((item) => !item.isStampReward && !item.isFreePromo);
+  const showPromoSection = isPromoActive() && hasRealItems && !hasFreePromoInCart;
 
   const handleProceed = (e) => {
     e.preventDefault();
@@ -250,6 +261,15 @@ function Cart() {
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
     getBlockedDates().then((dates) => setBlockedDates(dates || [])).catch(() => void 0);
+    if (isPromoActive()) {
+      getProducts({ q: "shake" })
+        .then((data) => {
+          // Filter to only include products with "shake" in the name to be safe
+          const validShakes = data.filter(p => p.name.toLowerCase().includes("shake"));
+          setShakes(validShakes);
+        })
+        .catch(() => void 0);
+    }
   }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
@@ -260,6 +280,12 @@ function Cart() {
   const handleQuantityChange = (id, quantity) => {
     const nextQuantity = Math.max(1, quantity);
     setQuantity(id, nextQuantity).catch(() => void 0);
+  };
+
+  const handleAddFreeShake = (shake) => {
+    addProduct(shake, 1, shake.weights?.[0]?.label || "Half Kg", "", "", false, true)
+      .then(() => toast.success(`${shake.name} added for free!`))
+      .catch((err) => toast.error(err.message || "Failed to add free shake"));
   };
 
   const handleRemove = (id) => {
@@ -312,9 +338,16 @@ function Cart() {
                         🎁 Loyalty Reward
                       </span>
                     )}
+                    {item.isFreePromo && (
+                      <span className="mt-1 inline-block rounded-full bg-[#fff2e9] px-2 py-0.5 text-[10px] font-black text-[#e63946]">
+                        🎁 Free Promo Item
+                      </span>
+                    )}
                     <div className="col-span-2 flex items-center pt-1 justify-between  text-left sm:col-auto sm:block sm:border-0 sm:pt-0 sm:text-right">
                       {item.isStampReward ? (
                         <p className="text-[14px] font-[500] text-[#0f8b57] sm:text-xl">₹1</p>
+                      ) : item.isFreePromo ? (
+                        <p className="text-[14px] font-[500] text-[#e63946] sm:text-xl">Free</p>
                       ) : (
                         <p className="text-[14px] font-[500] text-[#1f2221] sm:text-xl">
                           {formatPrice(item.price * item.quantity)}
@@ -350,7 +383,7 @@ function Cart() {
                       </div>
                       
                       <div className="flex items-center gap-2 sm:gap-3">
-                        {item.isStampReward ? (
+                        {item.isStampReward || item.isFreePromo ? (
                           <div className="flex h-8 items-center rounded-lg border border-[#ebebeb] bg-[#f7f7f7] px-3">
                             <span className="text-[10px] font-black text-[#6f7573]">Qty: 1</span>
                           </div>
@@ -419,6 +452,52 @@ function Cart() {
                   Shop Cakes
                 </Link>
               </div>
+            )}
+            
+            {showPromoSection && shakes.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bk-card mt-5 p-4 border-[#e63946]/30 bg-[#fffdfc]"
+              >
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-[16px] font-bold text-[#e63946] flex items-center gap-2">
+                      🎉 Special Offer Unlocked!
+                    </h3>
+                    <p className="text-xs text-[#6f7573] mt-0.5">
+                      Choose one FREE shake with your order. Valid till 19th July.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar">
+                  {shakes.map((shake) => (
+                    <div key={shake.id} className="min-w-[140px] max-w-[140px] rounded-lg border border-[#ebebeb] bg-white p-2 snap-start flex flex-col">
+                      <div className="aspect-square w-full overflow-hidden rounded-md bg-[#f9f9f9]">
+                        <img
+                          src={optimizeImage(shake.image, 200)}
+                          alt={shake.name}
+                          loading="lazy"
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <h4 className="mt-2 text-xs font-semibold text-[#1f2221] line-clamp-2 leading-snug">
+                        {shake.name}
+                      </h4>
+                      <div className="mt-auto pt-2">
+                        <button
+                          type="button"
+                          onClick={() => handleAddFreeShake(shake)}
+                          className="w-full rounded bg-[#e63946] py-1.5 text-[11px] font-bold text-white transition hover:bg-[#c9323d] active:scale-95"
+                        >
+                          Select Free
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
             )}
           </section>
 

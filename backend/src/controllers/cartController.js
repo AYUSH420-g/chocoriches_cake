@@ -53,7 +53,7 @@ export async function getCart(req, res) {
 }
 
 export async function addCartItem(req, res) {
-  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1, baseFlavour, creamFlavour, deliveryDate, isStampReward = false } = req.body;
+  const { productId: productIdValue, size = "6 Inch (Serves 8-10)", quantity = 1, baseFlavour, creamFlavour, deliveryDate, isStampReward = false, isFreePromo = false } = req.body;
   const product = await findProductForCart(productIdValue);
   if (!product) {
     res.status(404).json({ message: "Product not found." });
@@ -65,12 +65,13 @@ export async function addCartItem(req, res) {
   const normalizedBaseFlavour = String(baseFlavour || "").slice(0, 80);
   const normalizedCreamFlavour = String(creamFlavour || "").slice(0, 80);
   const rewardRequested = isStampReward === true;
+  const promoRequested = isFreePromo === true;
   const parsedQuantity = Number(quantity);
   if (!Number.isInteger(parsedQuantity) || parsedQuantity < 1 || parsedQuantity > 9) {
     res.status(400).json({ message: "Quantity must be between 1 and 9." });
     return;
   }
-  const nextQuantity = rewardRequested ? 1 : parsedQuantity;
+  const nextQuantity = (rewardRequested || promoRequested) ? 1 : parsedQuantity;
   const owner = cartOwnerOrError(req, res);
   if (!owner) return;
   const requestedDate = String(deliveryDate || "").slice(0, 10);
@@ -112,6 +113,17 @@ export async function addCartItem(req, res) {
     }
   }
 
+  if (promoRequested) {
+    const existingCartItems = isDatabaseConnected()
+      ? await CartItem.find(owner).lean()
+      : memory.cartItems.filter((item) => ownerMatches(item, owner));
+    const hasExistingPromo = existingCartItems.some((item) => item.isFreePromo);
+    if (hasExistingPromo) {
+      res.status(422).json({ message: "You can only add one free promo shake." });
+      return;
+    }
+  }
+
   const capacity = await cakeCapacityStatus(requestedDate, nextQuantity, await ownerCartQuantity(owner, requestedDate));
   if (!capacity.allowed) {
     res.status(422).json({ message: capacity.message });
@@ -119,9 +131,9 @@ export async function addCartItem(req, res) {
   }
 
   if (isDatabaseConnected()) {
-    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour: normalizedBaseFlavour, creamFlavour: normalizedCreamFlavour, deliveryDate: requestedDate, isStampReward: rewardRequested });
+    const existingItem = await CartItem.findOne({ ...owner, productId: requestedProductId, size: requestedSize, baseFlavour: normalizedBaseFlavour, creamFlavour: normalizedCreamFlavour, deliveryDate: requestedDate, isStampReward: rewardRequested, isFreePromo: promoRequested });
     if (existingItem) {
-      if (!rewardRequested && existingItem.quantity + nextQuantity > 9) {
+      if (!rewardRequested && !promoRequested && existingItem.quantity + nextQuantity > 9) {
         res.status(400).json({ message: "Quantity must be between 1 and 9." });
         return;
       }
@@ -129,6 +141,9 @@ export async function addCartItem(req, res) {
       if (rewardRequested) {
         existingItem.quantity = 1;
         existingItem.price = 1;
+      } else if (promoRequested) {
+        existingItem.quantity = 1;
+        existingItem.price = 0;
       } else {
         existingItem.quantity += nextQuantity;
       }
@@ -138,10 +153,10 @@ export async function addCartItem(req, res) {
     }
   } else {
     const existingItem = memory.cartItems.find(
-      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize && item.baseFlavour === normalizedBaseFlavour && item.creamFlavour === normalizedCreamFlavour && item.deliveryDate === requestedDate && item.isStampReward === rewardRequested
+      (item) => ownerMatches(item, owner) && String(item.productId || item.id) === requestedProductId && item.size === requestedSize && item.baseFlavour === normalizedBaseFlavour && item.creamFlavour === normalizedCreamFlavour && item.deliveryDate === requestedDate && item.isStampReward === rewardRequested && item.isFreePromo === promoRequested
     );
     if (existingItem) {
-      if (!rewardRequested && existingItem.quantity + nextQuantity > 9) {
+      if (!rewardRequested && !promoRequested && existingItem.quantity + nextQuantity > 9) {
         res.status(400).json({ message: "Quantity must be between 1 and 9." });
         return;
       }
@@ -149,6 +164,9 @@ export async function addCartItem(req, res) {
       if (rewardRequested) {
         existingItem.quantity = 1;
         existingItem.price = 1;
+      } else if (promoRequested) {
+        existingItem.quantity = 1;
+        existingItem.price = 0;
       } else {
         existingItem.quantity += nextQuantity;
       }
@@ -163,7 +181,7 @@ export async function addCartItem(req, res) {
     productId: requestedProductId,
     ...owner,
     ...snapshot,
-    price: rewardRequested ? 1 : snapshot.price,
+    price: rewardRequested ? 1 : (promoRequested ? 0 : snapshot.price),
     size: requestedSize,
     weight: requestedSize,
     quantity: nextQuantity,
@@ -171,6 +189,7 @@ export async function addCartItem(req, res) {
     creamFlavour: normalizedCreamFlavour,
     deliveryDate: requestedDate,
     isStampReward: rewardRequested,
+    isFreePromo: promoRequested,
   };
 
   if (isDatabaseConnected()) {
@@ -218,8 +237,8 @@ export async function updateCartItem(req, res) {
   }
   
   if (updates.quantity && currentItem) {
-    // Stamp reward items are locked at quantity 1
-    if (currentItem.isStampReward) {
+    // Stamp reward items and free promo items are locked at quantity 1
+    if (currentItem.isStampReward || currentItem.isFreePromo) {
       updates.quantity = 1;
     }
     const requestedDate = updates.deliveryDate || currentItem.deliveryDate || todayIso();
