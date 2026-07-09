@@ -229,10 +229,11 @@ function Cart() {
   const navigate = useNavigate();
 
   const isPromoActive = () => {
-    const now = new Date();
+    if (!deliveryDate) return false;
+    const selected = new Date(deliveryDate + "T00:00:00+05:30");
     const start = new Date("2026-07-13T00:00:00+05:30");
     const end = new Date("2026-07-19T23:59:59+05:30");
-    return now >= start && now <= end;
+    return selected >= start && selected <= end;
   };
 
   const hasRewardInCart = cart.some((item) => item.isStampReward);
@@ -261,15 +262,13 @@ function Cart() {
   useEffect(() => {
     getPublicSettings().then(setSiteSettings).catch(() => void 0);
     getBlockedDates().then((dates) => setBlockedDates(dates || [])).catch(() => void 0);
-    if (isPromoActive()) {
-      getProducts({ q: "shake" })
-        .then((data) => {
-          // Filter to only include products with "shake" in the name to be safe
-          const validShakes = data.filter(p => p.name.toLowerCase().includes("shake"));
-          setShakes(validShakes);
-        })
-        .catch(() => void 0);
-    }
+    getProducts({ q: "shake" })
+      .then((data) => {
+        // Filter to only include products with "shake" in the name to be safe
+        const validShakes = data.filter(p => p.name.toLowerCase().includes("shake"));
+        setShakes(validShakes);
+      })
+      .catch(() => void 0);
   }, []);
 
   const subtotal = cart.reduce((acc, item) => acc + (item.isStampReward ? 1 : item.price * item.quantity), 0);
