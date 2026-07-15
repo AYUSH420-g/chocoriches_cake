@@ -118,7 +118,8 @@ export async function pincodeStatus(pincode) {
     if (coords) {
       const distance = calculateDistance(STORE_COORDS.lat, STORE_COORDS.lon, coords.lat, coords.lon);
       // Delivery charge formula: distance * 2 (two-way) * 8 rs per km
-      deliveryCharge = Math.ceil(distance * 2 * 8);
+      const calculatedCharge = Math.ceil(distance * 2 * 8);
+      deliveryCharge = Math.max(25, calculatedCharge);
     } else {
       // Fallback charge if coordinates are not found
       deliveryCharge = 50; 

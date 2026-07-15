@@ -5,7 +5,7 @@ const orderSchema = new mongoose.Schema(
     id: { type: String, required: true, unique: true, index: true, maxlength: 100 },
     date: { type: String, required: true },
     total: { type: Number, required: true, min: 1 },
-    status: { type: String, required: true, enum: ["Processing", "Packed", "Out For Delivery", "Delivered", "Cancelled"] },
+    status: { type: String, required: true, enum: ["Pending Payment", "Processing", "Packed", "Out For Delivery", "Delivered", "Cancelled"] },
     items: [{ type: mongoose.Schema.Types.Mixed, required: true }],
     itemCount: { type: Number, default: 0 },
     customerName: { type: String, maxlength: 100 },
@@ -24,5 +24,6 @@ const orderSchema = new mongoose.Schema(
 );
 
 orderSchema.index({ "payment.razorpayPaymentId": 1 }, { unique: true, sparse: true });
+orderSchema.index({ "payment.razorpayOrderId": 1 }, { unique: true, sparse: true });
 
 export const Order = mongoose.models.Order || mongoose.model("Order", orderSchema);

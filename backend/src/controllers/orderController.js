@@ -38,112 +38,27 @@ function createPublicOrderId() {
   return `CR-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
 }
 
-export async function createOrder(req, res) {
-  const customerEmail = String(req.user.email || "").trim().toLowerCase();
-  const customerName = String(req.body.name || req.user.name || "").trim().slice(0, 100);
-  const customerPhone = String(req.body.phone || req.user.phone || "").replace(/\D/g, "").slice(0, 15);
-  const deliveryAddress = String(req.body.address || "").trim().slice(0, 500);
-  const deliveryDate = String(req.body.deliveryDate || "").slice(0, 10);
-  const deliveryTimeSlot = String(req.body.deliveryTimeSlot || "").trim();
+export async function approvePendingOrder(orderDocument, paymentDetails) {
+  if (orderDocument.status !== "Pending Payment") return orderDocument;
 
-  if (!customerName || customerPhone.length < 7 || !deliveryAddress) {
-    res.status(400).json({ message: "Valid customer name, phone, and address are required." });
-    return;
-  }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(deliveryDate) || deliveryDate < todayIso()) {
-    res.status(422).json({ message: "Please select a valid future delivery date." });
-    return;
-  }
-  if (!DELIVERY_SLOTS.has(deliveryTimeSlot)) {
-    res.status(422).json({ message: "Please select a valid delivery time slot." });
-    return;
-  }
+  orderDocument.status = "Processing";
+  orderDocument.payment = paymentDetails;
 
-  // Return a customer's already-created order before reading their now-cleared
-  // cart. This makes payment callbacks safely idempotent without allowing a
-  // payment ID to be reused by another account.
-  const requestedPaymentId = String(req.body.payment?.razorpay_payment_id || "").trim().slice(0, 100);
-  if (requestedPaymentId) {
-    const existingOrder = isDatabaseConnected()
-      ? await Order.findOne({ "payment.razorpayPaymentId": requestedPaymentId }).lean()
-      : memory.orders.find((item) => item.payment?.razorpayPaymentId === requestedPaymentId);
-    if (existingOrder) {
-      if (String(existingOrder.customerEmail).toLowerCase() !== customerEmail) {
-        res.status(409).json({ message: "This payment has already been used." });
-        return;
-      }
-      res.status(200).json(publicOrderView(existingOrder));
-      return;
-    }
-  }
-
-  const checkout = await calculateCheckout({
-    user: req.user,
-    deliveryPincode: req.body.deliveryPincode,
-    deliveryOption: req.body.deliveryOption,
-    deliveryDate,
-  });
-
-  if (deliveryDate === todayIso() && (!checkout.allSameDayEligible || indiaHour() < 6 || indiaHour() >= 18)) {
-    res.status(422).json({ message: "One or more cart items are not eligible for same-day delivery." });
-    return;
-  }
-
-  if (await isDeliveryDateBlocked(deliveryDate)) {
-    res.status(422).json({ message: "Delivery is blocked for the selected date." });
-    return;
-  }
-
-  const capacity = await cakeCapacityStatus(deliveryDate, checkout.itemCount);
-  if (!capacity.allowed) {
-    res.status(422).json({ message: capacity.message });
-    return;
-  }
-
-  const verifiedPayment = await verifyPaymentForCheckout({
-    payment: req.body.payment,
-    expectedAmountPaise: checkout.totalPaise,
-    user: req.user,
-  });
-
-  const order = {
-    id: createPublicOrderId(),
-    date: new Intl.DateTimeFormat("en-US", {
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    }).format(new Date()),
-    total: checkout.total,
-    status: "Processing",
-    items: checkout.items,
-    itemCount: checkout.itemCount,
-    customerName,
-    customerEmail,
-    customerPhone,
-    deliveryAddress,
-    deliveryPincode: checkout.deliveryPincode,
-    deliveryDate,
-    deliveryTimeSlot,
-    deliveryOption: checkout.deliveryOption,
-    payment: verifiedPayment,
-    isStampRewardOrder: checkout.isStampRewardOrder,
-  };
+  const customerEmail = String(orderDocument.customerEmail || "").toLowerCase();
 
   if (isDatabaseConnected()) {
     const session = await Order.startSession();
-    let created;
     try {
       await session.withTransaction(async () => {
-        if (checkout.isStampRewardOrder) {
+        if (orderDocument.isStampRewardOrder) {
           const rewardClaim = await User.updateOne(
             { email: customerEmail, stampCount: { $gte: 5 } },
             { $set: { stampCount: 0 } },
             { session }
           );
           if (rewardClaim.modifiedCount !== 1) {
-            const error = new Error("This loyalty reward has already been used.");
-            error.statusCode = 409;
-            throw error;
+             // If reward claim fails, we just proceed but log it. The order is already paid.
+             console.warn("Failed to claim stamp reward for order", orderDocument.id);
           }
         } else {
           await User.updateOne(
@@ -152,96 +67,93 @@ export async function createOrder(req, res) {
             { session }
           );
         }
-        [created] = await Order.create([order], { session });
+        await orderDocument.save({ session });
         await CartItem.deleteMany({ userEmail: customerEmail }, { session });
       });
-    } catch (error) {
-      if (error?.code === 11000 && requestedPaymentId) {
-        const duplicate = await Order.findOne({ "payment.razorpayPaymentId": requestedPaymentId }).lean();
-        if (duplicate && String(duplicate.customerEmail).toLowerCase() === customerEmail) {
-          res.status(200).json(publicOrderView(duplicate));
-          return;
-        }
-      }
-      throw error;
     } finally {
       await session.endSession();
     }
-    
-    const itemDetails = checkout.items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
-    const adminEmailContent = `
-New Order Received!
--------------------
-Order ID: ${order.id}
-Customer Name: ${customerName}
-Customer Email: ${customerEmail}
-Customer Phone: ${customerPhone}
-
-Items: ${itemDetails}
-Total Price: ${formatPrice(order.total)}
-Delivery Option: ${checkout.deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
-Delivery Date: ${deliveryDate}
-Delivery Address: ${deliveryAddress}
-Pincode: ${checkout.deliveryPincode}
-`.trim();
-
-    // Send to admin
-    sendEmail({
-      to: config.adminSeed.email,
-      subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
-      text: adminEmailContent
-    }).catch(console.error);
-
-    // Send to customer
-    sendEmail({
-      to: customerEmail,
-      subject: `Order Confirmed: ${order.id}`,
-      text: `Hi ${customerName},\n\nYour order ${order.id} has been placed successfully for ${formatPrice(order.total)}.\n\nItems: ${itemDetails}`
-    }).catch(console.error);
-    
-    res.status(201).json(publicOrderView(created.toObject()));
-    return;
+  } else {
+    memory.cartItems = memory.cartItems.filter((item) => String(item.userEmail || "").toLowerCase() !== customerEmail);
+    const memoryUser = memory.users.find((u) => String(u.email).toLowerCase() === customerEmail);
+    if (memoryUser) {
+      memoryUser.stampCount = orderDocument.isStampRewardOrder ? 0 : Math.min(5, Number(memoryUser.stampCount || 0) + 1);
+    }
   }
 
-  memory.orders.push(order);
-  memory.cartItems = memory.cartItems.filter((item) => String(item.userEmail || "").toLowerCase() !== customerEmail);
-  const memoryUser = memory.users.find((u) => String(u.email).toLowerCase() === customerEmail);
-  if (memoryUser) {
-    memoryUser.stampCount = checkout.isStampRewardOrder ? 0 : Math.min(5, Number(memoryUser.stampCount || 0) + 1);
-  }
-
-  const itemDetails = checkout.items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
+  const itemDetails = orderDocument.items.map(i => `${i.name || "Cake"} (Qty: ${i.quantity || 1})`).join(", ");
   const adminEmailContent = `
 New Order Received!
 -------------------
-Order ID: ${order.id}
-Customer Name: ${customerName}
-Customer Email: ${customerEmail}
-Customer Phone: ${customerPhone}
+Order ID: ${orderDocument.id}
+Customer Name: ${orderDocument.customerName}
+Customer Email: ${orderDocument.customerEmail}
+Customer Phone: ${orderDocument.customerPhone}
 
 Items: ${itemDetails}
-Total Price: ${formatPrice(order.total)}
-Delivery Option: ${checkout.deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
-Delivery Date: ${deliveryDate}
-Delivery Address: ${deliveryAddress}
-Pincode: ${checkout.deliveryPincode}
+Total Price: ${formatPrice(orderDocument.total)}
+Delivery Option: ${orderDocument.deliveryOption === "delivery" ? "Chocoriches Will Deliver" : "Customer Will Pickup (Near Bikanerwala Nehrunagar)"}
+Delivery Date: ${orderDocument.deliveryDate}
+Delivery Address: ${orderDocument.deliveryAddress}
+Pincode: ${orderDocument.deliveryPincode}
 `.trim();
 
   // Send to admin
   sendEmail({
     to: config.adminSeed.email,
-    subject: `New Order Alert: ${order.id} - ${formatPrice(order.total)}`,
+    subject: `New Order Alert: ${orderDocument.id} - ${formatPrice(orderDocument.total)}`,
     text: adminEmailContent
   }).catch(console.error);
 
   // Send to customer
   sendEmail({
     to: customerEmail,
-    subject: `Order Confirmed: ${order.id}`,
-    text: `Hi ${customerName},\n\nYour order ${order.id} has been placed successfully for ${formatPrice(order.total)}.\n\nItems: ${itemDetails}`
+    subject: `Order Confirmed: ${orderDocument.id}`,
+    text: `Hi ${orderDocument.customerName},\n\nYour order ${orderDocument.id} has been placed successfully for ${formatPrice(orderDocument.total)}.\n\nItems: ${itemDetails}`
   }).catch(console.error);
 
-  res.status(201).json(publicOrderView(order));
+  return orderDocument;
+}
+
+export async function createOrder(req, res) {
+  const customerEmail = String(req.user.email || "").trim().toLowerCase();
+  
+  const requestedPaymentId = String(req.body.payment?.razorpay_payment_id || "").trim().slice(0, 100);
+  const requestedOrderId = String(req.body.payment?.razorpay_order_id || "").trim().slice(0, 100);
+  
+  if (!requestedPaymentId || !requestedOrderId) {
+    res.status(400).json({ message: "Payment details are required." });
+    return;
+  }
+
+  let order = isDatabaseConnected()
+    ? await Order.findOne({ "payment.razorpayOrderId": requestedOrderId })
+    : memory.orders.find((item) => item.payment?.razorpayOrderId === requestedOrderId);
+
+  if (!order) {
+    res.status(404).json({ message: "Pending order not found. Please try again." });
+    return;
+  }
+
+  if (String(order.customerEmail).toLowerCase() !== customerEmail) {
+    res.status(403).json({ message: "Not authorized for this order." });
+    return;
+  }
+
+  if (order.status !== "Pending Payment") {
+     // Order is already processed (e.g. by webhook)
+     res.status(200).json(publicOrderView(order.toObject ? order.toObject() : order));
+     return;
+  }
+
+  const verifiedPayment = await verifyPaymentForCheckout({
+    payment: req.body.payment,
+    expectedAmountPaise: Math.round(order.total * 100),
+    user: req.user,
+  });
+
+  const updatedOrder = await approvePendingOrder(order, verifiedPayment);
+  res.status(200).json(publicOrderView(updatedOrder.toObject ? updatedOrder.toObject() : updatedOrder));
 }
 
 export async function myOrders(req, res) {

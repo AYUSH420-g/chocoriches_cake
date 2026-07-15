@@ -1,6 +1,9 @@
 import crypto from "node:crypto";
 import Razorpay from "razorpay";
 import { config } from "../config/env.js";
+import { isDatabaseConnected } from "../db.js";
+import { Order } from "../models/Order.js";
+import { memory } from "../utils/memoryStore.js";
 import { calculateCheckout } from "../services/checkoutService.js";
 
 function razorpayClient() {
@@ -18,6 +21,10 @@ function createRazorpayReceipt() {
   return `cr_${Date.now()}_${crypto.randomBytes(4).toString("hex")}`;
 }
 
+function createPublicOrderId() {
+  return `CR-${Date.now().toString(36).toUpperCase()}-${crypto.randomBytes(5).toString("hex").toUpperCase()}`;
+}
+
 export function razorpayConfig(_req, res) {
   res.json({ keyId: config.razorpayKeyId, currency: "INR" });
 }
@@ -29,18 +36,30 @@ export async function createRazorpayOrder(req, res) {
     return;
   }
 
+  const customerEmail = String(req.user.email || "").trim().toLowerCase();
+  const customerName = String(req.body.name || req.user.name || "").trim().slice(0, 100);
+  const customerPhone = String(req.body.phone || req.user.phone || "").replace(/\D/g, "").slice(0, 15);
+  const deliveryAddress = String(req.body.address || "").trim().slice(0, 500);
+  const deliveryDate = String(req.body.deliveryDate || "").slice(0, 10);
+  const deliveryTimeSlot = String(req.body.deliveryTimeSlot || "").trim();
+
+  if (!customerName || customerPhone.length < 7 || !deliveryAddress) {
+    res.status(400).json({ message: "Valid customer name, phone, and address are required." });
+    return;
+  }
+
   const checkout = await calculateCheckout({
     user: req.user,
     deliveryPincode: req.body.deliveryPincode,
     deliveryOption: req.body.deliveryOption,
-    deliveryDate: req.body.deliveryDate,
+    deliveryDate: deliveryDate,
   });
   if (checkout.totalPaise < 100) {
     res.status(422).json({ message: "Order total must be at least ₹1." });
     return;
   }
 
-  const order = await razorpay.orders.create({
+  const razorpayOrder = await razorpay.orders.create({
     amount: checkout.totalPaise,
     currency: "INR",
     receipt: createRazorpayReceipt(),
@@ -50,10 +69,41 @@ export async function createRazorpayOrder(req, res) {
     },
   });
 
+  const order = {
+    id: createPublicOrderId(),
+    date: new Intl.DateTimeFormat("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    }).format(new Date()),
+    total: checkout.total,
+    status: "Pending Payment",
+    items: checkout.items,
+    itemCount: checkout.itemCount,
+    customerName,
+    customerEmail,
+    customerPhone,
+    deliveryAddress,
+    deliveryPincode: checkout.deliveryPincode,
+    deliveryDate,
+    deliveryTimeSlot,
+    deliveryOption: checkout.deliveryOption,
+    payment: {
+      razorpayOrderId: razorpayOrder.id,
+    },
+    isStampRewardOrder: checkout.isStampRewardOrder,
+  };
+
+  if (isDatabaseConnected()) {
+    await Order.create(order);
+  } else {
+    memory.orders.push(order);
+  }
+
   res.status(201).json({
-    id: order.id,
-    amount: order.amount,
-    currency: order.currency,
+    id: razorpayOrder.id,
+    amount: razorpayOrder.amount,
+    currency: razorpayOrder.currency,
     keyId: config.razorpayKeyId,
   });
 }
@@ -154,9 +204,29 @@ export async function razorpayWebhook(req, res) {
       return;
     }
     
-    // Process webhook event safely (e.g. update order status)
     const event = req.body.event;
     console.log(`[Webhook] Received Razorpay Event: ${event}`);
+
+    if (event === "payment.captured" || event === "order.paid") {
+      const paymentEntity = req.body.payload.payment.entity;
+      const razorpayOrderId = paymentEntity.order_id;
+      
+      const order = isDatabaseConnected() 
+        ? await Order.findOne({ "payment.razorpayOrderId": razorpayOrderId })
+        : memory.orders.find(o => o.payment?.razorpayOrderId === razorpayOrderId);
+
+      if (order && order.status === "Pending Payment") {
+        const { approvePendingOrder } = await import("./orderController.js");
+        await approvePendingOrder(order, {
+          mode: "razorpay",
+          razorpayOrderId: paymentEntity.order_id,
+          razorpayPaymentId: paymentEntity.id,
+          status: paymentEntity.status,
+          verifiedAt: new Date().toISOString(),
+        });
+        console.log(`[Webhook] Approved pending order ${order.id}`);
+      }
+    }
     
     res.status(200).json({ status: "ok" });
   } catch (error) {

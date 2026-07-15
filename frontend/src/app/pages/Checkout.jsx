@@ -139,9 +139,22 @@ function Checkout() {
     let razorpayOrder;
     try {
       razorpayOrder = await createRazorpayOrder({
-        deliveryPincode: nextCheckoutData.pincode,
+        name: nextCheckoutData.name || "",
+        email: nextCheckoutData.email || "",
+        phone: nextCheckoutData.phone || "",
+        address: [nextCheckoutData.houseNo, nextCheckoutData.street || nextCheckoutData.address, nextCheckoutData.city, nextCheckoutData.landmark].filter(Boolean).join(", "),
+        deliveryPincode: nextCheckoutData.pincode || "",
+        deliveryDate: nextCheckoutData.deliveryDate || sessionStorage.getItem("chocoriches_delivery_date") || new Date().toISOString().slice(0, 10),
+        deliveryTimeSlot: sessionStorage.getItem("chocoriches_time_slot") || "",
         deliveryOption,
-        deliveryDate: nextCheckoutData.deliveryDate,
+        items: cart.map((item) => ({
+          name: item.name,
+          quantity: item.quantity,
+          size: item.size,
+          messageOnCake: item.messageOnCake,
+          baseFlavour: item.baseFlavour,
+          creamFlavour: item.creamFlavour,
+        })),
       });
     } catch (error) {
       setLoading(false);
